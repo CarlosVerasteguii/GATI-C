@@ -1,17 +1,35 @@
 "use client"
 
+import { useState, useMemo, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Progress } from "@/components/ui/progress"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DropdownMenuSubContent } from "@/components/ui/dropdown-menu"
-
 import { DropdownMenuPortal } from "@/components/ui/dropdown-menu"
-
 import { DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu"
-
 import { DropdownMenuSub } from "@/components/ui/dropdown-menu"
-
-import { useState, useMemo } from "react"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -30,6 +48,11 @@ import {
   Edit,
   Handshake,
   UserCheck,
+  ChevronLeft,
+  ChevronRight,
+  Columns,
+  RotateCcw,
+  Copy,
 } from "lucide-react"
 import { QuickLoadModal } from "@/components/quick-load-modal"
 import { useApp } from "@/contexts/app-context"
@@ -43,20 +66,45 @@ import { BulkRetireModal } from "@/components/bulk-retire-modal"
 import { ActionMenu } from "@/components/action-menu"
 import { BulkEditModal } from "@/components/bulk-edit-modal"
 
+const ITEMS_PER_PAGE = 10
+
+const allColumns = [
+  { id: "nombre", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start" },
+  { id: "marca", label: "Marca", defaultVisible: true, sortable: true },
+  { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true },
+  { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: true },
+  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: true },
+  { id: "estado", label: "Estado", defaultVisible: true, sortable: true },
+  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: true },
+  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: true },
+  { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: true },
+  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true },
+  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true },
+  { id: "qty", label: "QTY", defaultVisible: true, sortable: false, fixed: "end" },
+]
+
 export default function InventoryPage() {
   const { state, dispatch, addRecentActivity } = useApp()
   const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState({
-    estado: "Todos",
-    categoria: "Todas",
-    marca: "Todas",
-  })
-  const [sortConfig, setSortConfig] = useState<{
-    key: string
-    direction: "ascending" | "descending"
-  } | null>(null)
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "")
+  const [filterEstado, setFilterEstado] = useState(searchParams.get("estado") || "Todos")
+  const [filterCategoria, setFilterCategoria] = useState(
+    searchParams.get("categoria") || "Todas",
+  )
+  const [filterMarca, setFilterMarca] = useState(searchParams.get("marca") || "Todas")
+  const [currentPage, setCurrentPage] = useState(
+    Number(searchParams.get("page")) || 1,
+  )
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    allColumns.filter((c) => c.defaultVisible).map((c) => c.id),
+  )
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDirection, setSortDirection] = useState<"ascending" | "descending">(
+    "ascending",
+  )
   const [isQuickLoadModalOpen, setIsQuickLoadModalOpen] = useState(false)
   const [isQuickRetireModalOpen, setIsQuickRetireModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -67,8 +115,31 @@ export default function InventoryPage() {
   const [isBulkLendModalOpen, setIsBulkLendModalOpen] = useState(false)
   const [isBulkRetireModalOpen, setIsBulkRetireModalOpen] = useState(false)
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [showImportProgress, setShowImportProgress] = useState(false)
+  const [importProgress, setImportProgress] = useState(0)
 
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (searchTerm) params.set("search", searchTerm)
+    if (filterEstado !== "Todos") params.set("estado", filterEstado)
+    if (filterCategoria !== "Todas") params.set("categoria", filterCategoria)
+    if (filterMarca !== "Todas") params.set("marca", filterMarca)
+    if (currentPage > 1) params.set("page", currentPage.toString())
+    router.replace(`/inventario${params.toString() ? "?" + params.toString() : ""}`, { scroll: false })
+  }, [searchTerm, filterEstado, filterCategoria, filterMarca, currentPage, router])
+
+  useEffect(() => {
+    const processId = searchParams.get("processCargaTaskId")
+    const highlightId = searchParams.get("highlightRetireTask")
+    if (processId) {
+      dispatch({ type: "PROCESS_CARGA_TASK", payload: Number(processId) })
+    } else if (highlightId) {
+      dispatch({ type: "HIGHLIGHT_RETIRE_TASK", payload: Number(highlightId) })
+    }
+  }, [searchParams, dispatch])
 
   const handleSelectProduct = (id: string) => {
     setSelectedProductIds((prev) => (prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id]))
@@ -256,52 +327,54 @@ export default function InventoryPage() {
         product.idContrato?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesEstado = filters.estado === "Todos" || product.estado === filters.estado
-      const matchesCategoria = filters.categoria === "Todas" || product.categoria === filters.categoria
-      const matchesMarca = filters.marca === "Todas" || product.marca === filters.marca
+      const matchesEstado = filterEstado === "Todos" || product.estado === filterEstado
+      const matchesCategoria = filterCategoria === "Todas" || product.categoria === filterCategoria
+      const matchesMarca = filterMarca === "Todas" || product.marca === filterMarca
 
       return matchesSearch && matchesEstado && matchesCategoria && matchesMarca
     })
 
     return filtered
-  }, [state.inventoryData, searchTerm, filters])
+  }, [state.inventoryData, searchTerm, filterEstado, filterCategoria, filterMarca])
 
   const sortedProducts = useMemo(() => {
-    if (!sortConfig) {
+    if (!sortColumn) {
       return filteredProducts
     }
 
     const sorted = [...filteredProducts].sort((a, b) => {
-      const aValue = a[sortConfig.key] || ""
-      const bValue = b[sortConfig.key] || ""
+      const aValue = a[sortColumn] || ""
+      const bValue = b[sortColumn] || ""
 
       if (aValue < bValue) {
-        return sortConfig.direction === "ascending" ? -1 : 1
+        return sortDirection === "ascending" ? -1 : 1
       }
       if (aValue > bValue) {
-        return sortConfig.direction === "ascending" ? 1 : -1
+        return sortDirection === "ascending" ? 1 : -1
       }
       return 0
     })
     return sorted
-  }, [filteredProducts, sortConfig])
+  }, [filteredProducts, sortColumn, sortDirection])
 
   const requestSort = (key: string) => {
-    let direction: "ascending" | "descending" = "ascending"
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending"
+    if (sortColumn === key) {
+      setSortDirection(sortDirection === "ascending" ? "descending" : "ascending")
+    } else {
+      setSortColumn(key)
+      setSortDirection("ascending")
     }
-    setSortConfig({ key, direction })
   }
 
   const getSortIcon = (key: string) => {
-    if (!sortConfig || sortConfig.key !== key) {
+    if (sortColumn !== key) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />
     }
-    if (sortConfig.direction === "ascending") {
-      return <ArrowUpDown className="ml-2 h-4 w-4 rotate-180" />
-    }
-    return <ArrowUpDown className="ml-2 h-4 w-4" />
+    return sortDirection === "ascending" ? (
+      <ArrowUpDown className="ml-2 h-4 w-4 rotate-180" />
+    ) : (
+      <ArrowUpDown className="ml-2 h-4 w-4" />
+    )
   }
 
   const allCategories = useMemo(() => {
@@ -319,14 +392,88 @@ export default function InventoryPage() {
     return ["Todos", ...Array.from(statuses).sort()]
   }, [state.inventoryData])
 
-  const filteredAndSortedProducts = sortedProducts
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ITEMS_PER_PAGE))
+  const paginatedProducts = sortedProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  )
+
+  const displayedColumns = useMemo(() => {
+    const fixedStart = allColumns.find((c) => c.fixed === "start")
+    const fixedEnd = allColumns.find((c) => c.fixed === "end")
+    const others = allColumns.filter((c) => visibleColumns.includes(c.id) && !c.fixed)
+    let cols: any[] = []
+    if (fixedStart) cols.push(fixedStart)
+    cols = [...cols, ...others]
+    if (fixedEnd) cols.push(fixedEnd)
+    return cols
+  }, [visibleColumns])
+
+  const handleColumnToggle = (id: string, checked: boolean) => {
+    const column = allColumns.find((c) => c.id === id)
+    if (column?.fixed) return
+    setVisibleColumns((prev) => (checked ? [...prev, id] : prev.filter((c) => c !== id)))
+  }
+
+  const getAssignmentDetails = (item: any) => {
+    if (item.numeroSerie) {
+      const active = state.asignadosData.find(
+        (a) => a.numeroSerie === item.numeroSerie && a.estado === "Activo",
+      )
+      if (active) {
+        return { asignadoA: active.asignadoA, fechaAsignacion: active.fechaAsignacion }
+      }
+    }
+    return { asignadoA: null, fechaAsignacion: null }
+  }
+
+  const handleReactivate = (product: any) => {
+    dispatch({ type: "REACTIVATE_PRODUCT", payload: product.id })
+    addRecentActivity({
+      type: "Reactivación",
+      description: `${product.nombre} reactivado`,
+      date: new Date().toLocaleString(),
+      details: { productId: product.id },
+    })
+    toast({
+      title: "Producto reactivado",
+      description: `${product.nombre} ha sido reactivado y está disponible.`,
+    })
+  }
+
+  const handleDuplicate = (product: any) => {
+    dispatch({ type: "DUPLICATE_PRODUCT", payload: product.id })
+    toast({ title: "Producto duplicado", description: `${product.nombre} duplicado.` })
+  }
+
+  const handleImportCSV = () => {
+    setShowImportProgress(true)
+    setImportProgress(0)
+    const interval = setInterval(() => {
+      setImportProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setTimeout(() => {
+            setShowImportProgress(false)
+            setIsImportModalOpen(false)
+            dispatch({ type: "IMPORT_CSV_COMPLETE" })
+            toast({ title: "Importación completada" })
+          }, 500)
+          return 100
+        }
+        return prev + 10
+      })
+    }, 200)
+  }
+
+  const filteredAndSortedProducts = paginatedProducts
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="ml-auto" onClick={() => console.log("Import CSV clicked")}>
+          <Button variant="outline" className="ml-auto" onClick={() => setIsImportModalOpen(true)}>
             <FileDown className="mr-2 h-4 w-4" />
             Importar CSV
           </Button>
@@ -365,8 +512,8 @@ export default function InventoryPage() {
                   {allStatuses.map((status) => (
                     <DropdownMenuCheckboxItem
                       key={status}
-                      checked={filters.estado === status}
-                      onCheckedChange={() => setFilters({ ...filters, estado: status })}
+                      checked={filterEstado === status}
+                      onCheckedChange={() => setFilterEstado(status)}
                     >
                       {status}
                     </DropdownMenuCheckboxItem>
@@ -381,8 +528,8 @@ export default function InventoryPage() {
                   {allCategories.map((category) => (
                     <DropdownMenuCheckboxItem
                       key={category}
-                      checked={filters.categoria === category}
-                      onCheckedChange={() => setFilters({ ...filters, categoria: category })}
+                      checked={filterCategoria === category}
+                      onCheckedChange={() => setFilterCategoria(category)}
                     >
                       {category}
                     </DropdownMenuCheckboxItem>
@@ -397,8 +544,8 @@ export default function InventoryPage() {
                   {allBrands.map((brand) => (
                     <DropdownMenuCheckboxItem
                       key={brand}
-                      checked={filters.marca === brand}
-                      onCheckedChange={() => setFilters({ ...filters, marca: brand })}
+                      checked={filterMarca === brand}
+                      onCheckedChange={() => setFilterMarca(brand)}
                     >
                       {brand}
                     </DropdownMenuCheckboxItem>
@@ -503,21 +650,46 @@ export default function InventoryPage() {
                   <TableCell>{product.cantidad}</TableCell>
                   <TableCell>
                     <ActionMenu
-                      onEdit={() => handleEditProduct(product)}
-                      onDelete={() => handleDeleteProduct(product)}
-                      onAssign={() => {
-                        setSelectedProductIds([product.id])
-                        setIsBulkAssignModalOpen(true)
-                      }}
-                      onLend={() => {
-                        setSelectedProductIds([product.id])
-                        setIsBulkLendModalOpen(true)
-                      }}
-                      onRetire={() => {
-                        setSelectedProductIds([product.id])
-                        setIsBulkRetireModalOpen(true)
-                      }}
-                      product={product}
+                      actions={[
+                        { label: "Editar", onClick: () => handleEditProduct(product), icon: Edit },
+                        { label: "Duplicar", onClick: () => handleDuplicate(product), icon: Copy },
+                        {
+                          label: "Reactivar",
+                          onClick: () => handleReactivate(product),
+                          icon: RotateCcw,
+                          disabled: product.estado !== "Retirado",
+                        },
+                        {
+                          label: "Asignar...",
+                          onClick: () => {
+                            setSelectedProductIds([product.id])
+                            setIsBulkAssignModalOpen(true)
+                          },
+                          icon: UserCheck,
+                        },
+                        {
+                          label: "Prestar...",
+                          onClick: () => {
+                            setSelectedProductIds([product.id])
+                            setIsBulkLendModalOpen(true)
+                          },
+                          icon: Handshake,
+                        },
+                        {
+                          label: "Marcar Retiro",
+                          onClick: () => {
+                            setSelectedProductIds([product.id])
+                            setIsBulkRetireModalOpen(true)
+                          },
+                          icon: PackageMinus,
+                        },
+                        {
+                          label: "Eliminar",
+                          onClick: () => handleDeleteProduct(product),
+                          icon: PackageMinus,
+                          destructive: true,
+                        },
+                      ]}
                     />
                   </TableCell>
                 </TableRow>
@@ -525,6 +697,30 @@ export default function InventoryPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Mostrando {filteredAndSortedProducts.length} de {sortedProducts.length} productos
+        </p>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" /> Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={currentPage >= totalPages}
+          >
+            Siguiente <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <QuickLoadModal open={isQuickLoadModalOpen} onOpenChange={setIsQuickLoadModalOpen} />
@@ -567,6 +763,37 @@ export default function InventoryPage() {
         selectedProducts={selectedProductIds}
         onBulkEdit={handleBulkEdit}
       />
+      <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Importar desde CSV</DialogTitle>
+            <DialogDescription>
+              Selecciona un archivo CSV para importar productos al inventario.
+            </DialogDescription>
+          </DialogHeader>
+          {!showImportProgress ? (
+            <div className="grid gap-4 py-4">
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="csvFile">Archivo CSV</Label>
+                <Input id="csvFile" type="file" accept=".csv" />
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 py-4">
+              <Label>Progreso de importación</Label>
+              <Progress value={importProgress} />
+              <p className="text-sm text-muted-foreground">{importProgress}% completado</p>
+            </div>
+          )}
+          {!showImportProgress && (
+            <DialogFooter>
+              <Button onClick={handleImportCSV}>
+                <FileDown className="mr-2 h-4 w-4" /> Importar
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
