@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Trash2, RotateCcw, Search, FileText, Calendar, User, Package, Info } from 'lucide-react'
+import { Trash2, RotateCcw, Search, FileText, Calendar, User, Package, Info, X } from 'lucide-react'
 import { useApp } from '@/contexts/app-context'
 import { showSuccess, showError } from '@/hooks/use-toast'
 
@@ -103,8 +103,8 @@ export default function PapeleraDocumentosPage() {
     const filteredDocuments = deletedDocuments.filter(doc => {
         const matchesSearch = doc.originalFilename.toLowerCase().includes(searchTerm.toLowerCase()) ||
             doc.productName.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesProduct = !filterProduct || doc.productName.includes(filterProduct)
-        const matchesReason = !filterReason || doc.deletionReason === filterReason
+        const matchesProduct = !filterProduct || filterProduct === "__all__" || doc.productName.includes(filterProduct)
+        const matchesReason = !filterReason || filterReason === "__all__" || doc.deletionReason === filterReason
         const matchesUser = !filterUser || doc.deletedBy.includes(filterUser)
 
         return matchesSearch && matchesProduct && matchesReason && matchesUser
@@ -173,6 +173,14 @@ export default function PapeleraDocumentosPage() {
         })
     }
 
+    // Función para limpiar todos los filtros
+    const clearAllFilters = () => {
+        setSearchTerm("");
+        setFilterProduct("");
+        setFilterReason("");
+        setFilterUser("");
+    }
+
     if (!hasAccess) {
         return (
             <div className="container mx-auto py-6 space-y-6">
@@ -217,7 +225,20 @@ export default function PapeleraDocumentosPage() {
             {/* Filtros */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
+                    <div className="flex justify-between items-center">
+                        <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
+                        {(searchTerm || filterProduct || filterReason || filterUser) && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearAllFilters}
+                                className="flex items-center text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="h-4 w-4 mr-1" />
+                                Limpiar filtros
+                            </Button>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -231,6 +252,14 @@ export default function PapeleraDocumentosPage() {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="pl-8"
                                 />
+                                {searchTerm && (
+                                    <button
+                                        className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                                        onClick={() => setSearchTerm("")}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -266,11 +295,21 @@ export default function PapeleraDocumentosPage() {
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Eliminado por</label>
-                            <Input
-                                placeholder="Nombre de usuario..."
-                                value={filterUser}
-                                onChange={(e) => setFilterUser(e.target.value)}
-                            />
+                            <div className="relative">
+                                <Input
+                                    placeholder="Nombre de usuario..."
+                                    value={filterUser}
+                                    onChange={(e) => setFilterUser(e.target.value)}
+                                />
+                                {filterUser && (
+                                    <button
+                                        className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                                        onClick={() => setFilterUser("")}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </CardContent>
