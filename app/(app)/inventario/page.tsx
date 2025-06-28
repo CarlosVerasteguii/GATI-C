@@ -56,6 +56,8 @@ import {
   Columns,
   LayoutList,
   LayoutGrid,
+  X,
+  Badge,
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -177,12 +179,12 @@ export default function InventarioPage() {
   const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
     const userId = state.user?.id;
     const pageId = "inventario";
-    
+
     // Obtener de preferencias de usuario si están disponibles
     if (userId &&
-        state.userColumnPreferences &&
-        Array.isArray(state.userColumnPreferences) &&
-        state.userColumnPreferences.some(pref => pref.page === pageId)) {
+      state.userColumnPreferences &&
+      Array.isArray(state.userColumnPreferences) &&
+      state.userColumnPreferences.some(pref => pref.page === pageId)) {
       const userPrefs = state.userColumnPreferences.find(pref => pref.page === pageId);
       if (userPrefs && userPrefs.itemsPerPage) {
         return userPrefs.itemsPerPage;
@@ -324,13 +326,22 @@ export default function InventarioPage() {
     }
   }, [searchParams, state.pendingTasksData, router, isProcessingUrlParam])
 
+  // Añadir función para limpiar todos los filtros
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setFilterCategoria("");
+    setFilterMarca("");
+    setFilterEstado("");
+    setCurrentPage(1); // Volver a la primera página al limpiar filtros
+  };
+
   // Actualizar URL con filtros
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchTerm) params.set("search", searchTerm)
-    if (filterCategoria) params.set("categoria", filterCategoria)
-    if (filterMarca) params.set("marca", filterMarca)
-    if (filterEstado) params.set("estado", filterEstado)
+    if (filterCategoria && filterCategoria !== "all") params.set("categoria", filterCategoria)
+    if (filterMarca && filterMarca !== "all") params.set("marca", filterMarca)
+    if (filterEstado && filterEstado !== "all") params.set("estado", filterEstado)
 
     const newUrl = params.toString() ? `?${params.toString()}` : ""
     router.replace(`/inventario${newUrl}`, { scroll: false })
@@ -418,9 +429,9 @@ export default function InventarioPage() {
         (item.contratoId && item.contratoId.toLowerCase().includes(searchTerm.toLowerCase()))
       )
 
-      const matchesCategoria = !filterCategoria || filterCategoria === "all" || item.categoria === filterCategoria
-      const matchesMarca = !filterMarca || filterMarca === "all" || item.marca === filterMarca
-      const matchesEstado = !filterEstado || filterEstado === "all" || item.estado === filterEstado
+      const matchesCategoria = !filterCategoria || filterCategoria === "" || filterCategoria === "all" || filterCategoria === "__all__" || item.categoria === filterCategoria
+      const matchesMarca = !filterMarca || filterMarca === "" || filterMarca === "all" || filterMarca === "__all__" || item.marca === filterMarca
+      const matchesEstado = !filterEstado || filterEstado === "" || filterEstado === "all" || filterEstado === "__all__" || item.estado === filterEstado
 
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado
     })
@@ -1161,44 +1172,74 @@ export default function InventarioPage() {
         (product.contratoId && product.contratoId.toLowerCase().includes(searchTerm.toLowerCase()))
       )
 
-      const matchesCategoria = !filterCategoria || filterCategoria === "all" || product.categoria === filterCategoria
-      const matchesMarca = !filterMarca || filterMarca === "all" || product.marca === filterMarca
-      const matchesEstado = !filterEstado || filterEstado === "all" || product.estado === filterEstado
+      const matchesCategoria = !filterCategoria || filterCategoria === "" || filterCategoria === "all" || filterCategoria === "__all__" || product.categoria === filterCategoria
+      const matchesMarca = !filterMarca || filterMarca === "" || filterMarca === "all" || filterMarca === "__all__" || product.marca === filterMarca
+      const matchesEstado = !filterEstado || filterEstado === "" || filterEstado === "all" || filterEstado === "__all__" || product.estado === filterEstado
 
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado
     })
   }, [searchTerm, filterCategoria, filterMarca, filterEstado, state.inventoryData])
 
   return (
-    <TooltipProvider>
-      {/* Rediseño de la barra de acciones principal */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="text-muted-foreground">
-          Gestiona todos los productos del sistema
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Header con título y botones de acción */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
+          <p className="text-muted-foreground mt-1">
+            Gestión centralizada de activos de TI
+          </p>
         </div>
-        <Button
-          onClick={handleAddProduct}
-          className="bg-primary hover:bg-primary-hover"
-          size="lg"
-        >
-          <Plus className="mr-2 h-5 w-5" />
-          Añadir Producto
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleAddProduct}
+            className="bg-primary hover:bg-primary-hover"
+            size="lg"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Añadir Producto
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Importar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsBulkRetireModalOpen(true)}
+            className="text-red-600 hover:text-red-700"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Retirar Selección
+          </Button>
+        </div>
       </div>
 
-      {/* Search and Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1">
+      {/* Card de filtros y acciones */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex-1 min-w-[240px]">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar productos..."
+                  placeholder="Buscar por nombre, marca, modelo, serie..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
                 />
+                {searchTerm && (
+                  <button
+                    className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
             <Popover>
@@ -1206,69 +1247,152 @@ export default function InventarioPage() {
                 <Button variant="outline">
                   <Filter className="mr-2 h-4 w-4" />
                   Filtros
+                  {(filterCategoria || filterMarca || filterEstado) && (
+                    <Badge variant="secondary" className="ml-2 px-1 py-0 h-5 min-w-5 flex items-center justify-center">
+                      {[filterCategoria, filterMarca, filterEstado].filter(Boolean).length}
+                    </Badge>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <div className="grid gap-4">
-                  <div className="space-y-2">
+                  <div className="flex justify-between items-center">
                     <h4 className="font-medium leading-none">Filtros</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Filtra los productos por categoría, marca o estado
-                    </p>
+                    {(filterCategoria || filterMarca || filterEstado) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="h-8 flex items-center text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Limpiar filtros
+                      </Button>
+                    )}
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    Filtra los productos por categoría, marca o estado
+                  </p>
                   <div className="grid gap-2">
                     <div className="grid grid-cols-3 items-center gap-4">
                       <Label htmlFor="filterCategoria">Categoría</Label>
-                      <Select value={filterCategoria} onValueChange={setFilterCategoria}>
-                        <SelectTrigger className="col-span-2 h-8">
-                          <SelectValue placeholder="Todas" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          {allCategories.map((categoria) => (
-                            <SelectItem key={categoria} value={categoria}>
-                              {categoria}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-2 relative">
+                        <Select value={filterCategoria} onValueChange={setFilterCategoria}>
+                          <SelectTrigger className="h-8">
+                            <SelectValue placeholder="Todas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todas</SelectItem>
+                            {allCategories.map((categoria) => (
+                              <SelectItem key={categoria} value={categoria}>
+                                {categoria}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {filterCategoria && (
+                          <button
+                            className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
+                            onClick={() => setFilterCategoria("")}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-3 items-center gap-4">
                       <Label htmlFor="filterMarca">Marca</Label>
-                      <Select value={filterMarca} onValueChange={setFilterMarca}>
-                        <SelectTrigger className="col-span-2 h-8">
-                          <SelectValue placeholder="Todas" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          {allBrands.map((marca) => (
-                            <SelectItem key={marca} value={marca}>
-                              {marca}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-2 relative">
+                        <Select value={filterMarca} onValueChange={setFilterMarca}>
+                          <SelectTrigger className="h-8">
+                            <SelectValue placeholder="Todas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todas</SelectItem>
+                            {allBrands.map((marca) => (
+                              <SelectItem key={marca} value={marca}>
+                                {marca}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {filterMarca && (
+                          <button
+                            className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
+                            onClick={() => setFilterMarca("")}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-3 items-center gap-4">
                       <Label htmlFor="filterEstado">Estado</Label>
-                      <Select value={filterEstado} onValueChange={setFilterEstado}>
-                        <SelectTrigger className="col-span-2 h-8">
-                          <SelectValue placeholder="Todos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos</SelectItem>
-                          {allStatuses.map((estado) => (
-                            <SelectItem key={estado} value={estado}>
-                              {estado}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-2 relative">
+                        <Select value={filterEstado} onValueChange={setFilterEstado}>
+                          <SelectTrigger className="h-8">
+                            <SelectValue placeholder="Todos" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos</SelectItem>
+                            {allStatuses.map((estado) => (
+                              <SelectItem key={estado} value={estado}>
+                                {estado}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {filterEstado && (
+                          <button
+                            className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
+                            onClick={() => setFilterEstado("")}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </PopoverContent>
             </Popover>
+
+            {/* Mostrar filtros activos en forma de badges */}
+            {(filterCategoria || filterMarca || filterEstado) && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-sm text-muted-foreground">Filtros activos:</span>
+                {filterCategoria && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    Categoría: {filterCategoria}
+                    <button onClick={() => setFilterCategoria("")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filterMarca && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    Marca: {filterMarca}
+                    <button onClick={() => setFilterMarca("")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filterEstado && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    Estado: {filterEstado}
+                    <button onClick={() => setFilterEstado("")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {(filterCategoria || filterMarca || filterEstado) && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-7 px-2">
+                    Limpiar todos
+                  </Button>
+                )}
+              </div>
+            )}
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline">
@@ -1644,13 +1768,13 @@ export default function InventarioPage() {
           {/* Selector de ítems por página */}
           <div className="flex items-center space-x-2">
             <p className="text-sm text-muted-foreground">Ítems por página:</p>
-            <Select 
+            <Select
               value={itemsPerPage.toString()}
               onValueChange={(value) => {
                 const newItemsPerPage = parseInt(value);
                 setItemsPerPage(newItemsPerPage);
                 setCurrentPage(1); // Resetear a la primera página
-                
+
                 // Guardar en preferencias de usuario
                 if (state.user?.id) {
                   appDispatch({
@@ -2372,6 +2496,6 @@ export default function InventarioPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </TooltipProvider>
+    </div>
   )
 }
