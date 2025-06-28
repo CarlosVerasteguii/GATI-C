@@ -1098,17 +1098,17 @@ export default function InventarioPage() {
 
   const allCategories = useMemo(() => {
     const categories = new Set((state.inventoryData || []).map((p) => p.categoria).filter(Boolean))
-    return ["Todas", ...Array.from(categories).sort()]
+    return [...Array.from(categories).sort()]
   }, [state.inventoryData])
 
   const allBrands = useMemo(() => {
     const brands = new Set((state.inventoryData || []).map((p) => p.marca).filter(Boolean))
-    return ["Todas", ...Array.from(brands).sort()]
+    return [...Array.from(brands).sort()]
   }, [state.inventoryData])
 
   const allStatuses = useMemo(() => {
     const statuses = new Set((state.inventoryData || []).map((p) => p.estado).filter(Boolean))
-    return ["Todos", ...Array.from(statuses).sort()]
+    return [...Array.from(statuses).sort()]
   }, [state.inventoryData])
 
   if (sortedAndFilteredData.length === 0 && !searchTerm && !filterCategoria && !filterMarca && !filterEstado) {
@@ -1266,7 +1266,6 @@ export default function InventarioPage() {
                           onClick={clearAllFilters}
                           className="h-8 flex items-center text-muted-foreground hover:text-foreground"
                         >
-                          <X className="h-4 w-4 mr-1" />
                           Limpiar filtros
                         </Button>
                       )}
@@ -1291,14 +1290,6 @@ export default function InventarioPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {filterCategoria && (
-                            <button
-                              className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
-                              onClick={() => setFilterCategoria("")}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
                         </div>
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
@@ -1317,14 +1308,6 @@ export default function InventarioPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {filterMarca && (
-                            <button
-                              className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
-                              onClick={() => setFilterMarca("")}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
                         </div>
                       </div>
                       <div className="grid grid-cols-3 items-center gap-4">
@@ -1343,14 +1326,6 @@ export default function InventarioPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {filterEstado && (
-                            <button
-                              className="absolute right-8 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
-                              onClick={() => setFilterEstado("")}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
                         </div>
                       </div>
                     </div>
