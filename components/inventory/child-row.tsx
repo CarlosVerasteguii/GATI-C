@@ -11,11 +11,9 @@ type ChildRowProps = {
 export function ChildRow({ asset }: ChildRowProps) {
     return (
         <TableRow>
-            <TableCell className="pl-12 text-sm text-muted-foreground">
-                {/* Dejamos este espacio para el nombre del producto padre, pero lo mostramos atenuado */}
-            </TableCell>
-            <TableCell></TableCell> {/* Celda vacía para alinear con Marca */}
-            <TableCell></TableCell> {/* Celda vacía para alinear con Modelo */}
+            <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
+            <TableCell />
+            <TableCell />
             <TableCell className="text-sm">{asset.numeroSerie}</TableCell>
             <TableCell className="text-sm">{asset.estado}</TableCell>
             <TableCell className="text-right">

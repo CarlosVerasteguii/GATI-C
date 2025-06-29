@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Table,
     TableBody,
@@ -22,7 +22,7 @@ type InventoryProduct = {
     children: InventoryAsset[];
 };
 
-export function GroupedInventoryTable({ data }: { data: InventoryProduct[] }) {
+export function GroupedInventoryTable({ data, searchQuery }: { data: InventoryProduct[], searchQuery: string }) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const toggleRow = (productId: string) => {
@@ -31,6 +31,35 @@ export function GroupedInventoryTable({ data }: { data: InventoryProduct[] }) {
             [productId]: !prev[productId],
         }));
     };
+
+    // --- NUEVA LÓGICA DE FILTRADO ---
+    const filteredData = useMemo(() => {
+        if (!searchQuery) {
+            return data; // Si no hay búsqueda, devuelve todos los datos
+        }
+
+        const lowercasedQuery = searchQuery.toLowerCase();
+
+        return data.filter(parent => {
+            // Comprobar si el padre coincide
+            const parentMatches =
+                parent.product.nombre.toLowerCase().includes(lowercasedQuery) ||
+                parent.product.marca.toLowerCase().includes(lowercasedQuery) ||
+                parent.product.modelo.toLowerCase().includes(lowercasedQuery);
+
+            if (parentMatches) {
+                return true; // Si el padre coincide, lo incluimos entero
+            }
+
+            // Si el padre no coincide, comprobar si alguno de sus hijos sí lo hace
+            const childMatches = parent.children.some(child =>
+                child.numeroSerie.toLowerCase().includes(lowercasedQuery)
+            );
+
+            return childMatches;
+        });
+    }, [data, searchQuery]);
+    // --- FIN DE LA LÓGICA DE FILTRADO ---
 
     return (
         <Table>
@@ -46,7 +75,7 @@ export function GroupedInventoryTable({ data }: { data: InventoryProduct[] }) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {data.map((parent) => (
+                {filteredData.map((parent) => (
                     <React.Fragment key={parent.product.id}>
                         <ParentRow
                             key={parent.product.id}
