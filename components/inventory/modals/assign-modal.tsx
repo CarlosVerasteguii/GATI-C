@@ -2,6 +2,7 @@
 
 // Imports de React y hooks
 import React, { useState, useEffect } from 'react';
+import { useApp } from '@/contexts/app-context';
 // Imports de Zod y React Hook Form
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,11 +26,17 @@ type AssignModalProps = {
     isOpen: boolean;
     onClose: () => void;
     productData: any | null;
-    users: any[];
-    onAddUser: (label: string) => string;
 };
 
-export function AssignModal({ isOpen, onClose, productData, users, onAddUser }: AssignModalProps) {
+export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) {
+    const { state, addUserToUsersData } = useApp(); // Obtenemos usuarios y función desde el contexto
+
+    // Convertimos los usuarios del contexto al formato que espera el componente
+    const users = state.usersData.map(user => ({
+        value: user.id.toString(),
+        label: user.nombre
+    }));
+
     // Estados separados como en BrandCombobox
     const [open, setOpen] = useState(false); // Estado para controlar el Popover
     const [inputValue, setInputValue] = useState(""); // Estado para el input de búsqueda
@@ -66,8 +73,15 @@ export function AssignModal({ isOpen, onClose, productData, users, onAddUser }: 
 
     const handleCreateNewUser = () => {
         if (inputValue && !users.some(user => user.label.toLowerCase() === inputValue.toLowerCase())) {
-            const newUserValue = onAddUser(inputValue);
-            form.setValue("assignee", newUserValue);
+            // Crear un nuevo usuario en el contexto
+            const newUser = {
+                id: Math.max(...state.usersData.map(u => u.id), 0) + 1, // Generar nuevo ID
+                nombre: inputValue,
+                email: `${inputValue.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Email temporal
+                rol: "Lector" as const // Rol por defecto
+            };
+            addUserToUsersData(newUser);
+            form.setValue("assignee", newUser.id.toString());
             setInputValue(inputValue); // Mantener el nombre en el input
             setOpen(false);
         }

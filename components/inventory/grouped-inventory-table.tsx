@@ -24,11 +24,9 @@ type InventoryProduct = {
     children: InventoryAsset[];
 };
 
-export function GroupedInventoryTable({ data, searchQuery, users, onAddUser }: {
+export function GroupedInventoryTable({ data, searchQuery }: {
     data: InventoryProduct[],
     searchQuery: string,
-    users: any[], // Recibe la lista de usuarios
-    onAddUser: (label: string) => string, // Recibe la función
 }) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
@@ -156,8 +154,6 @@ export function GroupedInventoryTable({ data, searchQuery, users, onAddUser }: {
                 isOpen={modalState.type === 'assign'}
                 onClose={handleCloseModal}
                 productData={modalState.data}
-                users={users}
-                onAddUser={onAddUser}
             />
 
             <QuickRetireModal
