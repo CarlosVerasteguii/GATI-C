@@ -11,11 +11,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InventoryItem } from '@/types/inventory';
 
-type ChildRowProps = {
-    asset: any;
+interface ChildRowProps {
+    asset: InventoryItem;
     isHighlighted: boolean;
-};
+}
 
 export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
     const handleAction = (action: string) => {

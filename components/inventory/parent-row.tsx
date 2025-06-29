@@ -17,14 +17,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { GroupedProduct } from '@/types/inventory';
 
-// Tipos para las props
-type ParentRowProps = {
-    parentProduct: any;
+interface ParentRowProps {
+    parentProduct: GroupedProduct;
     isExpanded: boolean;
     onToggle: () => void;
     onAction: (action: string) => void;
-};
+}
 
 export function ParentRow({ parentProduct, isExpanded, onToggle, onAction }: ParentRowProps) {
     const { product, summary } = parentProduct;

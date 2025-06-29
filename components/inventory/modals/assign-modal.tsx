@@ -16,17 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GroupedProduct, User } from '@/types/inventory';
 
 const formSchema = z.object({
     quantity: z.coerce.number().min(1, "Debe ser al menos 1"),
     assignee: z.string().min(1, "Debe seleccionar un responsable"),
 });
 
-type AssignModalProps = {
+interface AssignModalProps {
     isOpen: boolean;
     onClose: () => void;
-    productData: any | null;
-};
+    productData: GroupedProduct | null;
+}
 
 export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) {
     const { state, addUserToUsersData } = useApp(); // Obtenemos usuarios y función desde el contexto
@@ -74,11 +75,11 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
     const handleCreateNewUser = () => {
         if (inputValue && !users.some(user => user.label.toLowerCase() === inputValue.toLowerCase())) {
             // Crear un nuevo usuario en el contexto
-            const newUser = {
+            const newUser: User = {
                 id: Math.max(...state.usersData.map(u => u.id), 0) + 1, // Generar nuevo ID
                 nombre: inputValue,
                 email: `${inputValue.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Email temporal
-                rol: "Lector" as const // Rol por defecto
+                rol: "Lector" // Rol por defecto
             };
             addUserToUsersData(newUser);
             form.setValue("assignee", newUser.id.toString());

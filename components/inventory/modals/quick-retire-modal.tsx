@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { GroupedProduct } from '@/types/inventory';
 
 // El formulario ahora es completamente opcional
 const formSchema = z.object({
@@ -20,12 +21,12 @@ const formSchema = z.object({
     notes: z.string().optional(),
 });
 
-type QuickRetireModalProps = {
+interface QuickRetireModalProps {
     isOpen: boolean;
     onClose: () => void;
-    inventoryItems: any[]; // Recibirá todos los productos para la búsqueda
-    productData?: any | null;
-};
+    inventoryItems: GroupedProduct[]; // Recibirá todos los productos para la búsqueda
+    productData?: GroupedProduct | null;
+}
 
 export function QuickRetireModal({ isOpen, onClose, inventoryItems, productData }: QuickRetireModalProps) {
     const [open, setOpen] = useState(false);

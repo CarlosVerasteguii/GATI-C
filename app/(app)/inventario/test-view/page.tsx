@@ -6,21 +6,31 @@ import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-
 import { QuickRetireModal } from '@/components/inventory/modals/quick-retire-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { GroupedProduct } from '@/types/inventory';
 
 export default function TestViewPage() {
     const { state } = useApp();
     const [searchQuery, setSearchQuery] = useState('');
     const [isRetireModalOpen, setIsRetireModalOpen] = useState(false);
 
-    const groupedInventoryData = useMemo(() => {
-        const productGroups: { [key: string]: any } = {};
+    const groupedInventoryData = useMemo((): GroupedProduct[] => {
+        const productGroups: { [key: string]: GroupedProduct } = {};
 
         state.inventoryData.forEach(item => {
             const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
             if (!productGroups[groupKey]) {
+                // Determinar si es serializado basado en si hay número de serie
+                const isSerialized = item.numeroSerie !== null && item.numeroSerie !== '';
+
                 productGroups[groupKey] = {
                     isParent: true,
-                    product: { ...item, id: groupKey },
+                    product: {
+                        id: groupKey,
+                        nombre: item.nombre,
+                        marca: item.marca,
+                        modelo: item.modelo,
+                        isSerialized: isSerialized
+                    },
                     summary: { total: 0, disponible: 0, estados: {} },
                     children: [],
                 };

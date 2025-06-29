@@ -14,30 +14,27 @@ import { ParentRow } from './parent-row';
 import { ChildRow } from './child-row';
 import { AssignModal } from './modals/assign-modal';
 import { QuickRetireModal } from './modals/quick-retire-modal';
+import { GroupedProduct } from '@/types/inventory';
 
-// Definimos un tipo más específico para nuestros datos
-type InventoryAsset = any; // Podemos refinar esto después
-type InventoryProduct = {
-    isParent: boolean;
-    product: any;
-    summary: any;
-    children: InventoryAsset[];
-};
+interface GroupedInventoryTableProps {
+    data: GroupedProduct[];
+    searchQuery: string;
+}
 
-export function GroupedInventoryTable({ data, searchQuery }: {
-    data: InventoryProduct[],
-    searchQuery: string,
-}) {
+export function GroupedInventoryTable({ data, searchQuery }: GroupedInventoryTableProps) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const [modalState, setModalState] = useState<{
         type: 'assign' | null;
-        data: any | null;
+        data: GroupedProduct | null;
     }>({ type: null, data: null });
 
-    const [quickRetireState, setQuickRetireState] = useState<{ isOpen: boolean, product?: any }>({ isOpen: false });
+    const [quickRetireState, setQuickRetireState] = useState<{
+        isOpen: boolean;
+        product?: GroupedProduct | null;
+    }>({ isOpen: false });
 
-    const handleOpenQuickRetire = (product: any | null = null) => {
+    const handleOpenQuickRetire = (product: GroupedProduct | null = null) => {
         setQuickRetireState({ isOpen: true, product: product || null });
     };
 
@@ -72,7 +69,7 @@ export function GroupedInventoryTable({ data, searchQuery }: {
 
                 if (matchingChildren.length === 1 && !parentMatches) {
                     // Si solo un hijo coincide y el padre no, lo marcamos para resaltar.
-                    highlightedChildId = matchingChildren[0].id;
+                    highlightedChildId = matchingChildren[0].id.toString();
                 }
                 // --- FIN LÓGICA DE RESALTADO ---
 
@@ -81,7 +78,7 @@ export function GroupedInventoryTable({ data, searchQuery }: {
                 }
                 return null;
             })
-            .filter((p): p is InventoryProduct & { highlightedChildId: string | null } => p !== null);
+            .filter((p): p is GroupedProduct & { highlightedChildId: string | null } => p !== null);
     }, [data, lowercasedQuery]);
 
     // --- LÓGICA PARA AUTO-EXPANDIR ---
@@ -101,7 +98,7 @@ export function GroupedInventoryTable({ data, searchQuery }: {
     }, [searchQuery, filteredData]);
     // --- FIN LÓGICA PARA AUTO-EXPANDIR ---
 
-    const handleMenuAction = (action: string, product: any) => {
+    const handleMenuAction = (action: string, product: GroupedProduct) => {
         if (action === 'Asignar') {
             setModalState({ type: 'assign', data: product });
         } else if (action === 'Retiro Rápido') {
@@ -142,7 +139,7 @@ export function GroupedInventoryTable({ data, searchQuery }: {
                                 <ChildRow
                                     key={child.id}
                                     asset={child}
-                                    isHighlighted={child.id === parent.highlightedChildId}
+                                    isHighlighted={child.id.toString() === parent.highlightedChildId}
                                 />
                             ))}
                         </React.Fragment>
