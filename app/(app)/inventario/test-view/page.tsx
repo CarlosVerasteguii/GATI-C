@@ -2,45 +2,42 @@
 
 import { useState } from 'react';
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
-import { mockInventoryData, mockUsers as initialUsers } from '@/lib/mocks/inventory-mock-data';
-import { Input } from '@/components/ui/input';
+import { mockInventoryData } from '@/lib/mocks/inventory-mock-data';
+import { QuickRetireModal } from '@/components/inventory/modals/quick-retire-modal';
+import { Button } from '@/components/ui/button';
 
 export default function TestViewPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [isRetireModalOpen, setIsRetireModalOpen] = useState(false);
+    const [users, setUsers] = useState([
+        { value: 'user1', label: 'Usuario 1' },
+        { value: 'user2', label: 'Usuario 2' },
+    ]);
 
-    // --- ESTADO CENTRALIZADO PARA USUARIOS ---
-    const [users, setUsers] = useState(initialUsers);
-
-    const handleAddUser = (newUserLabel: string) => {
-        const newUserValue = newUserLabel.toLowerCase().replace(/\s+/g, '.');
-        const newUser = { value: newUserValue, label: newUserLabel };
-
-        // Verificamos si el usuario ya existe antes de añadirlo
-        const userExists = users.some(user => user.value === newUserValue);
-        if (!userExists) {
-            // Añadimos el nuevo usuario a la lista
-            setUsers(prevUsers => [...prevUsers, newUser]);
-            console.log("Nuevo usuario añadido a la lista central:", newUser);
-        }
-        return newUserValue; // Devolvemos el 'value' para que el formulario lo use
+    const handleAddUser = (label: string) => {
+        const newValue = `user${users.length + 1}`;
+        setUsers(prev => [...prev, { value: newValue, label }]);
+        return newValue;
     };
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-4">Página de Pruebas - Tabla Anidada</h1>
-            <p className="mb-4">Este es un laboratorio aislado para desarrollar el nuevo componente de inventario.</p>
-
-            <div className="mb-4">
-                <Input
-                    placeholder="Buscar por nombre, marca, modelo, N/S..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-sm"
-                />
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Página de Pruebas - Tabla Anidada</h1>
+                <Button onClick={() => setIsRetireModalOpen(true)}>
+                    Registrar Retiro Rápido
+                </Button>
             </div>
 
-            <div className="border p-4 rounded-lg">
-                {/* Pasamos la lista de usuarios y la función para añadir como props */}
+            <div className="space-y-4">
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre, marca, modelo o número de serie..."
+                    className="w-full p-2 border rounded"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
                 <GroupedInventoryTable
                     data={mockInventoryData}
                     searchQuery={searchQuery}
@@ -48,6 +45,12 @@ export default function TestViewPage() {
                     onAddUser={handleAddUser}
                 />
             </div>
+
+            <QuickRetireModal
+                isOpen={isRetireModalOpen}
+                onClose={() => setIsRetireModalOpen(false)}
+                inventoryItems={mockInventoryData}
+            />
         </div>
     );
 } 

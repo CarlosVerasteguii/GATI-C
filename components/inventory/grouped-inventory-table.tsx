@@ -13,6 +13,7 @@ import {
 import { ParentRow } from './parent-row';
 import { ChildRow } from './child-row';
 import { AssignModal } from './modals/assign-modal';
+import { QuickRetireModal } from './modals/quick-retire-modal';
 
 // Definimos un tipo más específico para nuestros datos
 type InventoryAsset = any; // Podemos refinar esto después
@@ -33,8 +34,18 @@ export function GroupedInventoryTable({ data, searchQuery, users, onAddUser }: {
 
     const [modalState, setModalState] = useState<{
         type: 'assign' | null;
-        data: InventoryProduct | null;
+        data: any | null;
     }>({ type: null, data: null });
+
+    const [quickRetireState, setQuickRetireState] = useState<{ isOpen: boolean, product?: any }>({ isOpen: false });
+
+    const handleOpenQuickRetire = (product: any | null = null) => {
+        setQuickRetireState({ isOpen: true, product: product || null });
+    };
+
+    const handleCloseQuickRetire = () => {
+        setQuickRetireState({ isOpen: false, product: null });
+    };
 
     const toggleRow = (productId: string) => {
         setExpandedRows(prev => ({
@@ -92,10 +103,11 @@ export function GroupedInventoryTable({ data, searchQuery, users, onAddUser }: {
     }, [searchQuery, filteredData]);
     // --- FIN LÓGICA PARA AUTO-EXPANDIR ---
 
-    const handleMenuAction = (action: string, product: InventoryProduct) => {
+    const handleMenuAction = (action: string, product: any) => {
         if (action === 'Asignar') {
-            console.log(`Abriendo modal de asignación para: ${product.product.nombre}`);
             setModalState({ type: 'assign', data: product });
+        } else if (action === 'Retiro Rápido') {
+            handleOpenQuickRetire(product);
         } else {
             console.log(`Acción '${action}' clickeada para: ${product.product.nombre}`);
         }
@@ -146,6 +158,13 @@ export function GroupedInventoryTable({ data, searchQuery, users, onAddUser }: {
                 productData={modalState.data}
                 users={users}
                 onAddUser={onAddUser}
+            />
+
+            <QuickRetireModal
+                isOpen={quickRetireState.isOpen}
+                onClose={handleCloseQuickRetire}
+                inventoryItems={data}
+                productData={quickRetireState.product}
             />
         </>
     );

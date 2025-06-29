@@ -171,4 +171,13 @@ export const mockUsers = [
     { value: "sandra.ruiz", label: "Sandra Ruiz (RRHH)" },
     { value: "roberto.silva", label: "Roberto Silva (Ventas)" },
     { value: "laura.martinez", label: "Laura Martínez (Diseño)" },
+    { value: "otro", label: "Otro (especificar en notas)" },
+];
+
+export const mockRetireReasons = [
+    { value: "dañado", label: "Dañado / No funcional" },
+    { value: "obsoleto", label: "Tecnología Obsoleta" },
+    { value: "extravio", label: "Extravío o Robo" },
+    { value: "fin_vida_util", label: "Fin de Vida Útil Programado" },
+    { value: "otro", label: "Otro (especificar en notas)" },
 ]; 
