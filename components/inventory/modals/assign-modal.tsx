@@ -25,9 +25,6 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils"; // Utilidad de Shadcn para clases condicionales
 
-// Importamos nuestro nuevo mock de usuarios
-import { mockUsers } from "@/lib/mocks/inventory-mock-data";
-
 // 1. Definir el esquema del formulario con Zod
 const formSchema = z.object({
     quantity: z.coerce.number().min(1, "Debe ser al menos 1"),
@@ -38,9 +35,11 @@ type AssignModalProps = {
     isOpen: boolean;
     onClose: () => void;
     productData: any | null;
+    users: any[]; // Recibe la lista de la página
+    onAddUser: (label: string) => string; // Recibe la función para añadir
 };
 
-export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) {
+export function AssignModal({ isOpen, onClose, productData, users, onAddUser }: AssignModalProps) {
     // 2. Configurar el hook del formulario
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -72,7 +71,7 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
     }
 
     // --- NUEVA LÓGICA DE FILTRADO Y CREACIÓN ---
-    const filteredUsers = mockUsers.filter(user =>
+    const filteredUsers = users.filter(user =>
         user.label.toLowerCase().includes(searchUserInput.toLowerCase())
     );
 
@@ -80,11 +79,11 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
 
     // Función para obtener el label del usuario seleccionado (incluyendo usuarios creados)
     const getSelectedUserLabel = (value: string) => {
-        const existingUser = mockUsers.find(user => user.value === value);
+        const existingUser = users.find(user => user.value === value);
         if (existingUser) {
             return existingUser.label;
         }
-        // Si no existe en mockUsers, es un usuario creado dinámicamente
+        // Si no existe en users, es un usuario creado dinámicamente
         return value.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' (Nuevo)';
     };
 
@@ -155,8 +154,9 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
                                                     {showCreateOption && (
                                                         <CommandItem
                                                             onSelect={() => {
-                                                                // Guardamos el nombre del nuevo usuario como su "value"
-                                                                form.setValue("assignee", searchUserInput.toLowerCase().replace(/\s+/g, '.'));
+                                                                // Llamamos a la función del padre para añadir el usuario Y obtener su 'value'
+                                                                const newUserValue = onAddUser(searchUserInput);
+                                                                form.setValue("assignee", newUserValue);
                                                                 form.trigger("assignee"); // Re-valida el campo
                                                                 setSearchUserInput(""); // Limpia el input
                                                             }}

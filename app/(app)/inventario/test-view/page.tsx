@@ -2,11 +2,28 @@
 
 import { useState } from 'react';
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
-import { mockInventoryData } from '@/lib/mocks/inventory-mock-data';
+import { mockInventoryData, mockUsers as initialUsers } from '@/lib/mocks/inventory-mock-data';
 import { Input } from '@/components/ui/input';
 
 export default function TestViewPage() {
     const [searchQuery, setSearchQuery] = useState('');
+
+    // --- ESTADO CENTRALIZADO PARA USUARIOS ---
+    const [users, setUsers] = useState(initialUsers);
+
+    const handleAddUser = (newUserLabel: string) => {
+        const newUserValue = newUserLabel.toLowerCase().replace(/\s+/g, '.');
+        const newUser = { value: newUserValue, label: newUserLabel };
+
+        // Verificamos si el usuario ya existe antes de añadirlo
+        const userExists = users.some(user => user.value === newUserValue);
+        if (!userExists) {
+            // Añadimos el nuevo usuario a la lista
+            setUsers(prevUsers => [...prevUsers, newUser]);
+            console.log("Nuevo usuario añadido a la lista central:", newUser);
+        }
+        return newUserValue; // Devolvemos el 'value' para que el formulario lo use
+    };
 
     return (
         <div>
@@ -23,7 +40,13 @@ export default function TestViewPage() {
             </div>
 
             <div className="border p-4 rounded-lg">
-                <GroupedInventoryTable data={mockInventoryData} searchQuery={searchQuery} />
+                {/* Pasamos la lista de usuarios y la función para añadir como props */}
+                <GroupedInventoryTable
+                    data={mockInventoryData}
+                    searchQuery={searchQuery}
+                    users={users}
+                    onAddUser={handleAddUser}
+                />
             </div>
         </div>
     );
