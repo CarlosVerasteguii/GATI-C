@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/contexts/app-context';
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 import { QuickRetireModal } from '@/components/inventory/modals/quick-retire-modal';
@@ -103,6 +103,15 @@ export default function TestViewPage() {
         return Object.values(productGroups);
     }, [state.inventoryData, categoryFilter, brandFilter, statusFilter, advancedFilters]);
 
+    // --- QUERY EFECTIVO PARA AUTO-EXPANSIÓN ---
+    // Combinamos el searchQuery normal con el filtro de número de serie para la auto-expansión
+    const effectiveSearchQuery = useMemo(() => {
+        if (advancedFilters.numeroSerie) {
+            return advancedFilters.numeroSerie;
+        }
+        return searchQuery;
+    }, [searchQuery, advancedFilters.numeroSerie]);
+
     const hasActiveFilters = categoryFilter || brandFilter || statusFilter || Object.values(advancedFilters).some(value => value);
 
     const clearAllFilters = () => {
@@ -155,82 +164,72 @@ export default function TestViewPage() {
                 </Button>
             </div>
 
-            <div className="flex items-center gap-4 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Input
-                    placeholder="Buscar por nombre, marca, modelo..."
+                    placeholder="Buscar..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-sm"
+                    className="max-w-xs"
                 />
 
-                {/* --- NUEVA INTERFAZ DE BOTONES DE FILTRO --- */}
-                <FilterPopover
-                    title="Categoría"
-                    options={state.categorias}
-                    selectedValue={categoryFilter}
-                    onSelect={setCategoryFilter}
-                />
-                <FilterPopover
-                    title="Marca"
-                    options={state.marcas}
-                    selectedValue={brandFilter}
-                    onSelect={setBrandFilter}
-                />
-                <FilterPopover
-                    title="Estado"
-                    options={[...new Set(state.inventoryData.map(item => item.estado))]}
-                    selectedValue={statusFilter}
-                    onSelect={setStatusFilter}
-                />
-                <ColumnToggleMenu
-                    columns={allColumns}
-                    visibleColumns={visibleColumns}
-                    onColumnVisibilityChange={setVisibleColumns}
-                />
+                {/* --- NUEVA Y MEJORADA INTERFAZ DE FILTROS --- */}
+                <div className="flex items-center gap-2 border-l pl-2">
+                    <p className="text-sm font-semibold">Filtros:</p>
+                    <FilterPopover
+                        title="Categoría"
+                        options={state.categorias}
+                        selectedValue={categoryFilter}
+                        onSelect={setCategoryFilter}
+                    />
+                    <FilterPopover
+                        title="Marca"
+                        options={state.marcas}
+                        selectedValue={brandFilter}
+                        onSelect={setBrandFilter}
+                    />
+                    <FilterPopover
+                        title="Estado"
+                        options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                        selectedValue={statusFilter}
+                        onSelect={setStatusFilter}
+                    />
+                </div>
 
-                {/* Filtros Avanzados */}
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline">Filtros Avanzados</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[250px] p-0" align="start">
-                        <div className="p-2">
-                            <h4 className="font-medium text-sm">Filtros Avanzados</h4>
-                            <p className="text-xs text-muted-foreground">Solo aparecen filtros para columnas visibles.</p>
-                        </div>
-                        <Separator />
-                        <div className="p-2">
-                            <div className="grid gap-4">
-                                {allColumns.map(column => {
-                                    if (visibleColumns[column.id]) {
-                                        // Extraemos las opciones únicas para esta columna de los datos reales
-                                        const options = [...new Set(
-                                            state.inventoryData.map(item => (item as any)[column.id]).filter(Boolean)
-                                        )];
+                <div className="flex items-center gap-2 border-l pl-2">
+                    <p className="text-sm font-semibold">Configuración:</p>
+                    <ColumnToggleMenu
+                        columns={allColumns}
+                        visibleColumns={visibleColumns}
+                        onColumnVisibilityChange={setVisibleColumns}
+                    />
 
-                                        return (
-                                            <div key={column.id}>
-                                                <Label className="text-xs font-semibold">{column.label}</Label>
-                                                <FilterPopover
-                                                    title={`Seleccionar ${column.label}`}
-                                                    options={options}
-                                                    selectedValue={advancedFilters[column.id] || null}
-                                                    onSelect={(value) => {
-                                                        setAdvancedFilters(prev => ({
-                                                            ...prev,
-                                                            [column.id]: value
-                                                        }));
-                                                    }}
-                                                />
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })}
+                    {/* El Popover de Filtros Avanzados ahora es más simple */}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline">Filtros Avanzados</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[250px] p-4" align="start">
+                            <div className="space-y-4">
+                                <h4 className="font-medium text-sm">Filtros Avanzados</h4>
+                                <p className="text-xs text-muted-foreground">Filtra por columnas visibles.</p>
+
+                                {allColumns.filter(c => c.id === 'numeroSerie').map(column => (
+                                    visibleColumns[column.id] ? (
+                                        <div key={column.id}>
+                                            <Label className="text-xs font-semibold">{column.label}</Label>
+                                            <FilterPopover
+                                                title={`Seleccionar ${column.label}`}
+                                                options={[...new Set(state.inventoryData.map(item => item.numeroSerie).filter(Boolean) as string[])]}
+                                                selectedValue={advancedFilters[column.id] || null}
+                                                onSelect={(value) => setAdvancedFilters(prev => ({ ...prev, [column.id]: value }))}
+                                            />
+                                        </div>
+                                    ) : null
+                                ))}
                             </div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
+                        </PopoverContent>
+                    </Popover>
+                </div>
             </div>
 
             {/* --- NUEVA ÁREA PARA MOSTRAR BADGES DE FILTROS ACTIVOS --- */}
@@ -289,7 +288,7 @@ export default function TestViewPage() {
             <div className="border p-4 rounded-lg">
                 <GroupedInventoryTable
                     data={groupedInventoryData}
-                    searchQuery={searchQuery}
+                    searchQuery={effectiveSearchQuery}
                     visibleColumns={visibleColumns}
                 />
             </div>
