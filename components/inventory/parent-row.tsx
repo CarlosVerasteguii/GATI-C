@@ -9,6 +9,14 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Tipos para las props
 type ParentRowProps = {
@@ -19,6 +27,10 @@ type ParentRowProps = {
 
 export function ParentRow({ parentProduct, isExpanded, onToggle }: ParentRowProps) {
     const { product, summary } = parentProduct;
+
+    const handleAction = (action: string) => {
+        console.log(`Acción: ${action} en el producto padre: ${product.id}`);
+    };
 
     const renderEstadoTooltip = () => (
         <div className="flex flex-col gap-1 p-1 text-xs">
@@ -34,13 +46,12 @@ export function ParentRow({ parentProduct, isExpanded, onToggle }: ParentRowProp
             <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                     <Button
+                        onClick={onToggle}
                         variant="ghost"
                         size="sm"
-                        onClick={onToggle}
-                        className="h-6 w-6 p-0"
                     >
                         <ChevronRight
-                            className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                            className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
                         />
                     </Button>
                     <span>{product.nombre}</span>
@@ -65,9 +76,21 @@ export function ParentRow({ parentProduct, isExpanded, onToggle }: ParentRowProp
                 </TooltipProvider>
             </TableCell>
             <TableCell className="text-right">
-                <Button variant="ghost" size="icon" disabled>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => handleAction('Asignar')}>Asignar desde Stock</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleAction('Retiro Rápido')}>Retiro Rápido</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleAction('Editar')}>Editar Modelo</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </TableCell>
         </TableRow>
     );

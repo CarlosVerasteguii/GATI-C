@@ -3,6 +3,14 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type ChildRowProps = {
     asset: any;
@@ -10,6 +18,10 @@ type ChildRowProps = {
 };
 
 export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
+    const handleAction = (action: string) => {
+        console.log(`Acción: ${action} en el activo hijo: ${asset.id}`);
+    };
+
     return (
         <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
             <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
@@ -18,9 +30,21 @@ export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
             <TableCell className="text-sm">{asset.numeroSerie}</TableCell>
             <TableCell className="text-sm">{asset.estado}</TableCell>
             <TableCell className="text-right">
-                <Button variant="ghost" size="icon" disabled>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones de Activo</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => handleAction('Ver Detalles')}>Ver Detalles</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleAction('Editar')}>Editar Activo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleAction('Mover a Mantenimiento')}>Mover a Mantenimiento</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </TableCell>
         </TableRow>
     );
