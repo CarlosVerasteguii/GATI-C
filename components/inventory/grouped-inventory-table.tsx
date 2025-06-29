@@ -64,7 +64,7 @@ export function GroupedInventoryTable({ data, searchQuery }: GroupedInventoryTab
                 // --- LÓGICA DE RESALTADO ---
                 let highlightedChildId: string | null = null;
                 const matchingChildren = parent.children.filter(child =>
-                    child.numeroSerie.toLowerCase().includes(lowercasedQuery)
+                    child.numeroSerie && child.numeroSerie.toLowerCase().includes(lowercasedQuery)
                 );
 
                 if (matchingChildren.length === 1 && !parentMatches) {
