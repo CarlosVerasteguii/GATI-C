@@ -199,27 +199,35 @@ export default function TestViewPage() {
                             <p className="text-xs text-muted-foreground">Solo aparecen filtros para columnas visibles.</p>
                         </div>
                         <Separator />
-                        <div className="p-2 space-y-4">
-                            {allColumns.map(column => {
-                                if (visibleColumns[column.id]) {
-                                    return (
-                                        <div key={column.id}>
-                                            <Label className="text-xs">{column.label}</Label>
-                                            <Input
-                                                placeholder={`Filtrar por ${column.label}...`}
-                                                value={advancedFilters[column.id] || ''}
-                                                onChange={e => {
-                                                    setAdvancedFilters(prev => ({
-                                                        ...prev,
-                                                        [column.id]: e.target.value || null
-                                                    }));
-                                                }}
-                                            />
-                                        </div>
-                                    )
-                                }
-                                return null;
-                            })}
+                        <div className="p-2">
+                            <div className="grid gap-4">
+                                {allColumns.map(column => {
+                                    if (visibleColumns[column.id]) {
+                                        // Extraemos las opciones únicas para esta columna de los datos reales
+                                        const options = [...new Set(
+                                            state.inventoryData.map(item => (item as any)[column.id]).filter(Boolean)
+                                        )];
+
+                                        return (
+                                            <div key={column.id}>
+                                                <Label className="text-xs font-semibold">{column.label}</Label>
+                                                <FilterPopover
+                                                    title={`Seleccionar ${column.label}`}
+                                                    options={options}
+                                                    selectedValue={advancedFilters[column.id] || null}
+                                                    onSelect={(value) => {
+                                                        setAdvancedFilters(prev => ({
+                                                            ...prev,
+                                                            [column.id]: value
+                                                        }));
+                                                    }}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                            </div>
                         </div>
                     </PopoverContent>
                 </Popover>
