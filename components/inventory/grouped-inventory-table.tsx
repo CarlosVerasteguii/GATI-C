@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Table,
     TableBody,
@@ -32,44 +32,64 @@ export function GroupedInventoryTable({ data, searchQuery }: { data: InventoryPr
         }));
     };
 
-    // --- NUEVA LÓGICA DE FILTRADO ---
+    const lowercasedQuery = searchQuery.trim().toLowerCase();
+
     const filteredData = useMemo(() => {
-        if (!searchQuery) {
-            return data; // Si no hay búsqueda, devuelve todos los datos
-        }
+        if (!lowercasedQuery) return data.map(p => ({ ...p, highlightedChildId: null }));
 
-        const lowercasedQuery = searchQuery.toLowerCase();
+        return data
+            .map(parent => {
+                const parentMatches =
+                    parent.product.nombre.toLowerCase().includes(lowercasedQuery) ||
+                    parent.product.marca.toLowerCase().includes(lowercasedQuery) ||
+                    parent.product.modelo.toLowerCase().includes(lowercasedQuery);
 
-        return data.filter(parent => {
-            // Comprobar si el padre coincide
-            const parentMatches =
-                parent.product.nombre.toLowerCase().includes(lowercasedQuery) ||
-                parent.product.marca.toLowerCase().includes(lowercasedQuery) ||
-                parent.product.modelo.toLowerCase().includes(lowercasedQuery);
+                // --- LÓGICA DE RESALTADO ---
+                let highlightedChildId: string | null = null;
+                const matchingChildren = parent.children.filter(child =>
+                    child.numeroSerie.toLowerCase().includes(lowercasedQuery)
+                );
 
-            if (parentMatches) {
-                return true; // Si el padre coincide, lo incluimos entero
+                if (matchingChildren.length === 1 && !parentMatches) {
+                    // Si solo un hijo coincide y el padre no, lo marcamos para resaltar.
+                    highlightedChildId = matchingChildren[0].id;
+                }
+                // --- FIN LÓGICA DE RESALTADO ---
+
+                if (parentMatches || matchingChildren.length > 0) {
+                    return { ...parent, highlightedChildId }; // Devolvemos el padre con la info de resaltado
+                }
+                return null;
+            })
+            .filter((p): p is InventoryProduct & { highlightedChildId: string | null } => p !== null);
+    }, [data, lowercasedQuery]);
+
+    // --- LÓGICA PARA AUTO-EXPANDIR ---
+    useEffect(() => {
+        if (lowercasedQuery) {
+            // Si la búsqueda filtra y deja un único resultado padre, lo expandimos.
+            if (filteredData.length === 1) {
+                setExpandedRows({ [filteredData[0].product.id]: true });
+            } else {
+                // Si hay más de un resultado o ninguno, colapsamos todo para una vista limpia.
+                setExpandedRows({});
             }
-
-            // Si el padre no coincide, comprobar si alguno de sus hijos sí lo hace
-            const childMatches = parent.children.some(child =>
-                child.numeroSerie.toLowerCase().includes(lowercasedQuery)
-            );
-
-            return childMatches;
-        });
-    }, [data, searchQuery]);
-    // --- FIN DE LA LÓGICA DE FILTRADO ---
+        } else {
+            // Si la búsqueda está vacía, colapsamos todo.
+            setExpandedRows({});
+        }
+    }, [searchQuery, filteredData]);
+    // --- FIN LÓGICA PARA AUTO-EXPANDIR ---
 
     return (
         <Table>
             <TableCaption>Una lista de los activos de tu inventario.</TableCaption>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[400px]">Nombre del Producto</TableHead>
+                    <TableHead className="w-[300px]">Producto</TableHead>
                     <TableHead>Marca</TableHead>
                     <TableHead>Modelo</TableHead>
-                    <TableHead>N/S</TableHead>
+                    <TableHead>Número de Serie</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -78,13 +98,16 @@ export function GroupedInventoryTable({ data, searchQuery }: { data: InventoryPr
                 {filteredData.map((parent) => (
                     <React.Fragment key={parent.product.id}>
                         <ParentRow
-                            key={parent.product.id}
                             parentProduct={parent}
                             isExpanded={!!expandedRows[parent.product.id]}
                             onToggle={() => toggleRow(parent.product.id)}
                         />
                         {expandedRows[parent.product.id] && parent.children.map((child) => (
-                            <ChildRow key={child.id} asset={child} />
+                            <ChildRow
+                                key={child.id}
+                                asset={child}
+                                isHighlighted={child.id === parent.highlightedChildId}
+                            />
                         ))}
                     </React.Fragment>
                 ))}

@@ -6,11 +6,12 @@ import { MoreHorizontal } from "lucide-react";
 
 type ChildRowProps = {
     asset: any;
+    isHighlighted: boolean;
 };
 
-export function ChildRow({ asset }: ChildRowProps) {
+export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
     return (
-        <TableRow>
+        <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
             <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
             <TableCell />
             <TableCell />
