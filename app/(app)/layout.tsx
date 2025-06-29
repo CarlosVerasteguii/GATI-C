@@ -11,6 +11,13 @@ export default function MainAppLayout({
 }) {
   const [isOnline, setIsOnline] = useState(true)
 
+  // Estado para el renderizado en dos pasos - evita conflictos de hidratación
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   useEffect(() => {
     // Simular estados de conexión ocasionales para demostrar toasts del sistema
     const simulateConnectionStates = () => {
@@ -66,5 +73,11 @@ export default function MainAppLayout({
     return cleanup
   }, [])
 
+  if (!isClient) {
+    // Renderizado del servidor y primera carga: retorna null para evitar hidratación
+    return null
+  }
+
+  // Solo cuando isClient es true, renderizamos el layout completo
   return <AppLayout>{children}</AppLayout>
 }
