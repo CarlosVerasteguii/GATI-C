@@ -8,16 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import type { GroupedProduct } from '@/types/inventory';
 
 export default function TestViewPage() {
     const { state } = useApp();
     const [searchQuery, setSearchQuery] = useState('');
 
-    // --- NUEVO ESTADO PARA EL FILTRO DE CATEGORÍA ---
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+    const [brandFilter, setBrandFilter] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const [isRetireModalOpen, setIsRetireModalOpen] = useState(false);
 
@@ -28,6 +30,16 @@ export default function TestViewPage() {
         // 1. Aplicar filtro de categoría si existe
         if (categoryFilter) {
             filteredItems = filteredItems.filter(item => item.categoria === categoryFilter);
+        }
+
+        // 2. Aplicar filtro de marca si existe
+        if (brandFilter) {
+            filteredItems = filteredItems.filter(item => item.marca === brandFilter);
+        }
+
+        // 3. Aplicar filtro de estado si existe
+        if (statusFilter) {
+            filteredItems = filteredItems.filter(item => item.estado === statusFilter);
         }
         // --- FIN FILTRADO MEJORADO ---
 
@@ -60,7 +72,43 @@ export default function TestViewPage() {
         });
 
         return Object.values(productGroups);
-    }, [state.inventoryData, categoryFilter]); // Añadimos categoryFilter a las dependencias
+    }, [state.inventoryData, categoryFilter, brandFilter, statusFilter]);
+
+    const hasActiveFilters = categoryFilter || brandFilter || statusFilter;
+
+    // --- COMPONENTE REUTILIZABLE PARA LOS POPOVERS DE FILTRO ---
+    const FilterPopover = ({ title, options, selectedValue, onSelect }: {
+        title: string,
+        options: string[],
+        selectedValue: string | null,
+        onSelect: (value: string | null) => void
+    }) => (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline">{title}</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0" align="start">
+                <Command>
+                    <CommandInput placeholder={`Buscar ${title.toLowerCase()}...`} />
+                    <CommandList>
+                        <CommandEmpty>No se encontró.</CommandEmpty>
+                        <CommandGroup>
+                            {options.map((option) => (
+                                <CommandItem
+                                    key={option}
+                                    value={option}
+                                    onSelect={() => onSelect(option === selectedValue ? null : option)}
+                                >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedValue === option ? "opacity-100" : "opacity-0")} />
+                                    {option}
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
 
     return (
         <div>
@@ -71,8 +119,7 @@ export default function TestViewPage() {
                 </Button>
             </div>
 
-            {/* --- CABECERA DE FILTROS Y BÚSQUEDA --- */}
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4 mb-2">
                 <Input
                     placeholder="Buscar por nombre, marca, modelo..."
                     value={searchQuery}
@@ -80,39 +127,71 @@ export default function TestViewPage() {
                     className="max-w-sm"
                 />
 
-                {/* --- NUEVO BOTÓN DE FILTROS CON POPOVER --- */}
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline">Filtros</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0" align="start">
-                        <Command>
-                            <CommandInput placeholder="Buscar categoría..." />
-                            <CommandList>
-                                <CommandEmpty>No se encontró la categoría.</CommandEmpty>
-                                <CommandGroup>
-                                    {state.categorias.map((categoria) => (
-                                        <CommandItem
-                                            key={categoria}
-                                            value={categoria}
-                                            onSelect={(currentValue) => {
-                                                setCategoryFilter(currentValue === categoryFilter ? null : currentValue);
-                                            }}
-                                        >
-                                            <Check className={cn("mr-2 h-4 w-4", categoryFilter === categoria ? "opacity-100" : "opacity-0")} />
-                                            {categoria}
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
-                {categoryFilter && (
-                    <Button variant="ghost" onClick={() => setCategoryFilter(null)}>Limpiar Filtro</Button>
-                )}
+                {/* --- NUEVA INTERFAZ DE BOTONES DE FILTRO --- */}
+                <FilterPopover
+                    title="Categoría"
+                    options={state.categorias}
+                    selectedValue={categoryFilter}
+                    onSelect={setCategoryFilter}
+                />
+                <FilterPopover
+                    title="Marca"
+                    options={state.marcas}
+                    selectedValue={brandFilter}
+                    onSelect={setBrandFilter}
+                />
+                <FilterPopover
+                    title="Estado"
+                    options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                    selectedValue={statusFilter}
+                    onSelect={setStatusFilter}
+                />
             </div>
-            {/* --- FIN CABECERA --- */}
+
+            {/* --- NUEVA ÁREA PARA MOSTRAR BADGES DE FILTROS ACTIVOS --- */}
+            {hasActiveFilters && (
+                <div className="flex items-center gap-2 mb-4">
+                    <p className="text-sm text-muted-foreground">Filtros activos:</p>
+                    {categoryFilter && (
+                        <Badge variant="secondary">
+                            Categoría: {categoryFilter}
+                            <X
+                                className="ml-2 h-3 w-3 cursor-pointer"
+                                onClick={() => setCategoryFilter(null)}
+                            />
+                        </Badge>
+                    )}
+                    {brandFilter && (
+                        <Badge variant="secondary">
+                            Marca: {brandFilter}
+                            <X
+                                className="ml-2 h-3 w-3 cursor-pointer"
+                                onClick={() => setBrandFilter(null)}
+                            />
+                        </Badge>
+                    )}
+                    {statusFilter && (
+                        <Badge variant="secondary">
+                            Estado: {statusFilter}
+                            <X
+                                className="ml-2 h-3 w-3 cursor-pointer"
+                                onClick={() => setStatusFilter(null)}
+                            />
+                        </Badge>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                            setCategoryFilter(null);
+                            setBrandFilter(null);
+                            setStatusFilter(null);
+                        }}
+                    >
+                        Limpiar todo
+                    </Button>
+                </div>
+            )}
 
             <div className="border p-4 rounded-lg">
                 <GroupedInventoryTable
