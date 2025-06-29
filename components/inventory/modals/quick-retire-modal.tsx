@@ -125,7 +125,11 @@ export function QuickRetireModal({ isOpen, onClose, inventoryItems, productData 
                                     <FormLabel>Notas (Opcional)</FormLabel>
                                     <FormControl>
                                         <Textarea
-                                            placeholder="Contexto rápido del retiro (ej. 'para proyecto Alfa', 'se lo llevó Ana')"
+                                            placeholder={
+                                                productData
+                                                    ? `Especifica cuál(es) ${productData.product.nombre}${productData.product.isSerialized ? ' (incluye números de serie)' : ''} y el motivo del retiro`
+                                                    : "Contexto del retiro (ej. 'para proyecto Alfa')"
+                                            }
                                             {...field}
                                         />
                                     </FormControl>
