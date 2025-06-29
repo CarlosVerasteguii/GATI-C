@@ -24,9 +24,10 @@ interface ParentRowProps {
     isExpanded: boolean;
     onToggle: () => void;
     onAction: (action: string) => void;
+    visibleColumns: Record<string, boolean>;
 }
 
-export function ParentRow({ parentProduct, isExpanded, onToggle, onAction }: ParentRowProps) {
+export function ParentRow({ parentProduct, isExpanded, onToggle, onAction, visibleColumns }: ParentRowProps) {
     const { product, summary } = parentProduct;
 
     const renderEstadoTooltip = () => (
@@ -54,10 +55,10 @@ export function ParentRow({ parentProduct, isExpanded, onToggle, onAction }: Par
                     <span>{product.nombre}</span>
                 </div>
             </TableCell>
-            <TableCell>{product.marca}</TableCell>
-            <TableCell>{product.modelo}</TableCell>
-            <TableCell>N/A</TableCell>
-            <TableCell>
+            {visibleColumns.marca && <TableCell>{product.marca}</TableCell>}
+            {visibleColumns.modelo && <TableCell>{product.modelo}</TableCell>}
+            {visibleColumns.numeroSerie && <TableCell>N/A</TableCell>}
+            {visibleColumns.estado && <TableCell>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -71,7 +72,7 @@ export function ParentRow({ parentProduct, isExpanded, onToggle, onAction }: Par
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-            </TableCell>
+            </TableCell>}
             <TableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

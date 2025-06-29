@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-context';
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 import { QuickRetireModal } from '@/components/inventory/modals/quick-retire-modal';
+import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,12 +15,27 @@ import { Badge } from '@/components/ui/badge';
 import type { GroupedProduct } from '@/types/inventory';
 
 export default function TestViewPage() {
+    const allColumns = [
+        { id: 'marca', label: 'Marca' },
+        { id: 'modelo', label: 'Modelo' },
+        { id: 'numeroSerie', label: 'Número de Serie' },
+        { id: 'estado', label: 'Estado' },
+        // Añadiremos más columnas aquí en el futuro
+    ];
+
     const { state } = useApp();
     const [searchQuery, setSearchQuery] = useState('');
 
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
     const [brandFilter, setBrandFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+        marca: true,
+        modelo: true,
+        numeroSerie: true,
+        estado: true,
+    });
 
     const [isRetireModalOpen, setIsRetireModalOpen] = useState(false);
 
@@ -146,6 +162,11 @@ export default function TestViewPage() {
                     selectedValue={statusFilter}
                     onSelect={setStatusFilter}
                 />
+                <ColumnToggleMenu
+                    columns={allColumns}
+                    visibleColumns={visibleColumns}
+                    onColumnVisibilityChange={setVisibleColumns}
+                />
             </div>
 
             {/* --- NUEVA ÁREA PARA MOSTRAR BADGES DE FILTROS ACTIVOS --- */}
@@ -197,6 +218,7 @@ export default function TestViewPage() {
                 <GroupedInventoryTable
                     data={groupedInventoryData}
                     searchQuery={searchQuery}
+                    visibleColumns={visibleColumns}
                 />
             </div>
 

@@ -19,9 +19,10 @@ import { GroupedProduct } from '@/types/inventory';
 interface GroupedInventoryTableProps {
     data: GroupedProduct[];
     searchQuery: string;
+    visibleColumns: Record<string, boolean>;
 }
 
-export function GroupedInventoryTable({ data, searchQuery }: GroupedInventoryTableProps) {
+export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: GroupedInventoryTableProps) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const [modalState, setModalState] = useState<{
@@ -119,10 +120,10 @@ export function GroupedInventoryTable({ data, searchQuery }: GroupedInventoryTab
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[300px]">Producto</TableHead>
-                        <TableHead>Marca</TableHead>
-                        <TableHead>Modelo</TableHead>
-                        <TableHead>Número de Serie</TableHead>
-                        <TableHead>Estado</TableHead>
+                        {visibleColumns.marca && <TableHead>Marca</TableHead>}
+                        {visibleColumns.modelo && <TableHead>Modelo</TableHead>}
+                        {visibleColumns.numeroSerie && <TableHead>N/S</TableHead>}
+                        {visibleColumns.estado && <TableHead>Estado</TableHead>}
                         <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -134,12 +135,14 @@ export function GroupedInventoryTable({ data, searchQuery }: GroupedInventoryTab
                                 isExpanded={!!expandedRows[parent.product.id]}
                                 onToggle={() => toggleRow(parent.product.id)}
                                 onAction={(action) => handleMenuAction(action, parent)}
+                                visibleColumns={visibleColumns}
                             />
                             {expandedRows[parent.product.id] && parent.children.map((child) => (
                                 <ChildRow
                                     key={child.id}
                                     asset={child}
                                     isHighlighted={child.id.toString() === parent.highlightedChildId}
+                                    visibleColumns={visibleColumns}
                                 />
                             ))}
                         </React.Fragment>

@@ -16,9 +16,10 @@ import { InventoryItem } from '@/types/inventory';
 interface ChildRowProps {
     asset: InventoryItem;
     isHighlighted: boolean;
+    visibleColumns: Record<string, boolean>;
 }
 
-export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
+export function ChildRow({ asset, isHighlighted, visibleColumns }: ChildRowProps) {
     const handleAction = (action: string) => {
         console.log(`Acción: ${action} en el activo hijo: ${asset.id}`);
     };
@@ -26,10 +27,10 @@ export function ChildRow({ asset, isHighlighted }: ChildRowProps) {
     return (
         <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
             <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
-            <TableCell />
-            <TableCell />
-            <TableCell className="text-sm">{asset.numeroSerie}</TableCell>
-            <TableCell className="text-sm">{asset.estado}</TableCell>
+            {visibleColumns.marca && <TableCell />}
+            {visibleColumns.modelo && <TableCell />}
+            {visibleColumns.numeroSerie && <TableCell className="text-sm">{asset.numeroSerie}</TableCell>}
+            {visibleColumns.estado && <TableCell className="text-sm">{asset.estado}</TableCell>}
             <TableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
