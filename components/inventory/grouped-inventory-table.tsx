@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { ParentRow } from './parent-row';
 import { ChildRow } from './child-row';
+import { AssignModal } from './modals/assign-modal';
 
 // Definimos un tipo más específico para nuestros datos
 type InventoryAsset = any; // Podemos refinar esto después
@@ -24,6 +25,11 @@ type InventoryProduct = {
 
 export function GroupedInventoryTable({ data, searchQuery }: { data: InventoryProduct[], searchQuery: string }) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+
+    const [modalState, setModalState] = useState<{
+        type: 'assign' | null;
+        data: InventoryProduct | null;
+    }>({ type: null, data: null });
 
     const toggleRow = (productId: string) => {
         setExpandedRows(prev => ({
@@ -81,37 +87,59 @@ export function GroupedInventoryTable({ data, searchQuery }: { data: InventoryPr
     }, [searchQuery, filteredData]);
     // --- FIN LÓGICA PARA AUTO-EXPANDIR ---
 
+    const handleMenuAction = (action: string, product: InventoryProduct) => {
+        if (action === 'Asignar') {
+            console.log(`Abriendo modal de asignación para: ${product.product.nombre}`);
+            setModalState({ type: 'assign', data: product });
+        } else {
+            console.log(`Acción '${action}' clickeada para: ${product.product.nombre}`);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setModalState({ type: null, data: null });
+    };
+
     return (
-        <Table>
-            <TableCaption>Una lista de los activos de tu inventario.</TableCaption>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[300px]">Producto</TableHead>
-                    <TableHead>Marca</TableHead>
-                    <TableHead>Modelo</TableHead>
-                    <TableHead>Número de Serie</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {filteredData.map((parent) => (
-                    <React.Fragment key={parent.product.id}>
-                        <ParentRow
-                            parentProduct={parent}
-                            isExpanded={!!expandedRows[parent.product.id]}
-                            onToggle={() => toggleRow(parent.product.id)}
-                        />
-                        {expandedRows[parent.product.id] && parent.children.map((child) => (
-                            <ChildRow
-                                key={child.id}
-                                asset={child}
-                                isHighlighted={child.id === parent.highlightedChildId}
+        <>
+            <Table>
+                <TableCaption>Una lista de los activos de tu inventario.</TableCaption>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[300px]">Producto</TableHead>
+                        <TableHead>Marca</TableHead>
+                        <TableHead>Modelo</TableHead>
+                        <TableHead>Número de Serie</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredData.map((parent) => (
+                        <React.Fragment key={parent.product.id}>
+                            <ParentRow
+                                parentProduct={parent}
+                                isExpanded={!!expandedRows[parent.product.id]}
+                                onToggle={() => toggleRow(parent.product.id)}
+                                onAction={(action) => handleMenuAction(action, parent)}
                             />
-                        ))}
-                    </React.Fragment>
-                ))}
-            </TableBody>
-        </Table>
+                            {expandedRows[parent.product.id] && parent.children.map((child) => (
+                                <ChildRow
+                                    key={child.id}
+                                    asset={child}
+                                    isHighlighted={child.id === parent.highlightedChildId}
+                                />
+                            ))}
+                        </React.Fragment>
+                    ))}
+                </TableBody>
+            </Table>
+
+            <AssignModal
+                isOpen={modalState.type === 'assign'}
+                onClose={handleCloseModal}
+                productData={modalState.data}
+            />
+        </>
     );
 } 

@@ -23,14 +23,11 @@ type ParentRowProps = {
     parentProduct: any;
     isExpanded: boolean;
     onToggle: () => void;
+    onAction: (action: string) => void;
 };
 
-export function ParentRow({ parentProduct, isExpanded, onToggle }: ParentRowProps) {
+export function ParentRow({ parentProduct, isExpanded, onToggle, onAction }: ParentRowProps) {
     const { product, summary } = parentProduct;
-
-    const handleAction = (action: string) => {
-        console.log(`Acción: ${action} en el producto padre: ${product.id}`);
-    };
 
     const renderEstadoTooltip = () => (
         <div className="flex flex-col gap-1 p-1 text-xs">
@@ -86,9 +83,9 @@ export function ParentRow({ parentProduct, isExpanded, onToggle }: ParentRowProp
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => handleAction('Asignar')}>Asignar desde Stock</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleAction('Retiro Rápido')}>Retiro Rápido</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleAction('Editar')}>Editar Modelo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Asignar')}>Asignar desde Stock</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido')}>Retiro Rápido</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Editar')}>Editar Modelo</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>

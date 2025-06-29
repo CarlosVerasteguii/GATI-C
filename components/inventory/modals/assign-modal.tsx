@@ -3,17 +3,28 @@ import {
     Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
-export function AssignModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void; }) {
+type AssignModalProps = {
+    isOpen: boolean;
+    onClose: () => void;
+    productData: any | null; // Recibe los datos del producto
+};
+
+export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) {
+    if (!productData) return null; // No renderizar nada si no hay datos
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Asignar Activo desde Stock</DialogTitle>
+                    <DialogTitle>Asignar: {productData.product.nombre}</DialogTitle>
                     <DialogDescription>
-                        Formulario de Asignación (en construcción)...
+                        Disponible: {productData.summary.disponible} unidades.
                     </DialogDescription>
                 </DialogHeader>
-                {/* Aquí irá el formulario en la siguiente fase */}
+                <div className="mt-4">
+                    <p className="text-sm text-muted-foreground">Formulario de Asignación (en construcción)...</p>
+                    {/* Aquí irá el formulario en la siguiente fase */}
+                </div>
             </DialogContent>
         </Dialog>
     );
