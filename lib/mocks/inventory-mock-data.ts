@@ -159,4 +159,16 @@ export const mockInventoryData = [
             },
         ],
     },
+];
+
+// Lista de usuarios mock para el ComboBox de asignación
+export const mockUsers = [
+    { value: "carlos.vera", label: "Carlos Vera (TI)" },
+    { value: "ana.gomez", label: "Ana Gómez (Redes)" },
+    { value: "pedro.ramirez", label: "Pedro Ramírez (Soporte)" },
+    { value: "laura.diaz", label: "Laura Díaz (Gerencia)" },
+    { value: "miguel.lopez", label: "Miguel López (Contabilidad)" },
+    { value: "sandra.ruiz", label: "Sandra Ruiz (RRHH)" },
+    { value: "roberto.silva", label: "Roberto Silva (Ventas)" },
+    { value: "laura.martinez", label: "Laura Martínez (Diseño)" },
 ]; 
