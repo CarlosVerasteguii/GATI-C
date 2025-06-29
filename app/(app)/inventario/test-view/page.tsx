@@ -7,7 +7,9 @@ import { QuickRetireModal } from '@/components/inventory/modals/quick-retire-mod
 import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -29,6 +31,7 @@ export default function TestViewPage() {
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
     const [brandFilter, setBrandFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [advancedFilters, setAdvancedFilters] = useState<Record<string, string | null>>({});
 
     const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
         marca: true,
@@ -57,6 +60,16 @@ export default function TestViewPage() {
         if (statusFilter) {
             filteredItems = filteredItems.filter(item => item.estado === statusFilter);
         }
+
+        // 4. Aplicar filtros avanzados
+        Object.entries(advancedFilters).forEach(([columnId, filterValue]) => {
+            if (filterValue) {
+                filteredItems = filteredItems.filter(item => {
+                    const itemValue = (item as any)[columnId]?.toString().toLowerCase();
+                    return itemValue?.includes(filterValue.toLowerCase());
+                });
+            }
+        });
         // --- FIN FILTRADO MEJORADO ---
 
         const productGroups: { [key: string]: GroupedProduct } = {};
@@ -88,9 +101,16 @@ export default function TestViewPage() {
         });
 
         return Object.values(productGroups);
-    }, [state.inventoryData, categoryFilter, brandFilter, statusFilter]);
+    }, [state.inventoryData, categoryFilter, brandFilter, statusFilter, advancedFilters]);
 
-    const hasActiveFilters = categoryFilter || brandFilter || statusFilter;
+    const hasActiveFilters = categoryFilter || brandFilter || statusFilter || Object.values(advancedFilters).some(value => value);
+
+    const clearAllFilters = () => {
+        setCategoryFilter(null);
+        setBrandFilter(null);
+        setStatusFilter(null);
+        setAdvancedFilters({});
+    };
 
     // --- COMPONENTE REUTILIZABLE PARA LOS POPOVERS DE FILTRO ---
     const FilterPopover = ({ title, options, selectedValue, onSelect }: {
@@ -167,6 +187,42 @@ export default function TestViewPage() {
                     visibleColumns={visibleColumns}
                     onColumnVisibilityChange={setVisibleColumns}
                 />
+
+                {/* Filtros Avanzados */}
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline">Filtros Avanzados</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[250px] p-0" align="start">
+                        <div className="p-2">
+                            <h4 className="font-medium text-sm">Filtros Avanzados</h4>
+                            <p className="text-xs text-muted-foreground">Solo aparecen filtros para columnas visibles.</p>
+                        </div>
+                        <Separator />
+                        <div className="p-2 space-y-4">
+                            {allColumns.map(column => {
+                                if (visibleColumns[column.id]) {
+                                    return (
+                                        <div key={column.id}>
+                                            <Label className="text-xs">{column.label}</Label>
+                                            <Input
+                                                placeholder={`Filtrar por ${column.label}...`}
+                                                value={advancedFilters[column.id] || ''}
+                                                onChange={e => {
+                                                    setAdvancedFilters(prev => ({
+                                                        ...prev,
+                                                        [column.id]: e.target.value || null
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                    )
+                                }
+                                return null;
+                            })}
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             {/* --- NUEVA ÁREA PARA MOSTRAR BADGES DE FILTROS ACTIVOS --- */}
@@ -200,14 +256,22 @@ export default function TestViewPage() {
                             />
                         </Badge>
                     )}
+                    {Object.entries(advancedFilters).map(([key, value]) => {
+                        if (value) {
+                            const columnLabel = allColumns.find(c => c.id === key)?.label || key;
+                            return (
+                                <Badge key={key} variant="secondary">
+                                    {columnLabel}: {value}
+                                    <X className="ml-2 h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, [key]: null }))} />
+                                </Badge>
+                            )
+                        }
+                        return null;
+                    })}
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                            setCategoryFilter(null);
-                            setBrandFilter(null);
-                            setStatusFilter(null);
-                        }}
+                        onClick={clearAllFilters}
                     >
                         Limpiar todo
                     </Button>

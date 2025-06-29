@@ -58,9 +58,9 @@ export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: Gro
         return data
             .map(parent => {
                 const parentMatches =
-                    parent.product.nombre.toLowerCase().includes(lowercasedQuery) ||
-                    parent.product.marca.toLowerCase().includes(lowercasedQuery) ||
-                    parent.product.modelo.toLowerCase().includes(lowercasedQuery);
+                    (parent.product.nombre?.toLowerCase().includes(lowercasedQuery)) ||
+                    (parent.product.marca?.toLowerCase().includes(lowercasedQuery)) ||
+                    (parent.product.modelo?.toLowerCase().includes(lowercasedQuery));
 
                 // --- LÓGICA DE RESALTADO ---
                 let highlightedChildId: string | null = null;
