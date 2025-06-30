@@ -1153,10 +1153,59 @@ export default function InventarioPage() {
   }
 
   const handleViewModeChange = (mode: "table" | "cards") => {
-    if (viewMode !== mode) {
-      setViewMode(mode)
-    }
+    setViewMode(mode);
   }
+
+  // Manejador central para acciones de menú en la tabla anidada
+  const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
+    console.log(`Acción recibida: ${action}`, data);
+
+    // Determina si es un grupo o un item individual
+    const isGroup = 'isParent' in data && data.isParent;
+    
+    // Lógica para obtener un 'InventoryItem' válido para los manejadores existentes
+    let targetItem: InventoryItem | undefined;
+    if (isGroup) {
+      // Si es un grupo, buscamos el primer hijo disponible para acciones como "Asignar"
+      // o simplemente el primer hijo si no hay disponibles.
+      targetItem = (data as GroupedProduct).children.find(child => child.estado === 'Disponible') || (data as GroupedProduct).children[0];
+    } else {
+      targetItem = data as InventoryItem;
+    }
+    
+    if (!targetItem) {
+      console.error("No se encontró un activo válido para ejecutar la acción.", data);
+      // Aquí podríamos mostrar un error al usuario con showError()
+      return;
+    }
+
+    // Router de acciones
+    switch (action) {
+      case 'Asignar':
+        handleAssign(targetItem);
+        break;
+      case 'Ver Detalles':
+        handleViewDetails(targetItem);
+        break;
+      case 'Editar':
+        handleEdit(targetItem);
+        break;
+      case 'Mover a Mantenimiento':
+        handleMaintenanceState(targetItem);
+        break;
+      case 'Retiro Rápido':
+        handleMarkAsRetired(targetItem);
+        break;
+      case 'Reactivar':
+        handleReactivate(targetItem);
+        break;
+      case 'Duplicar':
+        handleDuplicate(targetItem);
+        break;
+      default:
+        console.warn(`Acción no manejada: ${action}`);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     return (state.inventoryData || []).filter((product) => {
@@ -1197,9 +1246,7 @@ export default function InventarioPage() {
               selectedRowIds={selectedRowIds}
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}
-              onAction={(action, product) => {
-                console.log('Action:', action, 'Product:', product);
-              }}
+              onAction={handleMenuAction}
               isLector={isLector}
             />
           </CardContent>

@@ -24,7 +24,7 @@ interface ParentRowProps {
     parentProduct: GroupedProduct;
     isExpanded: boolean;
     onToggle: () => void;
-    onAction: (action: string) => void;
+    onAction: (action: string, product: GroupedProduct) => void;
     visibleColumns: Record<string, boolean>;
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
@@ -109,9 +109,9 @@ export function ParentRow({
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction('Asignar')}>Asignar desde Stock</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido')}>Retiro Rápido</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Editar')}>Editar Modelo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Asignar', parentProduct)}>Asignar desde Stock</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido', parentProduct)}>Retiro Rápido</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Editar', parentProduct)}>Editar Modelo</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>

@@ -21,6 +21,7 @@ interface ChildRowProps {
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
+    onAction: (action: string, asset: InventoryItem) => void;
 }
 
 export function ChildRow({
@@ -29,12 +30,9 @@ export function ChildRow({
     visibleColumns,
     selectedRowIds,
     onRowSelect,
-    isLector
+    isLector,
+    onAction
 }: ChildRowProps) {
-    const handleAction = (action: string) => {
-        console.log(`Acción: ${action} en el activo hijo: ${asset.id}`);
-    };
-
     return (
         <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
             <TableCell className="pl-12">
@@ -61,9 +59,9 @@ export function ChildRow({
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Activo</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => handleAction('Ver Detalles')}>Ver Detalles</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleAction('Editar')}>Editar Activo</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleAction('Mover a Mantenimiento')}>Mover a Mantenimiento</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Ver Detalles', asset)}>Ver Detalles</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Editar', asset)}>Editar Activo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>Mover a Mantenimiento</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>

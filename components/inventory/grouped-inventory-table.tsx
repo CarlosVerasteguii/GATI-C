@@ -179,6 +179,7 @@ export function GroupedInventoryTable({
                                         selectedRowIds={selectedRowIds}
                                         onRowSelect={onRowSelect}
                                         isLector={isLector}
+                                        onAction={onAction}
                                     />
                                 ))
                             )}
