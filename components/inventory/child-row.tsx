@@ -2,6 +2,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal } from "lucide-react";
 import {
     DropdownMenu,
@@ -17,15 +18,33 @@ interface ChildRowProps {
     asset: InventoryItem;
     isHighlighted: boolean;
     visibleColumns: Record<string, boolean>;
+    selectedRowIds: number[];
+    onRowSelect: (id: number, checked: boolean) => void;
+    isLector: boolean;
 }
 
-export function ChildRow({ asset, isHighlighted, visibleColumns }: ChildRowProps) {
+export function ChildRow({
+    asset,
+    isHighlighted,
+    visibleColumns,
+    selectedRowIds,
+    onRowSelect,
+    isLector
+}: ChildRowProps) {
     const handleAction = (action: string) => {
         console.log(`Acción: ${action} en el activo hijo: ${asset.id}`);
     };
 
     return (
         <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
+            <TableCell className="pl-12">
+                {!isLector && (
+                    <Checkbox
+                        checked={selectedRowIds.includes(asset.id)}
+                        onCheckedChange={(checked) => onRowSelect(asset.id, !!checked)}
+                    />
+                )}
+            </TableCell>
             <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
             {visibleColumns.marca && <TableCell />}
             {visibleColumns.modelo && <TableCell />}

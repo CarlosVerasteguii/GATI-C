@@ -14,7 +14,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { GroupedProduct } from '@/types/inventory';
+import type { GroupedProduct, InventoryItem } from '@/types/inventory';
 
 export default function TestViewPage() {
     const allColumns = [
@@ -41,6 +41,9 @@ export default function TestViewPage() {
     });
 
     const [isRetireModalOpen, setIsRetireModalOpen] = useState(false);
+
+    // --- NUEVOS ESTADOS PARA PRUEBA DE INTEGRACIÓN ---
+    const [selectedRowIds, setSelectedRowIds] = useState<number[]>([]);
 
     const groupedInventoryData = useMemo((): GroupedProduct[] => {
         // --- LÓGICA DE FILTRADO MEJORADA ---
@@ -121,6 +124,29 @@ export default function TestViewPage() {
         setAdvancedFilters({});
     };
 
+    // --- NUEVOS MANEJADORES PARA PRUEBA DE INTEGRACIÓN ---
+    const handleRowSelect = (id: number, checked: boolean) => {
+        if (checked) {
+            setSelectedRowIds(prev => [...prev, id]);
+        } else {
+            setSelectedRowIds(prev => prev.filter(rowId => rowId !== id));
+        }
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            const allChildIds = groupedInventoryData.flatMap(group => group.children.map(child => child.id));
+            setSelectedRowIds(allChildIds);
+        } else {
+            setSelectedRowIds([]);
+        }
+    };
+
+    const handleAction = (action: string, product: GroupedProduct | InventoryItem) => {
+        console.log(`Acción: ${action} ejecutada en:`, product);
+        // Aquí conectaríamos con los manejadores reales de la página principal
+    };
+
     // --- COMPONENTE REUTILIZABLE PARA LOS POPOVERS DE FILTRO ---
     const FilterPopover = ({ title, options, selectedValue, onSelect }: {
         title: string,
@@ -158,7 +184,7 @@ export default function TestViewPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Página de Pruebas (Con Filtros)</h1>
+                <h1 className="text-2xl font-bold">Página de Pruebas (Con Filtros + Selección)</h1>
                 <Button onClick={() => setIsRetireModalOpen(true)}>
                     Registrar Retiro Rápido
                 </Button>
@@ -263,40 +289,48 @@ export default function TestViewPage() {
                             />
                         </Badge>
                     )}
-                    {Object.entries(advancedFilters).map(([key, value]) => {
-                        if (value) {
-                            const columnLabel = allColumns.find(c => c.id === key)?.label || key;
-                            return (
-                                <Badge key={key} variant="secondary">
-                                    {columnLabel}: {value}
-                                    <X className="ml-2 h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, [key]: null }))} />
-                                </Badge>
-                            )
-                        }
-                        return null;
-                    })}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearAllFilters}
-                    >
-                        Limpiar todo
+                    {Object.entries(advancedFilters).map(([key, value]) => value && (
+                        <Badge key={key} variant="secondary">
+                            {allColumns.find(c => c.id === key)?.label}: {value}
+                            <X
+                                className="ml-2 h-3 w-3 cursor-pointer"
+                                onClick={() => setAdvancedFilters(prev => ({ ...prev, [key]: null }))}
+                            />
+                        </Badge>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                        Limpiar todos
                     </Button>
                 </div>
             )}
 
-            <div className="border p-4 rounded-lg">
-                <GroupedInventoryTable
-                    data={groupedInventoryData}
-                    searchQuery={effectiveSearchQuery}
-                    visibleColumns={visibleColumns}
-                />
-            </div>
+            {/* --- NUEVA ÁREA PARA MOSTRAR ELEMENTOS SELECCIONADOS --- */}
+            {selectedRowIds.length > 0 && (
+                <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm font-medium">{selectedRowIds.length} elemento(s) seleccionado(s)</p>
+                    <Button variant="outline" size="sm" onClick={() => setSelectedRowIds([])}>
+                        Limpiar selección
+                    </Button>
+                </div>
+            )}
+
+            {/* --- TABLA ACTUALIZADA CON NUEVAS PROPS --- */}
+            <GroupedInventoryTable
+                data={groupedInventoryData}
+                searchQuery={effectiveSearchQuery}
+                visibleColumns={visibleColumns}
+                selectedRowIds={selectedRowIds}
+                onRowSelect={handleRowSelect}
+                onSelectAll={handleSelectAll}
+                onAction={handleAction}
+                isLector={false} // Para pruebas, siempre permitir acciones
+            />
 
             <QuickRetireModal
                 isOpen={isRetireModalOpen}
                 onClose={() => setIsRetireModalOpen(false)}
                 inventoryItems={groupedInventoryData}
+                productData={null}
             />
         </div>
     );

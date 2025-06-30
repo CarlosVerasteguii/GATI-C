@@ -2,6 +2,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 import {
     Tooltip,
@@ -25,9 +26,21 @@ interface ParentRowProps {
     onToggle: () => void;
     onAction: (action: string) => void;
     visibleColumns: Record<string, boolean>;
+    selectedRowIds: number[];
+    onRowSelect: (id: number, checked: boolean) => void;
+    isLector: boolean;
 }
 
-export function ParentRow({ parentProduct, isExpanded, onToggle, onAction, visibleColumns }: ParentRowProps) {
+export function ParentRow({
+    parentProduct,
+    isExpanded,
+    onToggle,
+    onAction,
+    visibleColumns,
+    selectedRowIds,
+    onRowSelect,
+    isLector
+}: ParentRowProps) {
     const { product, summary } = parentProduct;
 
     const renderEstadoTooltip = () => (
@@ -41,6 +54,16 @@ export function ParentRow({ parentProduct, isExpanded, onToggle, onAction, visib
 
     return (
         <TableRow className="bg-muted/50 hover:bg-muted/80">
+            <TableCell>
+                {!isLector && (
+                    <Checkbox
+                        checked={parentProduct.children.every(child => selectedRowIds.includes(child.id))}
+                        onCheckedChange={(checked) => {
+                            parentProduct.children.forEach(child => onRowSelect(child.id, !!checked));
+                        }}
+                    />
+                )}
+            </TableCell>
             <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                     <Button

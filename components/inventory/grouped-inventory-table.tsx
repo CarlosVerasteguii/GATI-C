@@ -10,19 +10,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ParentRow } from './parent-row';
 import { ChildRow } from './child-row';
 import { AssignModal } from './modals/assign-modal';
 import { QuickRetireModal } from './modals/quick-retire-modal';
-import { GroupedProduct } from '@/types/inventory';
+import { GroupedProduct, InventoryItem } from '@/types/inventory';
 
-interface GroupedInventoryTableProps {
+type GroupedInventoryTableProps = {
     data: GroupedProduct[];
     searchQuery: string;
     visibleColumns: Record<string, boolean>;
-}
+    selectedRowIds: number[];
+    onRowSelect: (id: number, checked: boolean) => void;
+    onSelectAll: (checked: boolean) => void;
+    onAction: (action: string, product: GroupedProduct | InventoryItem) => void;
+    isLector: boolean;
+};
 
-export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: GroupedInventoryTableProps) {
+export function GroupedInventoryTable({
+    data,
+    searchQuery,
+    visibleColumns,
+    selectedRowIds,
+    onRowSelect,
+    onSelectAll,
+    onAction,
+    isLector
+}: GroupedInventoryTableProps) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const [modalState, setModalState] = useState<{
@@ -105,7 +120,7 @@ export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: Gro
         } else if (action === 'Retiro Rápido') {
             handleOpenQuickRetire(product);
         } else {
-            console.log(`Acción '${action}' clickeada para: ${product.product.nombre}`);
+            onAction(action, product);
         }
     };
 
@@ -119,7 +134,18 @@ export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: Gro
                 <TableCaption>Una lista de los activos de tu inventario.</TableCaption>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[300px]">Producto</TableHead>
+                        <TableHead className="w-[50px]">
+                            {!isLector && (
+                                <Checkbox
+                                    checked={
+                                        selectedRowIds.length > 0 &&
+                                        data.flatMap(p => p.children).every(c => selectedRowIds.includes(c.id))
+                                    }
+                                    onCheckedChange={(checked) => onSelectAll(!!checked)}
+                                />
+                            )}
+                        </TableHead>
+                        <TableHead className="w-[400px]">Producto</TableHead>
                         {visibleColumns.marca && <TableHead>Marca</TableHead>}
                         {visibleColumns.modelo && <TableHead>Modelo</TableHead>}
                         {visibleColumns.numeroSerie && <TableHead>N/S</TableHead>}
@@ -136,6 +162,9 @@ export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: Gro
                                 onToggle={() => toggleRow(parent.product.id)}
                                 onAction={(action) => handleMenuAction(action, parent)}
                                 visibleColumns={visibleColumns}
+                                selectedRowIds={selectedRowIds}
+                                onRowSelect={onRowSelect}
+                                isLector={isLector}
                             />
                             {expandedRows[parent.product.id] && parent.children.map((child) => (
                                 <ChildRow
@@ -143,6 +172,9 @@ export function GroupedInventoryTable({ data, searchQuery, visibleColumns }: Gro
                                     asset={child}
                                     isHighlighted={child.id.toString() === parent.highlightedChildId}
                                     visibleColumns={visibleColumns}
+                                    selectedRowIds={selectedRowIds}
+                                    onRowSelect={onRowSelect}
+                                    isLector={isLector}
                                 />
                             ))}
                         </React.Fragment>
