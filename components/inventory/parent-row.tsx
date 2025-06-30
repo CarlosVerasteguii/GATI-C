@@ -29,6 +29,7 @@ interface ParentRowProps {
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
+    onParentRowSelect: (group: GroupedProduct, checked: boolean) => void;
 }
 
 export function ParentRow({
@@ -39,7 +40,8 @@ export function ParentRow({
     visibleColumns,
     selectedRowIds,
     onRowSelect,
-    isLector
+    isLector,
+    onParentRowSelect
 }: ParentRowProps) {
     console.log('Props de visibilidad recibidas en ParentRow:', visibleColumns);
 
@@ -60,9 +62,7 @@ export function ParentRow({
                 {!isLector && (
                     <Checkbox
                         checked={parentProduct.children.every(child => selectedRowIds.includes(child.id))}
-                        onCheckedChange={(checked) => {
-                            parentProduct.children.forEach(child => onRowSelect(child.id, !!checked));
-                        }}
+                        onCheckedChange={(checked) => onParentRowSelect(parentProduct, !!checked)}
                     />
                 )}
             </TableCell>

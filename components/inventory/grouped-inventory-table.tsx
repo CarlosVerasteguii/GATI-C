@@ -26,6 +26,7 @@ type GroupedInventoryTableProps = {
     onSelectAll: (checked: boolean) => void;
     onAction: (action: string, product: GroupedProduct | InventoryItem) => void;
     isLector: boolean;
+    onParentRowSelect: (group: GroupedProduct, checked: boolean) => void;
 };
 
 export function GroupedInventoryTable({
@@ -36,7 +37,8 @@ export function GroupedInventoryTable({
     onRowSelect,
     onSelectAll,
     onAction,
-    isLector
+    isLector,
+    onParentRowSelect
 }: GroupedInventoryTableProps) {
     console.log('Datos recibidos en GroupedInventoryTable:', data.slice(0, 2));
 
@@ -167,6 +169,7 @@ export function GroupedInventoryTable({
                                 selectedRowIds={selectedRowIds}
                                 onRowSelect={onRowSelect}
                                 isLector={isLector}
+                                onParentRowSelect={onParentRowSelect}
                             />
                             {expandedRows[parent.product.id] && (
                                 console.log(`Renderizando hijos para el padre: ${parent.product.id}. Total hijos: ${parent.children.length}`),

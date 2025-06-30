@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { GroupedProduct, InventoryItem } from "@/types/inventory"
 import {
   Dialog,
   DialogContent,
@@ -78,29 +79,7 @@ import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 
 
-// Definición de interfaces para tipar correctamente
-interface InventoryItem {
-  id: number
-  nombre: string
-  marca: string
-  modelo: string
-  categoria: string
-  estado: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO"
-  cantidad: number
-  numeroSerie: string | null
-  descripcion?: string
-  proveedor?: string | null
-  fechaAdquisicion?: string | null
-  contratoId?: string | null
-  fechaIngreso?: string
-  costo?: number
-  fechaCompra?: string
-  garantia?: string
-  vidaUtil?: string
-  mantenimiento?: string
-  historialMantenimiento?: { date: string; description: string }[]
-  documentosAdjuntos?: { name: string; url: string }[]
-}
+// El tipo InventoryItem ahora se importa desde @/types/inventory
 
 interface AssignmentItem {
   numeroSerie: string
@@ -479,19 +458,38 @@ export default function InventarioPage() {
   const selectedProducts = state.inventoryData.filter((item) => selectedRowIds.includes(item.id))
 
   const handleRowSelect = (id: number, checked: boolean) => {
-    if (checked) {
-      setSelectedRowIds((prev) => [...prev, id])
-    } else {
-      setSelectedRowIds((prev) => prev.filter((rowId) => rowId !== id))
-    }
+    // En nuestra nueva tabla, el ID que recibimos siempre es de un 'InventoryItem' (un hijo)
+    setSelectedRowIds((prev) => {
+      if (checked) {
+        return [...prev, id];
+      } else {
+        return prev.filter((rowId) => rowId !== id);
+      }
+    });
   }
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRowIds(paginatedData.map((item) => item.id))
+      // Aplanamos todos los hijos de los grupos filtrados y obtenemos sus IDs
+      const allVisibleIds = groupedAndFilteredData.flatMap(group => group.children.map(child => child.id));
+      setSelectedRowIds(allVisibleIds);
     } else {
-      setSelectedRowIds([])
+      setSelectedRowIds([]);
     }
+  }
+
+  const handleParentRowSelect = (group: GroupedProduct, checked: boolean) => {
+    const childIds = group.children.map((child: InventoryItem) => child.id);
+    setSelectedRowIds(prev => {
+      if (checked) {
+        // Añade todos los IDs de los hijos que no estén ya en la lista
+        const newIds = childIds.filter(id => !prev.includes(id));
+        return [...prev, ...newIds];
+      } else {
+        // Elimina todos los IDs de los hijos de la lista
+        return prev.filter(id => !childIds.includes(id));
+      }
+    });
   }
 
   const handleViewDetails = (product: InventoryItem) => {
@@ -1231,6 +1229,22 @@ export default function InventarioPage() {
       <div className="space-y-4">
         {/* ... existing code ... */}
 
+        {/* --- INICIO DE LA BARRA DE ACCIONES MASIVAS --- */}
+        {selectedRowIds.length > 0 && (
+          <div className="flex items-center gap-4 rounded-md border bg-muted p-2 text-sm text-muted-foreground mb-4">
+            <div className="flex-1">
+              {selectedRowIds.length} elemento(s) seleccionado(s).
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds([])}>
+              Limpiar selección
+            </Button>
+            {/* Aquí irán los botones de acciones masivas en el futuro */}
+            <Button size="sm" disabled>Asignar Selección</Button>
+            <Button size="sm" disabled>Retirar Selección</Button>
+          </div>
+        )}
+        {/* --- FIN DE LA BARRA DE ACCIONES MASIVAS --- */}
+
         {/* Tabla anidada */}
         <Card>
           <CardContent className="p-0">
@@ -1248,6 +1262,7 @@ export default function InventarioPage() {
               onSelectAll={handleSelectAll}
               onAction={handleMenuAction}
               isLector={isLector}
+              onParentRowSelect={handleParentRowSelect}
             />
           </CardContent>
         </Card>
