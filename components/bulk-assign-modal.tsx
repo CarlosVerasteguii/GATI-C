@@ -30,6 +30,7 @@ type BulkAssignModalProps = {
 export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSuccess }: BulkAssignModalProps) {
   const { state, addUserToUsersData } = useApp();
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,25 +91,33 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command filter={(value, search) => state.usersData.find(u => u.id === value)?.nombre.toLowerCase().includes(search.toLowerCase()) ? 1 : 0}>
-                        <CommandInput placeholder="Buscar o crear usuario..." />
+                        <CommandInput 
+                          placeholder="Buscar o crear usuario..."
+                          value={inputValue}
+                          onValueChange={setInputValue}
+                        />
                         <CommandList>
                             <CommandEmpty>
+                              {inputValue && (
                                 <Button className="w-full" variant="ghost" onClick={() => {
-                                    const newLabel = (document.querySelector('input[aria-controls^="radix-"]') as HTMLInputElement)?.value || '';
+                                    const newLabel = inputValue;
                                     if(newLabel) {
                                         const newValue = handleCreateNewUser(newLabel);
                                         form.setValue("assignee", newValue);
                                         setPopoverOpen(false);
+                                        setInputValue("");
                                     }
                                 }}>
-                                ➕ Crear usuario "{ (document.querySelector('input[aria-controls^="radix-"]') as HTMLInputElement)?.value }"
+                                    ➕ Crear usuario "{inputValue}"
                                 </Button>
+                              )}
                             </CommandEmpty>
                             <CommandGroup>
                                 {state.usersData.map((user) => (
                                     <CommandItem value={user.id} key={user.id} onSelect={() => {
                                         form.setValue("assignee", user.id);
                                         setPopoverOpen(false);
+                                        setInputValue("");
                                     }}>
                                     <Check className={cn("mr-2 h-4 w-4", user.id === field.value ? "opacity-100" : "opacity-0")} />
                                     {user.nombre}
