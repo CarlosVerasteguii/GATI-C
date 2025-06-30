@@ -444,7 +444,6 @@ export default function InventarioPage() {
       productGroups[groupKey].summary.estados[item.estado] = (productGroups[groupKey].summary.estados[item.estado] || 0) + 1;
     });
 
-    console.log('Datos agrupados:', Object.values(productGroups).slice(0, 2));
     return Object.values(productGroups);
 
   }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado]);
@@ -1143,7 +1142,6 @@ export default function InventarioPage() {
   }, [visibleColumns])
 
   const handleColumnToggle = (columnId: string, checked: boolean) => {
-    console.log(`Visibilidad de columna '${columnId}' cambiada a:`, checked);
     const column = allColumns.find((col) => col.id === columnId)
     if (column?.fixed) return // Prevent toggling fixed columns
 
@@ -1156,8 +1154,6 @@ export default function InventarioPage() {
 
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
-    console.log(`Acción recibida: ${action}`, data);
-
     // Determina si es un grupo o un item individual
     const isGroup = 'isParent' in data && data.isParent;
     
@@ -1238,9 +1234,20 @@ export default function InventarioPage() {
             <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds([])}>
               Limpiar selección
             </Button>
-            {/* Aquí irán los botones de acciones masivas en el futuro */}
-            <Button size="sm" disabled>Asignar Selección</Button>
-            <Button size="sm" disabled>Retirar Selección</Button>
+            {/* Botones de acciones masivas */}
+            <Button 
+                size="sm"
+                onClick={() => setIsBulkAssignModalOpen(true)}
+            >
+                Asignar Selección
+            </Button>
+            <Button 
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsBulkRetireModalOpen(true)}
+            >
+                Retirar Selección
+            </Button>
           </div>
         )}
         {/* --- FIN DE LA BARRA DE ACCIONES MASIVAS --- */}

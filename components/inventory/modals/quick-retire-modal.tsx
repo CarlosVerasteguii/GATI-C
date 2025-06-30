@@ -47,7 +47,6 @@ export function QuickRetireModal({ isOpen, onClose, inventoryItems, productData 
     }, [productData, isOpen, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log("Nueva Tarea Pendiente de Retiro (Unificado):", values);
         onClose();
     }
 

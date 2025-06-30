@@ -89,10 +89,6 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
     };
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log("Datos del formulario (versión final):", {
-            productId: productData?.product.id,
-            ...values,
-        });
         form.reset();
         setInputValue("");
         onClose();

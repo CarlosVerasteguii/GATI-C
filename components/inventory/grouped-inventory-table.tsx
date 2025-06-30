@@ -40,8 +40,6 @@ export function GroupedInventoryTable({
     isLector,
     onParentRowSelect
 }: GroupedInventoryTableProps) {
-    console.log('Datos recibidos en GroupedInventoryTable:', data.slice(0, 2));
-
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const [modalState, setModalState] = useState<{
@@ -172,7 +170,6 @@ export function GroupedInventoryTable({
                                 onParentRowSelect={onParentRowSelect}
                             />
                             {expandedRows[parent.product.id] && (
-                                console.log(`Renderizando hijos para el padre: ${parent.product.id}. Total hijos: ${parent.children.length}`),
                                 parent.children.map((child) => (
                                     <ChildRow
                                         key={child.id}
