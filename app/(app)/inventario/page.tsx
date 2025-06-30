@@ -175,6 +175,9 @@ export default function InventarioPage() {
   });
 
   const [selectedRowIds, setSelectedRowIds] = useState<number[]>([])
+  const selectedProductsData = useMemo(() => {
+    return state.inventoryData.filter(item => selectedRowIds.includes(item.id));
+  }, [selectedRowIds, state.inventoryData]);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isDetailSheetOpen, setIsDetailSheetOpen] = useState(false)
@@ -1276,6 +1279,21 @@ export default function InventarioPage() {
 
         {/* ... rest of the JSX ... */}
       </div>
+      
+      {/* --- INICIO DE MODALES DE ACCIONES MASIVAS --- */}
+      <BulkAssignModal
+        open={isBulkAssignModalOpen}
+        onOpenChange={setIsBulkAssignModalOpen}
+        selectedProducts={selectedProductsData}
+        onSuccess={handleBulkSuccess}
+      />
+      <BulkRetireModal
+        open={isBulkRetireModalOpen}
+        onOpenChange={setIsBulkRetireModalOpen}
+        selectedProducts={selectedProductsData}
+        onSuccess={handleBulkSuccess}
+      />
+      {/* --- FIN DE MODALES DE ACCIONES MASIVAS --- */}
     </TooltipProvider>
   )
 }

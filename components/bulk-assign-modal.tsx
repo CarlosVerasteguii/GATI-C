@@ -1,250 +1,149 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { showSuccess, showInfo } from "@/hooks/use-toast"
-import { Loader2, UserPlus } from "lucide-react"
-import { useApp } from "@/contexts/app-context"
-import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
+import React, { useState, useEffect } from 'react';
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useApp } from '@/contexts/app-context';
+import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { User } from '@/types/inventory';
 
-interface BulkAssignModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  selectedProducts?: any[] // Made optional and will default to empty array
-  onSuccess: () => void
-}
+const formSchema = z.object({
+  assignee: z.string().min(1, "Debes seleccionar o crear un usuario."),
+  notes: z.string().optional(),
+});
 
-const usuarios = [
-  { id: 1, nombre: "Juan Pérez", departamento: "IT" },
-  { id: 2, nombre: "María García", departamento: "Marketing" },
-  { id: 3, nombre: "Carlos López", departamento: "Diseño" },
-  { id: 4, nombre: "Ana Martínez", departamento: "Ventas" },
-]
+type BulkAssignModalProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedProducts: any[];
+  onSuccess: () => void;
+};
 
-export function BulkAssignModal({ open, onOpenChange, selectedProducts = [], onSuccess }: BulkAssignModalProps) {
-  const { state, addPendingRequest, addRecentActivity, updateInventory, updateAsignados } = useApp()
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedUser, setSelectedUser] = useState("")
-  const [notes, setNotes] = useState("")
-  const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
+export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSuccess }: BulkAssignModalProps) {
+  const { state, addUserToUsersData } = useApp();
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { assignee: "", notes: "" },
+  });
 
-
-  const executeBulkAssign = () => {
-    // Toast de progreso con contexto del usuario
-    const assignedUserName = usuarios.find((u) => u.id.toString() === selectedUser)?.nombre || "Usuario"
-    showInfo({
-      title: "Procesando asignación masiva...",
-      description: `Asignando ${selectedProducts.length} productos a ${assignedUserName}`
-    })
-
-    // Simulate assignment
-    setTimeout(() => {
-      setIsLoading(false)
-      onOpenChange(false)
-      setSelectedUser("")
-      setNotes("")
-
-      let updatedInventory = [...state.inventoryData]
-      const assignedItems = []
-
-      selectedProducts.forEach((product) => {
-        if (product.numeroSerie === null) {
-          // For non-serialized items, find the available quantity and decrement it
-          const existingAvailableItemIndex = updatedInventory.findIndex(
-            (item) => item.nombre === product.nombre && item.modelo === product.modelo && item.estado === "Disponible",
-          )
-
-          if (existingAvailableItemIndex !== -1) {
-            const availableItem = updatedInventory[existingAvailableItemIndex]
-            if (availableItem.cantidad > 0) {
-              // Decrement available quantity
-              updatedInventory[existingAvailableItemIndex] = {
-                ...availableItem,
-                cantidad: availableItem.cantidad - 1,
-              }
-
-              // Create a new entry for the assigned unit
-              assignedItems.push({
-                id: Math.max(...state.inventoryData.map((item) => item.id)) + 1 + assignedItems.length, // Unique ID
-                nombre: product.nombre,
-                marca: product.marca,
-                modelo: product.modelo,
-                categoria: product.categoria,
-                estado: "Asignado",
-                cantidad: 1,
-                numeroSerie: null,
-                fechaIngreso: product.fechaIngreso,
-                descripcion: product.descripcion,
-              })
-            }
-          }
-        } else {
-          // For serialized items, change the status of the specific item
-          updatedInventory = updatedInventory.map((item) => {
-            if (item.id === product.id) {
-              return { ...item, estado: "Asignado" }
-            }
-            return item
-          })
-          assignedItems.push({
-            id: Math.max(...state.asignadosData.map((item) => item.id)) + 1 + assignedItems.length,
-            nombre: product.nombre,
-            marca: product.marca,
-            modelo: product.modelo,
-            numeroSerie: product.numeroSerie,
-            asignadoA: usuarios.find((u) => u.id.toString() === selectedUser)?.nombre || "Desconocido",
-            fechaAsignacion: new Date().toISOString().split("T")[0],
-            departamento: usuarios.find((u) => u.id.toString() === selectedUser)?.departamento || "Desconocido",
-            descripcion: notes,
-          })
-        }
-      })
-
-      updateInventory(updatedInventory)
-      updateAsignados([...state.asignadosData, ...assignedItems])
-
-      showSuccess({
-        title: "Asignación masiva completada",
-        description: `${selectedProducts.length} productos asignados a ${assignedUserName}`,
-      })
-      addRecentActivity({
-        type: "Asignación Masiva",
-        description: `Se asignaron ${selectedProducts.length} productos a ${usuarios.find((u) => u.id.toString() === selectedUser)?.nombre}`,
-        date: new Date().toLocaleString(),
-        details: {
-          selectedProductIds: selectedProducts.map((p) => ({ id: p.id, name: p.nombre, serial: p.numeroSerie })),
-          assignedTo: usuarios.find((u) => u.id.toString() === selectedUser)?.nombre,
-          notes: notes,
-        },
-      })
-      onSuccess()
-    }, 1000)
-  }
-
-  const handleBulkAssign = async () => {
-    if (!selectedUser) return
-
-    setIsLoading(true)
-
-    if (state.user?.rol === "Editor") {
-      setIsConfirmEditorOpen(true)
-      setIsLoading(false)
-      return
+  useEffect(() => {
+    if (!open) {
+      form.reset();
     }
+  }, [open, form]);
 
-    executeBulkAssign()
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Datos de Asignación Masiva:", {
+        productIds: selectedProducts.map(p => p.id),
+        ...values,
+    });
+    onSuccess();
+    onOpenChange(false);
   }
 
-  const handleConfirmEditorAction = () => {
-    addPendingRequest({
-      type: "Asignación Masiva",
-      details: {
-        selectedProductIds: selectedProducts.map((p) => ({ id: p.id, name: p.nombre, serial: p.numeroSerie })),
-        assignedTo: usuarios.find((u) => u.id.toString() === selectedUser)?.nombre,
-        notes: notes,
-      },
-      requestedBy: state.user?.nombre || "Editor",
-      date: new Date().toISOString(),
-      status: "Pendiente",
-      auditLog: [
-        {
-          event: "CREACIÓN",
-          user: state.user?.nombre || "Editor",
-          dateTime: new Date().toISOString(),
-          description: `Solicitud de asignación masiva para ${selectedProducts.length} productos creada.`,
-        },
-      ],
-    })
-    showInfo({
-      title: "Solicitud enviada",
-      description: "Tu asignación masiva ha sido enviada a un administrador para aprobación.",
-    })
-    onOpenChange(false)
-    setSelectedUser("")
-    setNotes("")
-    setIsConfirmEditorOpen(false)
-    addRecentActivity({
-      type: "Solicitud de Asignación Masiva",
-      description: `Solicitud de asignación masiva para ${selectedProducts.length} productos enviada`,
-      date: new Date().toLocaleString(),
-      details: {
-        selectedProductIds: selectedProducts.map((p) => ({ id: p.id, name: p.nombre, serial: p.numeroSerie })),
-        assignedTo: usuarios.find((u) => u.id.toString() === selectedUser)?.nombre,
-        notes: notes,
-      },
-    })
+  const handleCreateNewUser = (newLabel: string) => {
+    const newUserValue = newLabel.toLowerCase().replace(/\s+/g, '.').concat(`.${Date.now()}`);
+    const newUser: User = { id: newUserValue, nombre: newLabel };
+    addUserToUsersData(newUser);
+    return newUserValue;
   }
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Asignar Productos (Masivo)
-            </DialogTitle>
-            <DialogDescription>
-              Asigna {selectedProducts.length} producto(s) seleccionado(s) permanentemente a un usuario.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="usuario">Usuario *</Label>
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un usuario" />
-                </SelectTrigger>
-                <SelectContent>
-                  {usuarios.map((usuario) => (
-                    <SelectItem key={usuario.id} value={usuario.id.toString()}>
-                      {usuario.nombre} - {usuario.departamento}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notas">Notas (opcional)</Label>
-              <Textarea
-                id="notas"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Motivo de la asignación, ubicación, etc."
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="submit"
-              onClick={handleBulkAssign}
-              disabled={isLoading || !selectedUser}
-              className="bg-primary hover:bg-primary-hover"
-            >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Asignar Productos
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5" />
+            Asignar {selectedProducts.length} Producto(s)
+          </DialogTitle>
+          <DialogDescription>
+            Asigna los productos seleccionados a un usuario. Puedes buscar un usuario existente o crear uno nuevo.
+          </DialogDescription>
+        </DialogHeader>
 
-      <ConfirmationDialogForEditor
-        open={isConfirmEditorOpen}
-        onOpenChange={setIsConfirmEditorOpen}
-        onConfirm={handleConfirmEditorAction}
-      />
-    </>
-  )
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="assignee"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Asignar a</FormLabel>
+                  <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
+                          {field.value ? state.usersData.find(u => u.id === field.value)?.nombre : "Seleccionar usuario..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command filter={(value, search) => state.usersData.find(u => u.id === value)?.nombre.toLowerCase().includes(search.toLowerCase()) ? 1 : 0}>
+                        <CommandInput placeholder="Buscar o crear usuario..." />
+                        <CommandList>
+                            <CommandEmpty>
+                                <Button className="w-full" variant="ghost" onClick={() => {
+                                    const newLabel = (document.querySelector('input[aria-controls^="radix-"]') as HTMLInputElement)?.value || '';
+                                    if(newLabel) {
+                                        const newValue = handleCreateNewUser(newLabel);
+                                        form.setValue("assignee", newValue);
+                                        setPopoverOpen(false);
+                                    }
+                                }}>
+                                ➕ Crear usuario "{ (document.querySelector('input[aria-controls^="radix-"]') as HTMLInputElement)?.value }"
+                                </Button>
+                            </CommandEmpty>
+                            <CommandGroup>
+                                {state.usersData.map((user) => (
+                                    <CommandItem value={user.id} key={user.id} onSelect={() => {
+                                        form.setValue("assignee", user.id);
+                                        setPopoverOpen(false);
+                                    }}>
+                                    <Check className={cn("mr-2 h-4 w-4", user.id === field.value ? "opacity-100" : "opacity-0")} />
+                                    {user.nombre}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notas (Opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Motivo de la asignación, ubicación, etc." {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+              <Button type="submit">Asignar Productos</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
 }
