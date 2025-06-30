@@ -688,7 +688,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       setState((prevState) => {
         // Verificar si ya existe una preferencia para esta página
         const existingPrefIndex = prevState.userColumnPreferences.findIndex(pref => pref.page === pageId);
-        
+
         if (existingPrefIndex !== -1) {
           // Actualizar preferencia existente
           const updatedPreferences = [...prevState.userColumnPreferences];
@@ -700,33 +700,33 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             })),
             itemsPerPage: itemsPerPage !== undefined ? itemsPerPage : updatedPreferences[existingPrefIndex].itemsPerPage
           };
-          
+
           return {
             ...prevState,
             userColumnPreferences: updatedPreferences
           };
         } else {
           // Crear nueva preferencia
-          const allColumnsForPage = pageId === "inventario" 
+          const allColumnsForPage = pageId === "inventario"
             ? [
-                { id: "nombre", label: "Nombre", visible: true },
-                { id: "marca", label: "Marca", visible: true },
-                { id: "modelo", label: "Modelo", visible: true },
-                { id: "numeroSerie", label: "N/S", visible: true },
-                { id: "categoria", label: "Categoría", visible: true },
-                { id: "estado", label: "Estado", visible: true },
-                { id: "proveedor", label: "Proveedor", visible: false },
-                { id: "fechaAdquisicion", label: "Fecha Adquisición", visible: false },
-                { id: "contratoId", label: "Contrato ID", visible: false },
-                { id: "asignadoA", label: "Asignado A", visible: false },
-                { id: "fechaAsignacion", label: "Fecha Asignación", visible: false },
-                { id: "qty", label: "QTY", visible: true }
-              ].map(col => ({
-                ...col,
-                visible: columns.includes(col.id)
-              }))
+              { id: "nombre", label: "Nombre", visible: true },
+              { id: "marca", label: "Marca", visible: true },
+              { id: "modelo", label: "Modelo", visible: true },
+              { id: "numeroSerie", label: "N/S", visible: true },
+              { id: "categoria", label: "Categoría", visible: true },
+              { id: "estado", label: "Estado", visible: true },
+              { id: "proveedor", label: "Proveedor", visible: false },
+              { id: "fechaAdquisicion", label: "Fecha Adquisición", visible: false },
+              { id: "contratoId", label: "Contrato ID", visible: false },
+              { id: "asignadoA", label: "Asignado A", visible: false },
+              { id: "fechaAsignacion", label: "Fecha Asignación", visible: false },
+              { id: "qty", label: "QTY", visible: true }
+            ].map(col => ({
+              ...col,
+              visible: columns.includes(col.id)
+            }))
             : columns.map(column => ({ id: column, label: column, visible: true }));
-          
+
           return {
             ...prevState,
             userColumnPreferences: [

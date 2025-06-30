@@ -38,6 +38,8 @@ export function GroupedInventoryTable({
     onAction,
     isLector
 }: GroupedInventoryTableProps) {
+    console.log('Datos recibidos en GroupedInventoryTable:', data.slice(0, 2));
+
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const [modalState, setModalState] = useState<{
@@ -166,17 +168,20 @@ export function GroupedInventoryTable({
                                 onRowSelect={onRowSelect}
                                 isLector={isLector}
                             />
-                            {expandedRows[parent.product.id] && parent.children.map((child) => (
-                                <ChildRow
-                                    key={child.id}
-                                    asset={child}
-                                    isHighlighted={child.id.toString() === parent.highlightedChildId}
-                                    visibleColumns={visibleColumns}
-                                    selectedRowIds={selectedRowIds}
-                                    onRowSelect={onRowSelect}
-                                    isLector={isLector}
-                                />
-                            ))}
+                            {expandedRows[parent.product.id] && (
+                                console.log(`Renderizando hijos para el padre: ${parent.product.id}. Total hijos: ${parent.children.length}`),
+                                parent.children.map((child) => (
+                                    <ChildRow
+                                        key={child.id}
+                                        asset={child}
+                                        isHighlighted={child.id.toString() === parent.highlightedChildId}
+                                        visibleColumns={visibleColumns}
+                                        selectedRowIds={selectedRowIds}
+                                        onRowSelect={onRowSelect}
+                                        isLector={isLector}
+                                    />
+                                ))
+                            )}
                         </React.Fragment>
                     ))}
                 </TableBody>

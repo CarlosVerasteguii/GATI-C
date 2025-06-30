@@ -41,6 +41,8 @@ export function ParentRow({
     onRowSelect,
     isLector
 }: ParentRowProps) {
+    console.log('Props de visibilidad recibidas en ParentRow:', visibleColumns);
+
     const { product, summary } = parentProduct;
 
     const renderEstadoTooltip = () => (
