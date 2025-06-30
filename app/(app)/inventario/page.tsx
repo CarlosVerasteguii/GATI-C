@@ -75,6 +75,8 @@ import { ActionMenu } from "@/components/action-menu"
 import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
+import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
+import { mockInventoryData } from '@/lib/mocks/inventory-mock-data';
 
 
 // Definición de interfaces para tipar correctamente
@@ -1464,7 +1466,9 @@ export default function InventarioPage() {
             description="Intenta ajustar los filtros o términos de búsqueda para encontrar lo que buscas."
           />
         ) : viewMode === "table" ? (
-          <Card>
+          <>
+            {/*
+            <Card>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -1680,6 +1684,30 @@ export default function InventarioPage() {
               </Table>
             </CardContent>
           </Card>
+          */}
+            {/* --- INICIO DE NUESTRO INJERTO DE PRUEBA --- */}
+            <Card>
+              <CardContent className="p-0">
+                <p className="p-4 text-sm text-blue-500">MODO DE PRUEBA: Mostrando tabla nueva con datos mockeados.</p>
+                <GroupedInventoryTable
+                  data={mockInventoryData}
+                  searchQuery={""}
+                  visibleColumns={{
+                    marca: true,
+                    modelo: true,
+                    numeroSerie: true,
+                    estado: true,
+                  }}
+                  selectedRowIds={[]}
+                  onRowSelect={() => { }}
+                  onSelectAll={() => { }}
+                  onAction={() => { }}
+                  isLector={false}
+                />
+              </CardContent>
+            </Card>
+            {/* --- FIN DE NUESTRO INJERTO DE PRUEBA --- */}
+          </>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {paginatedData.map((item) => (
