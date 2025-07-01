@@ -128,14 +128,14 @@ const allColumns: ColumnDefinition[] = [
   { id: "nombre", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start" },
   { id: "marca", label: "Marca", defaultVisible: true, sortable: true },
   { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true },
-  { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: true },
-  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: true },
-  { id: "estado", label: "Estado", defaultVisible: true, sortable: true },
-  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: true }, // New
-  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: true }, // New
-  { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: true }, // New
-  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true }, // New (derived)
-  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true }, // New (derived)
+  { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: false },
+  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: false },
+  { id: "estado", label: "Estado", defaultVisible: true, sortable: false },
+  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: false }, // New
+  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: false }, // New
+  { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
+  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: false }, // New (derived)
+  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: false }, // New (derived)
   { id: "qty", label: "QTY", defaultVisible: true, sortable: false, fixed: "end" },
 ]
 
