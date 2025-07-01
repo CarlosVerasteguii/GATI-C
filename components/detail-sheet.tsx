@@ -1,0 +1,76 @@
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { InventoryItem } from "@/types/inventory"
+
+interface DetailSheetProps {
+    isOpen: boolean
+    onClose: () => void
+    product: InventoryItem | null
+}
+
+export function DetailSheet({ isOpen, onClose, product }: DetailSheetProps) {
+    if (!product) return null
+
+    return (
+        <Sheet open={isOpen} onOpenChange={onClose}>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>Detalles del Activo</SheetTitle>
+                </SheetHeader>
+
+                <div className="mt-6 space-y-4">
+                    <div>
+                        <h3 className="font-medium">Información Básica</h3>
+                        <div className="mt-2 space-y-2">
+                            <div>
+                                <span className="text-sm text-muted-foreground">Nombre:</span>
+                                <p>{product.nombre}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Marca:</span>
+                                <p>{product.marca}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Modelo:</span>
+                                <p>{product.modelo}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Número de Serie:</span>
+                                <p>{product.numeroSerie || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Categoría:</span>
+                                <p>{product.categoria}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Estado:</span>
+                                <p>{product.estado}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 className="font-medium">Detalles Adicionales</h3>
+                        <div className="mt-2 space-y-2">
+                            <div>
+                                <span className="text-sm text-muted-foreground">Descripción:</span>
+                                <p>{product.descripcion}</p>
+                            </div>
+                            {product.asignadoA && (
+                                <div>
+                                    <span className="text-sm text-muted-foreground">Asignado a:</span>
+                                    <p>{product.asignadoA}</p>
+                                </div>
+                            )}
+                            {product.fechaAsignacion && (
+                                <div>
+                                    <span className="text-sm text-muted-foreground">Fecha de Asignación:</span>
+                                    <p>{new Date(product.fechaAsignacion).toLocaleDateString()}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+} 

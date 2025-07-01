@@ -58,10 +58,49 @@ export function ChildRow({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Activo</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => onAction('Ver Detalles', asset)}>
+                            Ver Detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Editar', asset)}>
+                            Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Duplicar', asset)}>
+                            Duplicar
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction('Ver Detalles', asset)}>Ver Detalles</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Editar', asset)}>Editar Activo</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>Mover a Mantenimiento</DropdownMenuItem>
+
+                        {/* --- LÓGICA CONTEXTUAL --- */}
+                        {asset.estado === 'Disponible' && (
+                            <>
+                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                    Asignar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onAction('Prestar', asset)}>
+                                    Prestar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>
+                                    Mantenimiento
+                                </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {(asset.estado === 'Asignado' || asset.estado === 'Prestado') && (
+                            <DropdownMenuItem onSelect={() => onAction('Marcar como Retirado', asset)}>
+                                Devolver / Liberar
+                            </DropdownMenuItem>
+                        )}
+
+                        {asset.estado === 'Retirado' && (
+                            <DropdownMenuItem onSelect={() => onAction('Reactivar', asset)}>
+                                Reactivar Activo
+                            </DropdownMenuItem>
+                        )}
+                        {/* --- FIN LÓGICA CONTEXTUAL --- */}
+
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600" onSelect={() => onAction('Marcar como Retirado', asset)}>
+                            Retiro Definitivo
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>

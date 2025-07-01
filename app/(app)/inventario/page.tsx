@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { GroupedProduct, InventoryItem } from "@/types/inventory"
+import { DetailSheet } from "@/components/detail-sheet"
 import {
   Dialog,
   DialogContent,
@@ -1157,29 +1158,46 @@ export default function InventarioPage() {
 
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
-    // Determina si es un grupo o un item individual
+    console.log(`Ejecutando acción: ${action}`);
+
     const isGroup = 'isParent' in data && data.isParent;
-    
-    // Lógica para obtener un 'InventoryItem' válido para los manejadores existentes
-    let targetItem: InventoryItem | undefined;
+    let targetItem: InventoryItem | undefined | null = null;
+
+    // --- LÓGICA DE DECISIÓN MEJORADA ---
     if (isGroup) {
-      // Si es un grupo, buscamos el primer hijo disponible para acciones como "Asignar"
-      // o simplemente el primer hijo si no hay disponibles.
-      targetItem = (data as GroupedProduct).children.find(child => child.estado === 'Disponible') || (data as GroupedProduct).children[0];
+      // Si la acción es sobre un grupo...
+      if (action === 'Retiro Rápido') {
+        // Para retiro rápido, pasamos todo el grupo al modal.
+        handleOpenQuickRetire(data);
+        return; // Salimos de la función aquí.
+      } else {
+        // Para otras acciones (Asignar, Prestar), buscamos un hijo disponible.
+        targetItem = data.children.find(child => child.estado === 'Disponible');
+        if (!targetItem) {
+          console.error(`Acción '${action}' falló: No hay unidades disponibles en el grupo.`);
+          // Aquí podríamos usar showError() para notificar al usuario.
+          return;
+        }
+      }
     } else {
+      // Si la acción es sobre un hijo, ese es nuestro objetivo.
       targetItem = data as InventoryItem;
     }
-    
+    // --- FIN DE LA LÓGICA DE DECISIÓN ---
+
+    // Si no tenemos un item válido a este punto, no hacemos nada.
     if (!targetItem) {
-      console.error("No se encontró un activo válido para ejecutar la acción.", data);
-      // Aquí podríamos mostrar un error al usuario con showError()
+      console.error("No se pudo determinar un activo válido para la acción.");
       return;
     }
 
-    // Router de acciones
+    // Router de acciones que ahora recibe un targetItem válido.
     switch (action) {
       case 'Asignar':
         handleAssign(targetItem);
+        break;
+      case 'Prestar':
+        handleLend(targetItem);
         break;
       case 'Ver Detalles':
         handleViewDetails(targetItem);
@@ -1187,17 +1205,17 @@ export default function InventarioPage() {
       case 'Editar':
         handleEdit(targetItem);
         break;
+      case 'Duplicar':
+        handleDuplicate(targetItem);
+        break;
       case 'Mover a Mantenimiento':
         handleMaintenanceState(targetItem);
         break;
-      case 'Retiro Rápido':
+      case 'Marcar como Retirado': // Para la acción de "Retiro Definitivo"
         handleMarkAsRetired(targetItem);
         break;
       case 'Reactivar':
         handleReactivate(targetItem);
-        break;
-      case 'Duplicar':
-        handleDuplicate(targetItem);
         break;
       default:
         console.warn(`Acción no manejada: ${action}`);
@@ -1238,18 +1256,18 @@ export default function InventarioPage() {
               Limpiar selección
             </Button>
             {/* Botones de acciones masivas */}
-            <Button 
-                size="sm"
-                onClick={() => setIsBulkAssignModalOpen(true)}
+            <Button
+              size="sm"
+              onClick={() => setIsBulkAssignModalOpen(true)}
             >
-                Asignar Selección
+              Asignar Selección
             </Button>
-            <Button 
-                variant="destructive"
-                size="sm"
-                onClick={() => setIsBulkRetireModalOpen(true)}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsBulkRetireModalOpen(true)}
             >
-                Retirar Selección
+              Retirar Selección
             </Button>
           </div>
         )}
@@ -1279,7 +1297,7 @@ export default function InventarioPage() {
 
         {/* ... rest of the JSX ... */}
       </div>
-      
+
       {/* --- INICIO DE MODALES DE ACCIONES MASIVAS --- */}
       <BulkAssignModal
         open={isBulkAssignModalOpen}
@@ -1294,6 +1312,21 @@ export default function InventarioPage() {
         onSuccess={handleBulkSuccess}
       />
       {/* --- FIN DE MODALES DE ACCIONES MASIVAS --- */}
+
+      {/* Modal de Préstamo Individual */}
+      <LendModal
+        open={isLendModalOpen}
+        onOpenChange={setIsLendModalOpen}
+        product={selectedProduct}
+        onSuccess={handleBulkSuccess}
+      />
+
+      {/* Panel de Detalles */}
+      <DetailSheet
+        isOpen={isDetailSheetOpen}
+        onClose={() => setIsDetailSheetOpen(false)}
+        product={selectedProduct}
+      />
     </TooltipProvider>
   )
 }

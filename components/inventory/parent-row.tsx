@@ -107,9 +107,16 @@ export function ParentRow({
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction('Asignar', parentProduct)}>Asignar desde Stock</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido', parentProduct)}>Retiro Rápido</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Editar', parentProduct)}>Editar Modelo</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Asignar', parentProduct)}>
+                            Asignar desde Stock
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAction('Prestar', parentProduct)}>
+                            Prestar desde Stock
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido', parentProduct)}>
+                            Retiro Rápido de Stock
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>
