@@ -120,23 +120,24 @@ interface ColumnDefinition {
   label: string
   defaultVisible: boolean
   sortable: boolean
+  type?: 'string' | 'number' | 'date' | 'status';
   fixed?: "start" | "end"
 }
 
 // Define all possible columns and their properties
 const allColumns: ColumnDefinition[] = [
-  { id: "nombre", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start" },
-  { id: "marca", label: "Marca", defaultVisible: true, sortable: true },
-  { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true },
+  { id: "nombre", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start", type: 'string' },
+  { id: "marca", label: "Marca", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true, type: 'string' },
   { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: false },
-  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: false },
-  { id: "estado", label: "Estado", defaultVisible: true, sortable: false },
-  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: false }, // New
-  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: false }, // New
+  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "estado", label: "Estado", defaultVisible: true, sortable: true, type: 'status' },
+  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: true, type: 'date' },
   { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
-  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: false }, // New (derived)
-  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: false }, // New (derived)
-  { id: "qty", label: "QTY", defaultVisible: true, sortable: false, fixed: "end" },
+  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' }, // New (derived)
+  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' }, // New (derived)
+  { id: "qty", label: "QTY", defaultVisible: true, sortable: true, fixed: "end", type: 'number' },
 ]
 
 export default function InventarioPage() {
@@ -376,7 +377,7 @@ export default function InventarioPage() {
   }
 
   // Función segura para obtener valores de columnas
-  const getColumnValue = (item: InventoryItem, columnId: string): string | number => {
+  const getColumnValue = (item: InventoryItem, columnId: string): string | number | null => {
     switch (columnId) {
       case "nombre":
         return item.nombre;
@@ -391,17 +392,21 @@ export default function InventarioPage() {
       case "numeroSerie":
         return item.numeroSerie || "";
       case "proveedor":
-        return item.proveedor || "";
+        return item.proveedor || null;
       case "fechaAdquisicion":
-        return item.fechaCompra || "";
+        return item.fechaCompra || null;
       case "contratoId":
-        return "";
+        return ""; // Not sortable yet
       case "fechaIngreso":
-        return item.fechaIngreso || "";
-      case "cantidad":
-        return item.cantidad;
+        return item.fechaIngreso || null;
+      case "qty":
+        return item.cantidad; // 'qty' in allColumns maps to 'cantidad'
+      case "asignadoA":
+        return getAssignmentDetails(item).asignadoA;
+      case "fechaAsignacion":
+        return getAssignmentDetails(item).fechaAsignacion;
       default:
-        return "";
+        return null;
     }
   };
 
@@ -424,17 +429,52 @@ export default function InventarioPage() {
     });
 
     if (sortColumn) {
+      // Encuentra la configuración de la columna para determinar el tipo de ordenamiento
+      const columnConfig = allColumns.find(c => c.id === sortColumn);
+      const sortType = columnConfig ? columnConfig.type : 'string'; // Fallback a 'string' por seguridad
+
+      // Mapa de orden personalizado para el estado
+      const statusOrder: { [key: string]: number } = { 
+        'Disponible': 1, 
+        'Asignado': 2, 
+        'Prestado': 3, 
+        'En Mantenimiento': 4, 
+        'PENDIENTE_DE_RETIRO': 5, 
+        'Retirado': 6 
+      };
+
       data.sort((a, b) => {
-        const valA = getColumnValue(a, sortColumn)?.toString().toLowerCase() || '';
-        const valB = getColumnValue(b, sortColumn)?.toString().toLowerCase() || '';
-        
-        if (valA < valB) {
-          return sortDirection === "asc" ? -1 : 1;
+        const aValue = getColumnValue(a, sortColumn);
+        const bValue = getColumnValue(b, sortColumn);
+
+        // Regla: los valores nulos o indefinidos siempre van al final, sin importar la dirección
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        let comparison = 0;
+
+        switch (sortType) {
+          case 'number':
+            comparison = (aValue as number) - (bValue as number);
+            break;
+          case 'date':
+            // Aseguramos que las fechas inválidas no rompan el sort
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (isNaN(dateA)) return 1;
+            if (isNaN(dateB)) return -1;
+            comparison = dateA - dateB;
+            break;
+          case 'status':
+            comparison = (statusOrder[aValue as string] || 99) - (statusOrder[bValue as string] || 99);
+            break;
+          default: // 'string'
+            comparison = String(aValue).localeCompare(String(bValue));
+            break;
         }
-        if (valA > valB) {
-          return sortDirection === "asc" ? 1 : -1;
-        }
-        return 0;
+
+        // Aplicar la dirección del ordenamiento
+        return sortDirection === 'asc' ? comparison : -comparison;
       });
     }
 
