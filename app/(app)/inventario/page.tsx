@@ -79,6 +79,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 import { EditProductModal } from "@/components/edit-product-modal"
+import { MaintenanceModal } from "@/components/maintenance-modal"
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -209,6 +210,7 @@ export default function InventarioPage() {
   const [tempMarca, setTempMarca] = useState("")
   const [isProcessingUrlParam, setIsProcessingUrlParam] = useState(false)
   const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false)
+  const [isReactivateConfirmOpen, setIsReactivateConfirmOpen] = useState(false)
   const [maintenanceDetails, setMaintenanceDetails] = useState({
     provider: "",
     notes: "",
@@ -543,6 +545,8 @@ export default function InventarioPage() {
   }
 
   const handleReactivate = (product: InventoryItem) => {
+    setSelectedProduct(product)
+    
     if (state.user?.rol === "Editor") {
       setPendingActionDetails({
         type: "Reactivación",
@@ -553,7 +557,8 @@ export default function InventarioPage() {
       setIsConfirmEditorOpen(true)
       return
     }
-    executeReactivate(product)
+    
+    setIsReactivateConfirmOpen(true)
   }
 
   const handleAddProduct = () => {
@@ -824,34 +829,33 @@ export default function InventarioPage() {
   }
 
   const executeRetirement = () => {
-    // Validar que se haya seleccionado un motivo
-    if (!retirementDetails.reason) {
+    // Validar que exista un producto seleccionado
+    if (!selectedProduct) {
       showError({
         title: "Error",
-        description: "Debe seleccionar un motivo para el retiro.",
+        description: "No hay producto seleccionado para retirar.",
       })
       return
     }
 
     appDispatch({
       type: 'UPDATE_INVENTORY_ITEM_STATUS',
-      payload: { id: selectedProduct!.id, status: "Retirado" }
+      payload: { id: selectedProduct.id, status: "Retirado" }
     })
     appDispatch({
       type: 'ADD_RECENT_ACTIVITY',
       payload: {
         type: "Retiro de Producto",
-        description: `${selectedProduct?.nombre} retirado por ${retirementDetails.reason}`,
+        description: `${selectedProduct.nombre} retirado`,
         date: new Date().toLocaleString(),
         details: {
-          product: { id: selectedProduct!.id, name: selectedProduct!.nombre, serial: selectedProduct!.numeroSerie },
-          retirementDetails: retirementDetails
+          product: { id: selectedProduct.id, name: selectedProduct.nombre, serial: selectedProduct.numeroSerie },
         },
       }
     })
     showSuccess({
       title: "Producto retirado",
-      description: `${selectedProduct?.nombre} ha sido marcado como retirado.`,
+      description: `${selectedProduct.nombre} ha sido marcado como retirado.`,
     })
     setIsConfirmDialogOpen(false) // Ensure dialog is closed
     setSelectedProduct(null) // Clear selected product
@@ -1322,6 +1326,14 @@ export default function InventarioPage() {
         onSuccess={handleBulkSuccess}
       />
 
+      {/* Modal de Asignación Individual */}
+      <AssignModal
+        open={isAssignModalOpen}
+        onOpenChange={setIsAssignModalOpen}
+        product={selectedProduct}
+        onSuccess={handleBulkSuccess}
+      />
+
       {/* Panel de Detalles */}
       <DetailSheet
         isOpen={isDetailSheetOpen}
@@ -1336,6 +1348,46 @@ export default function InventarioPage() {
         product={selectedProduct}
         onSuccess={handleBulkSuccess}
       />
+
+      {/* Modal de Mantenimiento */}
+      <MaintenanceModal
+        open={isMaintenanceModalOpen}
+        onOpenChange={setIsMaintenanceModalOpen}
+        product={selectedProduct}
+        onSuccess={handleBulkSuccess}
+      />
+
+      {/* Diálogo de Confirmación para Retiro Definitivo */}
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Retiro Definitivo</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedProduct && `¿Estás seguro de que deseas marcar "${selectedProduct.nombre}" como retirado? Esta acción no se puede deshacer.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={executeRetirement}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Diálogo de Confirmación para Reactivar */}
+      <AlertDialog open={isReactivateConfirmOpen} onOpenChange={setIsReactivateConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Reactivación</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedProduct && `¿Estás seguro de que deseas reactivar "${selectedProduct.nombre}" y devolverlo al inventario como "Disponible"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => selectedProduct && executeReactivate(selectedProduct)}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   )
 }
