@@ -78,6 +78,7 @@ import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
+import { EditProductModal } from "@/components/edit-product-modal"
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -1326,6 +1327,14 @@ export default function InventarioPage() {
         isOpen={isDetailSheetOpen}
         onClose={() => setIsDetailSheetOpen(false)}
         product={selectedProduct}
+      />
+
+      {/* Modal de Edición de Producto */}
+      <EditProductModal
+        open={isAddProductModalOpen}
+        onOpenChange={setIsAddProductModalOpen}
+        product={selectedProduct}
+        onSuccess={handleBulkSuccess}
       />
     </TooltipProvider>
   )
