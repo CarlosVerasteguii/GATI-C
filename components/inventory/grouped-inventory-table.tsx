@@ -16,6 +16,8 @@ import { ChildRow } from './child-row';
 import { AssignModal } from './modals/assign-modal';
 import { QuickRetireModal } from './modals/quick-retire-modal';
 import { GroupedProduct, InventoryItem } from '@/types/inventory';
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 type GroupedInventoryTableProps = {
     data: GroupedProduct[];
@@ -27,6 +29,15 @@ type GroupedInventoryTableProps = {
     onAction: (action: string, product: GroupedProduct | InventoryItem) => void;
     isLector: boolean;
     onParentRowSelect: (group: GroupedProduct, checked: boolean) => void;
+    onSort: (columnId: string) => void;
+    sortColumn: string | null;
+    sortDirection: 'asc' | 'desc';
+    columns: Array<{ id: string; label: string; sortable: boolean }>;
+};
+
+const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
+    if (!direction) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    return direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
 };
 
 export function GroupedInventoryTable({
@@ -38,7 +49,11 @@ export function GroupedInventoryTable({
     onSelectAll,
     onAction,
     isLector,
-    onParentRowSelect
+    onParentRowSelect,
+    onSort,
+    sortColumn,
+    sortDirection,
+    columns
 }: GroupedInventoryTableProps) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
@@ -147,11 +162,22 @@ export function GroupedInventoryTable({
                                 />
                             )}
                         </TableHead>
-                        <TableHead className="w-[400px]">Producto</TableHead>
-                        {visibleColumns.marca && <TableHead>Marca</TableHead>}
-                        {visibleColumns.modelo && <TableHead>Modelo</TableHead>}
-                        {visibleColumns.numeroSerie && <TableHead>N/S</TableHead>}
-                        {visibleColumns.estado && <TableHead>Estado</TableHead>}
+                        
+                        {columns.map((column) => (
+                          visibleColumns[column.id] && (
+                            <TableHead key={column.id}>
+                              {column.sortable ? (
+                                <Button variant="ghost" onClick={() => onSort(column.id)}>
+                                  {column.label}
+                                  <SortIcon direction={sortColumn === column.id ? sortDirection : null} />
+                                </Button>
+                              ) : (
+                                <span>{column.label}</span>
+                              )}
+                            </TableHead>
+                          )
+                        ))}
+
                         <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>

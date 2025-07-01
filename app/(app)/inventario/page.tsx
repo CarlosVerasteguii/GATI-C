@@ -356,6 +356,7 @@ export default function InventarioPage() {
       setSortColumn(columnId)
       setSortDirection("asc")
     }
+    setCurrentPage(1);
   }
 
   // Helper to get current assignee/assignment date for a serialized item
@@ -422,7 +423,20 @@ export default function InventarioPage() {
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
     });
 
-    // La lógica de ordenamiento la dejaremos para después para simplificar
+    if (sortColumn) {
+      data.sort((a, b) => {
+        const valA = getColumnValue(a, sortColumn)?.toString().toLowerCase() || '';
+        const valB = getColumnValue(b, sortColumn)?.toString().toLowerCase() || '';
+        
+        if (valA < valB) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (valA > valB) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
 
     // 2. LÓGICA DE AGRUPAMIENTO
     const productGroups: { [key: string]: any } = {};
@@ -453,7 +467,7 @@ export default function InventarioPage() {
 
     return Object.values(productGroups);
 
-  }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado]);
+  }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado, sortColumn, sortDirection]);
 
   // Datos paginados para la tabla
   const paginatedData = useMemo(() => {
@@ -1288,18 +1302,17 @@ export default function InventarioPage() {
             <GroupedInventoryTable
               data={paginatedData}
               searchQuery={searchTerm}
-              visibleColumns={{
-                marca: true,
-                modelo: true,
-                numeroSerie: true,
-                estado: true,
-              }}
+              columns={allColumns}
+              visibleColumns={Object.fromEntries(visibleColumns.map(id => [id, true]))}
               selectedRowIds={selectedRowIds}
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}
               onAction={handleMenuAction}
               isLector={isLector}
               onParentRowSelect={handleParentRowSelect}
+              onSort={handleSort}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
             />
           </CardContent>
           <CardFooter className="flex items-center justify-between py-4">
