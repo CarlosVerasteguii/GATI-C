@@ -31,7 +31,7 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
   const { state, addUserToUsersData } = useApp();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { assignee: "", notes: "" },
@@ -45,18 +45,23 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Datos de Asignación Masiva:", {
-        productIds: selectedProducts.map(p => p.id),
-        ...values,
+      productIds: selectedProducts.map(p => p.id),
+      ...values,
     });
     onSuccess();
     onOpenChange(false);
   }
 
   const handleCreateNewUser = (newLabel: string) => {
-    const newUserValue = newLabel.toLowerCase().replace(/\s+/g, '.').concat(`.${Date.now()}`);
-    const newUser: User = { id: newUserValue, nombre: newLabel };
+    const newId = Date.now();
+    const newUser: User = {
+      id: newId,
+      nombre: newLabel,
+      email: `${newLabel.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      rol: "Lector"
+    };
     addUserToUsersData(newUser);
-    return newUserValue;
+    return newId;
   }
 
   return (
@@ -84,46 +89,56 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
-                          {field.value ? state.usersData.find(u => u.id === field.value)?.nombre : "Seleccionar usuario..."}
+                          {field.value ? state.usersData.find(u => u.id === Number(field.value))?.nombre : "Seleccionar usuario..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command filter={(value, search) => state.usersData.find(u => u.id === value)?.nombre.toLowerCase().includes(search.toLowerCase()) ? 1 : 0}>
-                        <CommandInput 
+                      <Command
+                        filter={(value, search) => {
+                          const user = state.usersData.find(u => u.id === Number(value));
+                          if (!user) return 0;
+                          return user.nombre.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+                        }}
+                      >
+                        <CommandInput
                           placeholder="Buscar o crear usuario..."
                           value={inputValue}
                           onValueChange={setInputValue}
                         />
                         <CommandList>
-                            <CommandEmpty>
-                              {inputValue && (
-                                <Button className="w-full" variant="ghost" onClick={() => {
-                                    const newLabel = inputValue;
-                                    if(newLabel) {
-                                        const newValue = handleCreateNewUser(newLabel);
-                                        form.setValue("assignee", newValue);
-                                        setPopoverOpen(false);
-                                        setInputValue("");
-                                    }
+                          <CommandEmpty>
+                            {inputValue && (
+                              <Button
+                                className="w-full flex items-center justify-center gap-2"
+                                variant="ghost"
+                                onClick={() => {
+                                  const newLabel = inputValue;
+                                  if (newLabel) {
+                                    const newValue = handleCreateNewUser(newLabel);
+                                    form.setValue("assignee", String(newValue));
+                                    setPopoverOpen(false);
+                                    setInputValue("");
+                                  }
                                 }}>
-                                    ➕ Crear usuario "{inputValue}"
-                                </Button>
-                              )}
-                            </CommandEmpty>
-                            <CommandGroup>
-                                {state.usersData.map((user) => (
-                                    <CommandItem value={user.id} key={user.id} onSelect={() => {
-                                        form.setValue("assignee", user.id);
-                                        setPopoverOpen(false);
-                                        setInputValue("");
-                                    }}>
-                                    <Check className={cn("mr-2 h-4 w-4", user.id === field.value ? "opacity-100" : "opacity-0")} />
-                                    {user.nombre}
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
+                                <UserPlus className="h-4 w-4" />
+                                Crear usuario "{inputValue}"
+                              </Button>
+                            )}
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {state.usersData.map((user) => (
+                              <CommandItem value={String(user.id)} key={user.id} onSelect={() => {
+                                form.setValue("assignee", String(user.id));
+                                setPopoverOpen(false);
+                                setInputValue("");
+                              }}>
+                                <Check className={cn("mr-2 h-4 w-4", String(user.id) === field.value ? "opacity-100" : "opacity-0")} />
+                                {user.nombre}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
                         </CommandList>
                       </Command>
                     </PopoverContent>
@@ -145,7 +160,7 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
                 </FormItem>
               )}
             />
-            
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button type="submit">Asignar Productos</Button>
