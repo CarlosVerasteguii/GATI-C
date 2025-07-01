@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { GroupedProduct, InventoryItem } from "@/types/inventory"
 import { DetailSheet } from "@/components/detail-sheet"
@@ -392,9 +392,9 @@ export default function InventarioPage() {
       case "proveedor":
         return item.proveedor || "";
       case "fechaAdquisicion":
-        return item.fechaAdquisicion || "";
+        return item.fechaCompra || "";
       case "contratoId":
-        return item.contratoId || "";
+        return "";
       case "fechaIngreso":
         return item.fechaIngreso || "";
       case "cantidad":
@@ -455,11 +455,15 @@ export default function InventarioPage() {
 
   }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado]);
 
-  // Paginación (actualizada para usar groupedAndFilteredData)
-  const totalPages = Math.ceil(groupedAndFilteredData.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedData = groupedAndFilteredData.slice(startIndex, endIndex)
+  // Datos paginados para la tabla
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return groupedAndFilteredData.slice(startIndex, endIndex);
+  }, [groupedAndFilteredData, currentPage, itemsPerPage]);
+
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(groupedAndFilteredData.length / itemsPerPage);
 
   const selectedProducts = state.inventoryData.filter((item) => selectedRowIds.includes(item.id))
 
@@ -1282,7 +1286,7 @@ export default function InventarioPage() {
         <Card>
           <CardContent className="p-0">
             <GroupedInventoryTable
-              data={groupedAndFilteredData}
+              data={paginatedData}
               searchQuery={searchTerm}
               visibleColumns={{
                 marca: true,
@@ -1298,6 +1302,53 @@ export default function InventarioPage() {
               onParentRowSelect={handleParentRowSelect}
             />
           </CardContent>
+          <CardFooter className="flex items-center justify-between py-4">
+            <div className="text-xs text-muted-foreground">
+                Mostrando {paginatedData.length} de {groupedAndFilteredData.length} productos agrupados.
+            </div>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs">Items por página:</span>
+                    <Select
+                        value={itemsPerPage.toString()}
+                        onValueChange={(value) => {
+                            setItemsPerPage(Number(value));
+                            setCurrentPage(1); // Reset a la primera página al cambiar
+                        }}
+                    >
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue placeholder={itemsPerPage} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {[10, 25, 50, 100].map(size => (
+                                <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="text-xs font-medium">
+                    Página {currentPage} de {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Anterior
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Siguiente
+                    </Button>
+                </div>
+            </div>
+          </CardFooter>
         </Card>
 
         {/* ... rest of the JSX ... */}
