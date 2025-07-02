@@ -53,4 +53,15 @@ export interface GroupedProduct {
     };
     children: InventoryItem[];
     highlightedChildId?: string | null;
+}
+
+// Definición de una columna en la tabla de inventario
+export interface ColumnDefinition {
+    id: string;
+    label: string;
+    defaultVisible: boolean;
+    sortable: boolean;
+    type?: 'string' | 'number' | 'date' | 'status';
+    fixed?: "start" | "end";
+    visible?: boolean;
 } 

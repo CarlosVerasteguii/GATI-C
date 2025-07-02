@@ -127,6 +127,7 @@ interface ColumnDefinition {
   sortable: boolean
   type?: 'string' | 'number' | 'date' | 'status';
   fixed?: "start" | "end"
+  visible?: boolean
 }
 
 // Define all possible columns and their properties
@@ -245,24 +246,33 @@ export default function InventarioPage() {
     "Otro"
   ]
 
-  // Column visibility state, loaded from user preferences or default
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
-    const userId = state.user?.id
-    const pageId = "inventario"
+  // Column state, loaded from user preferences or default
+  const [columns, setColumns] = useState<ColumnDefinition[]>(() => {
+    const userId = state.user?.id;
+    const pageId = "inventario";
+    const userPrefs = state.userColumnPreferences?.find(pref => pref.page === pageId);
 
-    // Si el usuario está identificado y existe una preferencia para la página de inventario
-    if (userId &&
-      state.userColumnPreferences &&
-      Array.isArray(state.userColumnPreferences) &&
-      state.userColumnPreferences.some(pref => pref.page === pageId)) {
-      const userPrefs = state.userColumnPreferences.find(pref => pref.page === pageId)
-      if (userPrefs && userPrefs.preferences) {
-        return userPrefs.preferences.filter(p => p.visible).map(p => p.id)
-      }
+    // Si existen preferencias de usuario para esta página, las aplicamos
+    if (userId && userPrefs?.preferences) {
+      // Mapeamos sobre allColumns para asegurar que tenemos todas las columnas disponibles
+      return allColumns.map(col => {
+        const savedPref = userPrefs.preferences.find(p => p.id === col.id);
+        // Si hay una preferencia guardada para esta columna, usamos su visibilidad
+        // Si no, usamos el valor por defecto de la columna
+        return { ...col, visible: savedPref ? savedPref.visible : col.defaultVisible };
+      }).sort((a, b) => {
+        // Opcional: Añadir lógica para ordenar según el orden guardado si existe
+        const orderA = userPrefs.preferences.findIndex(p => p.id === a.id);
+        const orderB = userPrefs.preferences.findIndex(p => p.id === b.id);
+        if (orderA !== -1 && orderB !== -1) {
+          return orderA - orderB;
+        }
+        return 0;
+      });
     }
 
-    // Si no hay preferencias, usar los valores por defecto
-    return allColumns.filter((col) => col.defaultVisible).map((col) => col.id)
+    // Si no hay preferencias de usuario, inicializamos con la visibilidad por defecto
+    return allColumns.map(col => ({ ...col, visible: col.defaultVisible }));
   })
 
   // Sorting state
@@ -347,16 +357,17 @@ export default function InventarioPage() {
   // Save column preferences when they change
   useEffect(() => {
     if (state.user?.id) {
+      const visibleColumnIds = columns.filter(col => col.visible).map(col => col.id);
       dispatch({
         type: 'UPDATE_USER_COLUMN_PREFERENCES',
         payload: {
           userId: state.user.id,
           pageId: "inventario",
-          columns: visibleColumns
+          columns: visibleColumnIds
         }
       })
     }
-  }, [visibleColumns, state.user?.id, dispatch])
+  }, [columns, state.user?.id, dispatch])
 
   // Sorting logic
   const handleSort = (columnId: string) => {
@@ -1211,24 +1222,30 @@ export default function InventarioPage() {
 
   // Filter columns to display based on visibility state
   const displayedColumns = useMemo(() => {
-    const fixedStart = allColumns.find((col) => col.fixed === "start")
-    const fixedEnd = allColumns.find((col) => col.fixed === "end")
-    const otherColumns = allColumns.filter((col) => visibleColumns.includes(col.id) && !col.fixed)
+    const fixedStart = columns.find((col) => col.fixed === "start")
+    const fixedEnd = columns.find((col) => col.fixed === "end")
+    const otherColumns = columns.filter((col) => col.visible && !col.fixed)
 
     // Ensure fixed columns are always present and in correct order
     let finalColumns = []
-    if (fixedStart) finalColumns.push(allColumns.find((col) => col.fixed === "start")!)
+    if (fixedStart) finalColumns.push(columns.find((col) => col.fixed === "start")!)
     finalColumns = [...finalColumns, ...otherColumns]
-    if (fixedEnd) finalColumns.push(allColumns.find((col) => col.fixed === "end")!)
+    if (fixedEnd) finalColumns.push(columns.find((col) => col.fixed === "end")!)
 
     return finalColumns
-  }, [visibleColumns])
+  }, [columns])
 
   const handleColumnToggle = (columnId: string, checked: boolean) => {
-    const column = allColumns.find((col) => col.id === columnId)
+    const column = columns.find((col) => col.id === columnId)
     if (column?.fixed) return // Prevent toggling fixed columns
 
-    setVisibleColumns((prev) => (checked ? [...prev, columnId] : prev.filter((id) => id !== columnId)))
+    setColumns((prev) => 
+      prev.map(col => 
+        col.id === columnId 
+          ? { ...col, visible: checked } 
+          : col
+      )
+    )
   }
 
   const handleViewModeChange = (mode: "table" | "cards") => {
@@ -1441,11 +1458,8 @@ export default function InventarioPage() {
               </div>
               <div className="flex items-center gap-2">
                 <ColumnToggleMenu
-                  columns={allColumns}
-                  visibleColumns={Object.fromEntries(visibleColumns.map(id => [id, true]))}
-                  onColumnVisibilityChange={(newColumns) => {
-                    setVisibleColumns(Object.keys(newColumns).filter(key => newColumns[key]));
-                  }}
+                  columns={columns}
+                  onColumnsChange={setColumns}
                 />
                 <Popover>
                   <PopoverTrigger asChild>
@@ -1455,8 +1469,8 @@ export default function InventarioPage() {
                     <div className="space-y-4">
                       <h4 className="font-medium text-sm">Filtros Avanzados</h4>
                       <p className="text-xs text-muted-foreground">Filtra por columnas visibles.</p>
-                      {allColumns.filter(c => c.id === 'numeroSerie').map(column => (
-                        visibleColumns.includes(column.id) ? (
+                      {columns.filter(c => c.id === 'numeroSerie').map(column => (
+                        column.visible ? (
                           <div key={column.id}>
                             <Label className="text-xs font-semibold">{column.label}</Label>
                             <FilterPopover
@@ -1471,7 +1485,7 @@ export default function InventarioPage() {
                     </div>
                   </PopoverContent>
                 </Popover>
-                <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={setViewMode}>
+                <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "cards")}>
                   <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
                   <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
                 </ToggleGroup>
@@ -1532,8 +1546,8 @@ export default function InventarioPage() {
             <GroupedInventoryTable
               data={paginatedData}
               searchQuery={searchTerm}
-              columns={allColumns}
-              visibleColumns={Object.fromEntries(visibleColumns.map(id => [id, true]))}
+              columns={columns}
+              visibleColumns={Object.fromEntries(columns.filter(col => col.visible).map(col => [col.id, true]))}
               selectedRowIds={selectedRowIds}
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}
