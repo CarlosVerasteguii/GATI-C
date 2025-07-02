@@ -731,7 +731,7 @@ export default function InventarioPage() {
       } else if (modalMode === "process-carga") {
         // Process pending task
         if (processingTaskId) {
-          const task = state.tareasData.find((t) => t.id === processingTaskId)
+          const task = state.pendingTasksData.find((t) => t.id === processingTaskId)
           if (!task) return
 
           const newId = Math.max(...state.inventoryData.map((item) => item.id)) + 1
@@ -754,7 +754,7 @@ export default function InventarioPage() {
           newInventory = [...state.inventoryData, newProduct]
 
           // Remove the processed task
-          const updatedTasks = state.tareasData.filter((t) => t.id !== processingTaskId)
+          const updatedTasks = state.pendingTasksData.filter((t) => t.id !== processingTaskId)
           appDispatch({
             type: 'UPDATE_PENDING_TASK',
             payload: {

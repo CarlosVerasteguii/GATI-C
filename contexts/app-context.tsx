@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react"
@@ -59,6 +58,7 @@ interface User {
   password?: string // Should not be stored in client-side state normally
   rol: "Administrador" | "Editor" | "Lector" // Corregido según PRD
   departamento?: string
+  trustedIp?: string
 }
 
 interface SolicitudAcceso {
@@ -137,6 +137,12 @@ interface AppState {
   retirementReasons: string[]
   userColumnPreferences: UserColumnPreference[]
   userTheme?: string // Añadimos el tema del usuario al estado
+  error: string | null
+  isDragOver: boolean
+  isNavigating: boolean
+  isUploading: boolean
+  successMessage: string | null
+  uploadProgress: number
 }
 
 // Datos de ejemplo
@@ -486,6 +492,12 @@ const defaultInitialState: AppState = {
   marcas: ["Dell", "LG", "HyperX", "Logitech", "TP-Link", "HP", "Seagate", "Epson"],
   retirementReasons: ["Fin de vida útil", "Obsoleto", "Dañado", "Perdido", "Robado", "Donación"],
   userColumnPreferences: [],
+  error: null,
+  isDragOver: false,
+  isNavigating: false,
+  isUploading: false,
+  successMessage: null,
+  uploadProgress: 0,
 }
 
 // Definición de tipos para las acciones
