@@ -35,6 +35,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
+import { Badge } from "@/components/ui/badge"
 import {
   Plus,
   Upload,
@@ -59,7 +60,6 @@ import {
   LayoutList,
   LayoutGrid,
   X,
-  Badge,
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -1478,53 +1478,54 @@ export default function InventarioPage() {
               </div>
             </div>
 
-            {/* Área de Badges de Filtros Activos */}
-            {hasActiveFilters && (
-              <div className="pt-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm text-muted-foreground">Filtros activos:</p>
-                  {filterCategoria && (
-                    <Badge variant="secondary">
-                      Categoría: {filterCategoria}
-                      <X
-                        className="ml-2 h-3 w-3 cursor-pointer"
-                        onClick={() => setFilterCategoria("")}
-                      />
-                    </Badge>
-                  )}
-                  {filterMarca && (
-                    <Badge variant="secondary">
-                      Marca: {filterMarca}
-                      <X
-                        className="ml-2 h-3 w-3 cursor-pointer"
-                        onClick={() => setFilterMarca("")}
-                      />
-                    </Badge>
-                  )}
-                  {filterEstado && (
-                    <Badge variant="secondary">
-                      Estado: {filterEstado}
-                      <X
-                        className="ml-2 h-3 w-3 cursor-pointer"
-                        onClick={() => setFilterEstado("")}
-                      />
-                    </Badge>
-                  )}
-                  {Object.entries(advancedFilters).map(([key, value]) => value && (
-                    <Badge key={key} variant="secondary">
-                      {allColumns.find(c => c.id === key)?.label}: {value}
-                      <X
-                        className="ml-2 h-3 w-3 cursor-pointer"
-                        onClick={() => setAdvancedFilters(prev => ({ ...prev, [key]: null }))}
-                      />
-                    </Badge>
-                  ))}
-                  <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-                    Limpiar todos
-                  </Button>
-                </div>
-              </div>
-            )}
+            { (filterCategoria || filterMarca || filterEstado) && (
+  <div className="flex items-center gap-2 mb-4">
+    <p className="text-sm text-muted-foreground">Filtros activos:</p>
+
+    {filterCategoria && (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        Categoría: {filterCategoria}
+        <X
+          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+          onClick={() => setFilterCategoria("")}
+        />
+      </Badge>
+    )}
+
+    {filterMarca && (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        Marca: {filterMarca}
+        <X
+          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+          onClick={() => setFilterMarca("")}
+        />
+      </Badge>
+    )}
+
+    {filterEstado && (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        Estado: {filterEstado}
+        <X
+          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+          onClick={() => setFilterEstado("")}
+        />
+      </Badge>
+    )}
+
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-auto px-2 py-1 text-xs"
+      onClick={() => {
+        setFilterCategoria("");
+        setFilterMarca("");
+        setFilterEstado("");
+      }}
+    >
+      Limpiar todos
+    </Button>
+  </div>
+)}
           </CardHeader>
           <Separator />
           <CardContent className="p-0">
