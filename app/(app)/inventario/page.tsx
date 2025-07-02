@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { GroupedProduct, InventoryItem } from "@/types/inventory"
 import { DetailSheet } from "@/components/detail-sheet"
@@ -63,6 +63,10 @@ import {
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Check } from "lucide-react"
 import { AssignModal } from "@/components/assign-modal"
 import { LendModal } from "@/components/lend-modal"
 import { BulkEditModal } from "@/components/bulk-edit-modal"
@@ -78,6 +82,7 @@ import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
+import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { EditProductModal } from "@/components/edit-product-modal"
 import { MaintenanceModal } from "@/components/maintenance-modal"
 
@@ -137,7 +142,6 @@ const allColumns: ColumnDefinition[] = [
   { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
   { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' }, // New (derived)
   { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' }, // New (derived)
-  { id: "qty", label: "QTY", defaultVisible: true, sortable: false, fixed: "end", type: 'number' },
 ]
 
 export default function InventarioPage() {
@@ -229,6 +233,7 @@ export default function InventarioPage() {
   const [attachedDocuments, setAttachedDocuments] = useState<{ id: string, name: string, url: string, uploadDate: string }[]>([]);
   // Añadir estado para el modo de visualización
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string | null>>({});
 
   // Lista de motivos de retiro
   const retirementReasons = [
@@ -314,12 +319,16 @@ export default function InventarioPage() {
     }
   }, [searchParams, state.pendingTasksData, router, isProcessingUrlParam])
 
+  // Calcular si hay filtros activos
+  const hasActiveFilters = filterCategoria || filterMarca || filterEstado || Object.values(advancedFilters).some(value => value);
+
   // Añadir función para limpiar todos los filtros
   const clearAllFilters = () => {
     setSearchTerm("");
     setFilterCategoria("");
     setFilterMarca("");
     setFilterEstado("");
+    setAdvancedFilters({});
     setCurrentPage(1); // Volver a la primera página al limpiar filtros
   };
 
@@ -399,8 +408,6 @@ export default function InventarioPage() {
         return ""; // Not sortable yet
       case "fechaIngreso":
         return item.fechaIngreso || null;
-      case "qty":
-        return item.cantidad; // 'qty' in allColumns maps to 'cantidad'
       case "asignadoA":
         return getAssignmentDetails(item).asignadoA;
       case "fechaAsignacion":
@@ -1294,6 +1301,40 @@ export default function InventarioPage() {
     }
   };
 
+  // --- COMPONENTE REUTILIZABLE PARA LOS POPOVERS DE FILTRO ---
+  const FilterPopover = ({ title, options, selectedValue, onSelect }: {
+    title: string,
+    options: string[],
+    selectedValue: string | null,
+    onSelect: (value: string | null) => void
+  }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline">{title}</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={`Buscar ${title.toLowerCase()}...`} />
+          <CommandList>
+            <CommandEmpty>No se encontró.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={() => onSelect(option === selectedValue ? null : option)}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", selectedValue === option ? "opacity-100" : "opacity-0")} />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+
   const filteredProducts = useMemo(() => {
     return (state.inventoryData || []).filter((product) => {
       const matchesSearch = searchTerm === "" || (
@@ -1347,6 +1388,145 @@ export default function InventarioPage() {
 
         {/* Tabla anidada */}
         <Card>
+          <CardHeader className="px-7">
+            <div className="flex items-center justify-between gap-4">
+              {/* Lado Izquierdo: Barra de Búsqueda */}
+              <div className="flex-1">
+                <Input
+                  placeholder="Buscar por nombre, marca, modelo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full max-w-sm"
+                />
+              </div>
+
+              {/* Lado Derecho: Botones de Acción Globales */}
+              <div className="flex items-center gap-2">
+                <Button onClick={() => setIsAddProductModalOpen(true)}>
+                  Añadir Producto
+                </Button>
+                <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                  Importar
+                </Button>
+                {selectedRowIds.length > 0 && (
+                  <Button variant="destructive" onClick={() => setIsBulkRetireModalOpen(true)}>
+                    Retirar Selección
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Fila Inferior: Filtros y Configuración de Vista */}
+            <div className="flex items-center justify-between gap-2 pt-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-semibold">Filtros:</p>
+                <FilterPopover
+                  title="Categoría"
+                  options={state.categorias}
+                  selectedValue={filterCategoria || null}
+                  onSelect={(value) => setFilterCategoria(value || "")}
+                />
+                <FilterPopover
+                  title="Marca"
+                  options={state.marcas}
+                  selectedValue={filterMarca || null}
+                  onSelect={(value) => setFilterMarca(value || "")}
+                />
+                <FilterPopover
+                  title="Estado"
+                  options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                  selectedValue={filterEstado || null}
+                  onSelect={(value) => setFilterEstado(value || "")}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <ColumnToggleMenu
+                  columns={allColumns}
+                  visibleColumns={Object.fromEntries(visibleColumns.map(id => [id, true]))}
+                  onColumnVisibilityChange={(newColumns) => {
+                    setVisibleColumns(Object.keys(newColumns).filter(key => newColumns[key]));
+                  }}
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline">Filtros Avanzados</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[250px] p-4" align="start">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-sm">Filtros Avanzados</h4>
+                      <p className="text-xs text-muted-foreground">Filtra por columnas visibles.</p>
+                      {allColumns.filter(c => c.id === 'numeroSerie').map(column => (
+                        visibleColumns.includes(column.id) ? (
+                          <div key={column.id}>
+                            <Label className="text-xs font-semibold">{column.label}</Label>
+                            <FilterPopover
+                              title={`Seleccionar ${column.label}`}
+                              options={[...new Set(state.inventoryData.map(item => item.numeroSerie).filter(Boolean) as string[])]}
+                              selectedValue={advancedFilters[column.id] || null}
+                              onSelect={(value) => setAdvancedFilters(prev => ({ ...prev, [column.id]: value }))}
+                            />
+                          </div>
+                        ) : null
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={setViewMode}>
+                  <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
+                  <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
+
+            {/* Área de Badges de Filtros Activos */}
+            {hasActiveFilters && (
+              <div className="pt-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm text-muted-foreground">Filtros activos:</p>
+                  {filterCategoria && (
+                    <Badge variant="secondary">
+                      Categoría: {filterCategoria}
+                      <X
+                        className="ml-2 h-3 w-3 cursor-pointer"
+                        onClick={() => setFilterCategoria("")}
+                      />
+                    </Badge>
+                  )}
+                  {filterMarca && (
+                    <Badge variant="secondary">
+                      Marca: {filterMarca}
+                      <X
+                        className="ml-2 h-3 w-3 cursor-pointer"
+                        onClick={() => setFilterMarca("")}
+                      />
+                    </Badge>
+                  )}
+                  {filterEstado && (
+                    <Badge variant="secondary">
+                      Estado: {filterEstado}
+                      <X
+                        className="ml-2 h-3 w-3 cursor-pointer"
+                        onClick={() => setFilterEstado("")}
+                      />
+                    </Badge>
+                  )}
+                  {Object.entries(advancedFilters).map(([key, value]) => value && (
+                    <Badge key={key} variant="secondary">
+                      {allColumns.find(c => c.id === key)?.label}: {value}
+                      <X
+                        className="ml-2 h-3 w-3 cursor-pointer"
+                        onClick={() => setAdvancedFilters(prev => ({ ...prev, [key]: null }))}
+                      />
+                    </Badge>
+                  ))}
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                    Limpiar todos
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardHeader>
+          <Separator />
           <CardContent className="p-0">
             <GroupedInventoryTable
               data={paginatedData}

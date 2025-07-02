@@ -720,8 +720,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
               { id: "fechaAdquisicion", label: "Fecha Adquisición", visible: false },
               { id: "contratoId", label: "Contrato ID", visible: false },
               { id: "asignadoA", label: "Asignado A", visible: false },
-              { id: "fechaAsignacion", label: "Fecha Asignación", visible: false },
-              { id: "qty", label: "QTY", visible: true }
+              { id: "fechaAsignacion", label: "Fecha Asignación", visible: false }
             ].map(col => ({
               ...col,
               visible: columns.includes(col.id)

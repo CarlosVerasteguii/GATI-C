@@ -162,22 +162,21 @@ export function GroupedInventoryTable({
                                 />
                             )}
                         </TableHead>
-                        
-                        {columns.map((column) => (
-                          visibleColumns[column.id] && (
-                            <TableHead key={column.id}>
-                              {column.sortable ? (
-                                <Button variant="ghost" onClick={() => onSort(column.id)}>
-                                  {column.label}
-                                  <SortIcon direction={sortColumn === column.id ? sortDirection : null} />
-                                </Button>
-                              ) : (
-                                <span>{column.label}</span>
-                              )}
-                            </TableHead>
-                          )
-                        ))}
 
+                        {columns.map((column) => (
+                            visibleColumns[column.id] && (
+                                <TableHead key={column.id}>
+                                    {column.sortable ? (
+                                        <Button variant="ghost" onClick={() => onSort(column.id)}>
+                                            {column.label}
+                                            <SortIcon direction={sortColumn === column.id ? sortDirection : null} />
+                                        </Button>
+                                    ) : (
+                                        <span>{column.label}</span>
+                                    )}
+                                </TableHead>
+                            )
+                        ))}
                         <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>

@@ -81,6 +81,7 @@ export function ParentRow({
             {visibleColumns.marca && <TableCell>{product.marca}</TableCell>}
             {visibleColumns.modelo && <TableCell>{product.modelo}</TableCell>}
             {visibleColumns.numeroSerie && <TableCell>N/A</TableCell>}
+            {visibleColumns.categoria && <TableCell>{product.categoria}</TableCell>}
             {visibleColumns.estado && <TableCell>
                 <TooltipProvider>
                     <Tooltip>

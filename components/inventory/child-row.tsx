@@ -43,10 +43,11 @@ export function ChildRow({
                     />
                 )}
             </TableCell>
-            <TableCell className="pl-12 text-sm text-muted-foreground"></TableCell>
-            {visibleColumns.marca && <TableCell />}
-            {visibleColumns.modelo && <TableCell />}
+            <TableCell />
+            {visibleColumns.marca && <TableCell>{asset.marca}</TableCell>}
+            {visibleColumns.modelo && <TableCell>{asset.modelo}</TableCell>}
             {visibleColumns.numeroSerie && <TableCell className="text-sm">{asset.numeroSerie}</TableCell>}
+            {visibleColumns.categoria && <TableCell>{asset.categoria}</TableCell>}
             {visibleColumns.estado && <TableCell className="text-sm">{asset.estado}</TableCell>}
             <TableCell className="text-right">
                 <DropdownMenu>

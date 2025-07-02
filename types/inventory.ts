@@ -41,6 +41,7 @@ export interface GroupedProduct {
         nombre: string;
         marca: string;
         modelo: string;
+        categoria: string;
         isSerialized: boolean;
     };
     summary: {
