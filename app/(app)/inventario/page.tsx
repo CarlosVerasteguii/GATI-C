@@ -428,55 +428,7 @@ export default function InventarioPage() {
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
     });
 
-    if (sortColumn) {
-      // Encuentra la configuración de la columna para determinar el tipo de ordenamiento
-      const columnConfig = allColumns.find(c => c.id === sortColumn);
-      const sortType = columnConfig ? columnConfig.type : 'string'; // Fallback a 'string' por seguridad
 
-      // Mapa de orden personalizado para el estado
-      const statusOrder: { [key: string]: number } = {
-        'Disponible': 1,
-        'Asignado': 2,
-        'Prestado': 3,
-        'En Mantenimiento': 4,
-        'PENDIENTE_DE_RETIRO': 5,
-        'Retirado': 6
-      };
-
-      data.sort((a, b) => {
-        const aValue = getColumnValue(a, sortColumn);
-        const bValue = getColumnValue(b, sortColumn);
-
-        // Regla: los valores nulos o indefinidos siempre van al final, sin importar la dirección
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-
-        let comparison = 0;
-
-        switch (sortType) {
-          case 'number':
-            comparison = (aValue as number) - (bValue as number);
-            break;
-          case 'date':
-            // Aseguramos que las fechas inválidas no rompan el sort
-            const dateA = new Date(aValue as string).getTime();
-            const dateB = new Date(bValue as string).getTime();
-            if (isNaN(dateA)) return 1;
-            if (isNaN(dateB)) return -1;
-            comparison = dateA - dateB;
-            break;
-          case 'status':
-            comparison = (statusOrder[aValue as string] || 99) - (statusOrder[bValue as string] || 99);
-            break;
-          default: // 'string'
-            comparison = String(aValue).localeCompare(String(bValue));
-            break;
-        }
-
-        // Aplicar la dirección del ordenamiento
-        return sortDirection === 'asc' ? comparison : -comparison;
-      });
-    }
 
     // 2. LÓGICA DE AGRUPAMIENTO
     const productGroups: { [key: string]: any } = {};
@@ -505,7 +457,64 @@ export default function InventarioPage() {
       productGroups[groupKey].summary.estados[item.estado] = (productGroups[groupKey].summary.estados[item.estado] || 0) + 1;
     });
 
-    return Object.values(productGroups);
+    let groupedData = Object.values(productGroups);
+
+    if (sortColumn) {
+      const getGroupStatus = (group: any) => {
+        if (!group.isParent) return group.estado;
+        if (group.summary.disponible > 0) return 'Disponible';
+        const firstChildStatus = group.children[0]?.estado;
+        return firstChildStatus || 'Retirado';
+      };
+
+      const getGroupValue = (group: any, column: string) => {
+        if (column === 'estado') {
+          return getGroupStatus(group);
+        }
+        // Para otras columnas, obtenemos el valor del 'product' del grupo
+        return group.product?.[column];
+      };
+
+      groupedData.sort((a, b) => {
+        const aValue = getGroupValue(a, sortColumn);
+        const bValue = getGroupValue(b, sortColumn);
+
+        const columnConfig = allColumns.find(c => c.id === sortColumn);
+        const sortType = columnConfig ? columnConfig.type : 'string';
+
+        const statusOrder: { [key: string]: number } = {
+          'Disponible': 1, 'Asignado': 2, 'Prestado': 3, 'En Mantenimiento': 4, 'PENDIENTE_DE_RETIRO': 5, 'Retirado': 6
+        };
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        let comparison = 0;
+
+        switch (sortType) {
+          case 'number':
+            comparison = (aValue as number) - (bValue as number);
+            break;
+          case 'date':
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (isNaN(dateA)) return 1;
+            if (isNaN(dateB)) return -1;
+            comparison = dateA - dateB;
+            break;
+          case 'status':
+            comparison = (statusOrder[aValue as string] || 99) - (statusOrder[bValue as string] || 99);
+            break;
+          default: // 'string'
+            comparison = String(aValue).localeCompare(String(bValue));
+            break;
+        }
+
+        return sortDirection === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return groupedData;
 
   }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado, sortColumn, sortDirection]);
 
