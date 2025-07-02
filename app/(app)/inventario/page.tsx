@@ -137,7 +137,7 @@ const allColumns: ColumnDefinition[] = [
   { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
   { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' }, // New (derived)
   { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' }, // New (derived)
-  { id: "qty", label: "QTY", defaultVisible: true, sortable: true, fixed: "end", type: 'number' },
+  { id: "qty", label: "QTY", defaultVisible: true, sortable: false, fixed: "end", type: 'number' },
 ]
 
 export default function InventarioPage() {
@@ -434,13 +434,13 @@ export default function InventarioPage() {
       const sortType = columnConfig ? columnConfig.type : 'string'; // Fallback a 'string' por seguridad
 
       // Mapa de orden personalizado para el estado
-      const statusOrder: { [key: string]: number } = { 
-        'Disponible': 1, 
-        'Asignado': 2, 
-        'Prestado': 3, 
-        'En Mantenimiento': 4, 
-        'PENDIENTE_DE_RETIRO': 5, 
-        'Retirado': 6 
+      const statusOrder: { [key: string]: number } = {
+        'Disponible': 1,
+        'Asignado': 2,
+        'Prestado': 3,
+        'En Mantenimiento': 4,
+        'PENDIENTE_DE_RETIRO': 5,
+        'Retirado': 6
       };
 
       data.sort((a, b) => {
@@ -604,7 +604,7 @@ export default function InventarioPage() {
 
   const handleReactivate = (product: InventoryItem) => {
     setSelectedProduct(product)
-    
+
     if (state.user?.rol === "Editor") {
       setPendingActionDetails({
         type: "Reactivación",
@@ -615,7 +615,7 @@ export default function InventarioPage() {
       setIsConfirmEditorOpen(true)
       return
     }
-    
+
     setIsReactivateConfirmOpen(true)
   }
 
@@ -1357,49 +1357,49 @@ export default function InventarioPage() {
           </CardContent>
           <CardFooter className="flex items-center justify-between py-4">
             <div className="text-xs text-muted-foreground">
-                Mostrando {paginatedData.length} de {groupedAndFilteredData.length} productos agrupados.
+              Mostrando {paginatedData.length} de {groupedAndFilteredData.length} productos agrupados.
             </div>
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs">Items por página:</span>
-                    <Select
-                        value={itemsPerPage.toString()}
-                        onValueChange={(value) => {
-                            setItemsPerPage(Number(value));
-                            setCurrentPage(1); // Reset a la primera página al cambiar
-                        }}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={itemsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {[10, 25, 50, 100].map(size => (
-                                <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="text-xs font-medium">
-                    Página {currentPage} de {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                    >
-                        Siguiente
-                    </Button>
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">Items por página:</span>
+                <Select
+                  value={itemsPerPage.toString()}
+                  onValueChange={(value) => {
+                    setItemsPerPage(Number(value));
+                    setCurrentPage(1); // Reset a la primera página al cambiar
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue placeholder={itemsPerPage} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[10, 25, 50, 100].map(size => (
+                      <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-xs font-medium">
+                Página {currentPage} de {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente
+                </Button>
+              </div>
             </div>
           </CardFooter>
         </Card>
