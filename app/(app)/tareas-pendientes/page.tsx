@@ -31,8 +31,8 @@ import { AssignModal } from "@/components/assign-modal"
 import { LendModal } from "@/components/lend-modal"
 import { QuickLoadModal } from "@/components/quick-load-modal"
 import { RetireProductModal } from "@/components/retire-product-modal"
+import { InventoryItem } from "@/types/inventory"
 
-// Definir interfaces más específicas para los tipos de datos
 interface PendingTask {
   id: number
   type: string
@@ -41,20 +41,6 @@ interface PendingTask {
   status: string
   details: any
   auditLog?: { event: string; user: string; dateTime: string; description: string }[]
-}
-
-interface InventoryItem {
-  id: number
-  nombre: string
-  marca: string
-  modelo: string
-  categoria: string
-  descripcion?: string
-  estado: string // Cambiado de tipo enumerado a string para mayor flexibilidad
-  cantidad: number
-  numeroSerie: string | null
-  fechaIngreso: string
-  [key: string]: any // Para permitir propiedades adicionales como motivoRetiro
 }
 
 interface Assignment {

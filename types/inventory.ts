@@ -20,7 +20,10 @@ export interface InventoryItem {
     historialMantenimiento?: { date: string; description: string }[];
     documentosAdjuntos?: { name: string; url: string }[];
     isSerialized?: boolean;
+    contratoId?: string | null;
 }
+
+
 
 // Este tipo representa un usuario.
 export interface User {

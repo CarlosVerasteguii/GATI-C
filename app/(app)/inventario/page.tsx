@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useReducer, useMemo } from "react"
+import * as React from 'react';
 import { useSearchParams, useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
@@ -85,6 +86,8 @@ import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-
 import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { EditProductModal } from "@/components/edit-product-modal"
 import { MaintenanceModal } from "@/components/maintenance-modal"
+import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
+import { DateRange } from "react-day-picker"
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -217,6 +220,7 @@ export default function InventarioPage() {
   const [isProcessingUrlParam, setIsProcessingUrlParam] = useState(false)
   const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false)
   const [isReactivateConfirmOpen, setIsReactivateConfirmOpen] = useState(false)
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
   const [maintenanceDetails, setMaintenanceDetails] = useState({
     provider: "",
     notes: "",
@@ -432,7 +436,7 @@ export default function InventarioPage() {
   // Unified filtering, sorting and grouping logic
   const groupedAndFilteredData: any[] = useMemo(() => { // <-- Usamos any[] temporalmente
     // 1. LÓGICA DE FILTRADO Y ORDENAMIENTO
-    let data = state.inventoryData.filter((item: any) => { // <-- Usamos any
+    let data = state.inventoryData.filter((item: InventoryItem) => { // <-- Usamos any
       const lowercasedQuery = searchTerm.toLowerCase();
       const matchesSearch = searchTerm === "" ||
         (item.nombre?.toLowerCase().includes(lowercasedQuery)) ||
@@ -451,7 +455,7 @@ export default function InventarioPage() {
 
     // 2. LÓGICA DE AGRUPAMIENTO
     const productGroups: { [key: string]: any } = {};
-    data.forEach((item: any) => { // <-- Usamos any
+    data.forEach((item: InventoryItem) => { // <-- Agregamos tipo explícito InventoryItem
       const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
       if (!productGroups[groupKey]) {
         productGroups[groupKey] = {
@@ -563,7 +567,7 @@ export default function InventarioPage() {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       // Aplanamos todos los hijos de los grupos filtrados y obtenemos sus IDs
-      const allVisibleIds = groupedAndFilteredData.flatMap(group => group.children.map(child => child.id));
+      const allVisibleIds = groupedAndFilteredData.flatMap(group => group.children.map((child: InventoryItem) => child.id));
       setSelectedRowIds(allVisibleIds);
     } else {
       setSelectedRowIds([]);
@@ -759,7 +763,7 @@ export default function InventarioPage() {
             numeroSerie: task.details.serialNumbers?.[0] || null,
             fechaIngreso: new Date().toISOString().split("T")[0],
             proveedor: task.details.proveedor || null,
-            fechaAdquisicion: task.details.fechaAdquisicion || null,
+            fechaCompra: task.details.fechaAdquisicion || null,
             contratoId: task.details.contratoId || null,
           } as InventoryItem
 
@@ -844,21 +848,21 @@ export default function InventarioPage() {
       return
     }
 
-    const productData = {
+    const productData: Partial<InventoryItem> = {
       nombre: nombre,
       marca: marca,
       modelo: modelo,
       categoria: categoria,
-      descripcion: formData.get("descripcion") as string,
+      descripcion: (formData.get("descripcion") as string | null) ?? undefined,
       estado: selectedProduct?.estado || "Disponible",
       cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.get("cantidad") as string) || 1,
       numeroSerie: hasSerialNumber ? (formData.get("numerosSerie") as string) || null : null,
-      proveedor: (formData.get("proveedor") as string) || null,
-      fechaAdquisicion: (formData.get("fechaAdquisicion") as string) || null,
+      proveedor: (formData.get("proveedor") as string | null) ?? undefined,
+      fechaCompra: (formData.get("fechaAdquisicion") as string | null) ?? undefined,
       contratoId: (formData.get("contratoId") as string) || null,
       costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
-      garantia: (formData.get("garantia") as string) || undefined,
-      vidaUtil: (formData.get("vidaUtil") as string) || undefined
+      garantia: (formData.get("garantia") as string | null) ?? undefined,
+      vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined
     }
 
     if (state.user?.rol === "Editor") {
@@ -948,7 +952,7 @@ export default function InventarioPage() {
   }
 
   const confirmRetirement = () => {
-    if (state.user?.rol === "Editor") {
+    if (state.user?.rol === "Editor" && selectedProduct) {
       setPendingActionDetails({
         type: "Retiro de Producto",
         productId: selectedProduct.id,
@@ -1044,7 +1048,7 @@ export default function InventarioPage() {
       (invItem) => invItem.nombre === item.nombre && invItem.modelo === item.modelo && invItem.numeroSerie === null,
     )
 
-    allInstances.forEach((instance) => {
+    allInstances.forEach((instance: InventoryItem) => {
       if (instance.estado !== "Retirado") {
         totalInInventory += instance.cantidad
       }
@@ -1204,12 +1208,10 @@ export default function InventarioPage() {
       <EmptyState
         title="No hay productos en el inventario"
         description="Comienza añadiendo productos a tu inventario."
-        action={
-          <Button onClick={handleAddProduct} className="bg-primary hover:bg-primary-hover">
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir Producto
-          </Button>
-        }
+        action={{
+          label: "Añadir Producto",
+          onClick: handleAddProduct
+        }}
       />
     )
   }
@@ -1265,11 +1267,11 @@ export default function InventarioPage() {
       // Si la acción es sobre un grupo...
       if (action === 'Retiro Rápido') {
         // Para retiro rápido, pasamos todo el grupo al modal.
-        handleOpenQuickRetire(data);
+        // handleOpenQuickRetire(data);
         return; // Salimos de la función aquí.
       } else {
         // Para otras acciones (Asignar, Prestar), buscamos un hijo disponible.
-        targetItem = data.children.find(child => child.estado === 'Disponible');
+        targetItem = data.children.find((child: InventoryItem) => child.estado === 'Disponible');
         if (!targetItem) {
           console.error(`Acción '${action}' falló: No hay unidades disponibles en el grupo.`);
           // Aquí podríamos usar showError() para notificar al usuario.
@@ -1354,7 +1356,7 @@ export default function InventarioPage() {
   );
 
   const filteredProducts = useMemo(() => {
-    return (state.inventoryData || []).filter((product) => {
+    return (state.inventoryData || []).filter((product: InventoryItem) => {
       const matchesSearch = searchTerm === "" || (
         (product.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (product.marca?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -1685,6 +1687,15 @@ export default function InventarioPage() {
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
+            <div className="flex flex-col space-y-2">
+              <Label htmlFor="date-range">Fecha de Adquisición</Label>
+              <DatePickerWithRange 
+                id="date-range"
+                date={dateRange}
+                onDateChange={setDateRange}
+                className="w-full"
+              />
+            </div>
             {columns.filter(c => c.id === 'numeroSerie').map(column => (
               column.visible ? (
                 <div key={column.id}>

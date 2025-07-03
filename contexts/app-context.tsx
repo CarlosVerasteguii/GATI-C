@@ -1,30 +1,9 @@
 "use client"
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react"
+import type { InventoryItem, User } from "@/types/inventory"
 
 // Definición de tipos para el estado de la aplicación
-interface InventoryItem {
-  id: number
-  nombre: string
-  marca: string
-  modelo: string
-  categoria: string
-  descripcion?: string
-  estado: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO"
-  cantidad: number
-  numeroSerie: string | null
-  fechaIngreso: string // YYYY-MM-DD
-  ubicacion?: string
-  proveedor?: string
-  costo?: number
-  fechaCompra?: string
-  garantia?: string
-  vidaUtil?: string
-  mantenimiento?: string
-  historialMantenimiento?: { date: string; description: string }[]
-  documentosAdjuntos?: { name: string; url: string }[]
-}
-
 interface AsignadoItem {
   id: number
   articuloId: number // ID del item de inventario original
@@ -49,16 +28,6 @@ interface PrestamoItem {
   diasRestantes: number
   notas?: string
   registradoPor?: string
-}
-
-interface User {
-  id: number
-  nombre: string
-  email: string
-  password?: string // Should not be stored in client-side state normally
-  rol: "Administrador" | "Editor" | "Lector" // Corregido según PRD
-  departamento?: string
-  trustedIp?: string
 }
 
 interface SolicitudAcceso {
@@ -164,6 +133,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-01-15",
     descripcion: "Laptop de alto rendimiento para uso profesional.",
+    isSerialized: false,
+    contratoId: null
   },
   {
     id: 2,
@@ -176,6 +147,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-02-01",
     descripcion: "Monitor ultrawide para productividad y multitarea.",
+    isSerialized: false,
+    contratoId: null
   },
   {
     id: 3,
@@ -188,6 +161,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "HX-KB7RD2-US/RD",
     fechaIngreso: "2023-03-10",
     descripcion: "Teclado mecánico con switches rojos.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0015"
   },
   {
     id: 4,
@@ -199,7 +174,9 @@ const defaultInventoryData: InventoryItem[] = [
     cantidad: 1,
     numeroSerie: "910-005647",
     fechaIngreso: "2023-04-05",
-    descripcion: "Mouse ergonómico avanzado para productividad.",
+    descripcion: "Mouse ergonómico de alta precisión.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0022"
   },
   {
     id: 5,
@@ -212,6 +189,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "SN-R740-001",
     fechaIngreso: "2022-11-20",
     descripcion: "Servidor de rack para centro de datos.",
+    isSerialized: true,
+    contratoId: "CONT-2022-0089"
   },
   {
     id: 6,
@@ -224,6 +203,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "AX50-SN-001",
     fechaIngreso: "2023-05-12",
     descripcion: "Router Wi-Fi 6 de doble banda.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0031"
   },
   {
     id: 7,
@@ -236,6 +217,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-06-01",
     descripcion: "Impresora multifuncional para oficina.",
+    isSerialized: false,
+    contratoId: "CONT-2023-0042"
   },
   {
     id: 8,
@@ -248,6 +231,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-07-20",
     descripcion: "Cámara web Full HD para videollamadas.",
+    isSerialized: false,
+    contratoId: null
   },
   {
     id: 9,
@@ -260,6 +245,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-08-01",
     descripcion: "Disco duro externo USB 3.0 de 2TB.",
+    isSerialized: false,
+    contratoId: "CONT-2023-0053"
   },
   {
     id: 10,
@@ -272,6 +259,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: null,
     fechaIngreso: "2023-09-10",
     descripcion: "Proyector portátil para presentaciones.",
+    isSerialized: false,
+    contratoId: null
   },
   {
     id: 11,
@@ -284,6 +273,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "SN-XPS15-002",
     fechaIngreso: "2023-01-15",
     descripcion: "Laptop de alto rendimiento para uso profesional.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0015"
   },
   {
     id: 12,
@@ -296,6 +287,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "SN-XPS15-003",
     fechaIngreso: "2023-01-15",
     descripcion: "Laptop de alto rendimiento para uso profesional.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0015"
   },
   {
     id: 13,
@@ -308,6 +301,8 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "SN-XPS15-004",
     fechaIngreso: "2023-01-15",
     descripcion: "Laptop de alto rendimiento para uso profesional.",
+    isSerialized: true,
+    contratoId: "CONT-2023-0015"
   },
 ]
 
