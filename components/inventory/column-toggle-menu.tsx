@@ -29,6 +29,7 @@ export function ColumnToggleMenu({ columns, onColumnsChange }: ColumnToggleMenuP
                             );
                             onColumnsChange(newColumns);
                         }}
+                        onSelect={(e) => e.preventDefault()}
                     >
                         {column.label}
                     </DropdownMenuCheckboxItem>
