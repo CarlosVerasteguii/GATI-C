@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -235,6 +235,7 @@ export default function InventarioPage() {
   // Añadir estado para el modo de visualización
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string | null>>({});
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   // Lista de motivos de retiro
   const retirementReasons = [
@@ -1461,30 +1462,9 @@ export default function InventarioPage() {
                   columns={columns}
                   onColumnsChange={setColumns}
                 />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline">Filtros Avanzados</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[250px] p-4" align="start">
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-sm">Filtros Avanzados</h4>
-                      <p className="text-xs text-muted-foreground">Filtra por columnas visibles.</p>
-                      {columns.filter(c => c.id === 'numeroSerie').map(column => (
-                        column.visible ? (
-                          <div key={column.id}>
-                            <Label className="text-xs font-semibold">{column.label}</Label>
-                            <FilterPopover
-                              title={`Seleccionar ${column.label}`}
-                              options={[...new Set(state.inventoryData.map(item => item.numeroSerie).filter(Boolean) as string[])]}
-                              selectedValue={advancedFilters[column.id] || null}
-                              onSelect={(value) => setAdvancedFilters(prev => ({ ...prev, [column.id]: value }))}
-                            />
-                          </div>
-                        ) : null
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
+                  Filtros Avanzados
+                </Button>
                 <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "cards")}>
                   <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
                   <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
@@ -1695,6 +1675,35 @@ export default function InventarioPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Sheet open={isAdvancedFilterOpen} onOpenChange={setIsAdvancedFilterOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Filtros Avanzados</SheetTitle>
+            <SheetDescription>
+              Aplica filtros detallados para refinar tu búsqueda.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid gap-4 py-4">
+            {columns.filter(c => c.id === 'numeroSerie').map(column => (
+              column.visible ? (
+                <div key={column.id}>
+                  <Label className="text-xs font-semibold">{column.label}</Label>
+                  <FilterPopover
+                    title={`Seleccionar ${column.label}`}
+                    options={[...new Set(state.inventoryData.map(item => item.numeroSerie).filter(Boolean) as string[])]}
+                    selectedValue={advancedFilters[column.id] || null}
+                    onSelect={(value) => setAdvancedFilters(prev => ({ ...prev, [column.id]: value }))}
+                  />
+                </div>
+              ) : null
+            ))}
+          </div>
+          <SheetFooter>
+            <Button onClick={() => setIsAdvancedFilterOpen(false)}>Cerrar</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </TooltipProvider>
   )
 }
