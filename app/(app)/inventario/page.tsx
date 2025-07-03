@@ -291,7 +291,7 @@ export default function InventarioPage() {
     if (processCargaTaskId) {
       setIsProcessingUrlParam(true)
       const taskId = Number.parseInt(processCargaTaskId)
-      const task = state.pendingTasksData.find((t) => t.id === taskId && t.type === "CARGA")
+      const task = state.tasks.find((t) => t.id === taskId && t.type === "CARGA")
       if (task) {
         const productData: Partial<InventoryItem> = {
           id: 0, // Este ID será reemplazado al guardar
@@ -316,7 +316,7 @@ export default function InventarioPage() {
     } else if (highlightRetireTask) {
       setIsProcessingUrlParam(true)
       const taskId = Number.parseInt(highlightRetireTask)
-      const task = state.pendingTasksData.find((t) => t.id === taskId && t.type === "RETIRO")
+      const task = state.tasks.find((t) => t.id === taskId && t.type === "RETIRO")
       if (task && task.details.itemsImplicados) {
         setSelectedRowIds(task.details.itemsImplicados.map((item: any) => item.id))
         showInfo({
@@ -327,7 +327,7 @@ export default function InventarioPage() {
       }
       setTimeout(() => setIsProcessingUrlParam(false), 100)
     }
-  }, [searchParams, state.pendingTasksData, router, isProcessingUrlParam])
+  }, [searchParams, state.tasks, router, isProcessingUrlParam])
 
   // Calcular si hay filtros activos
   const hasActiveFilters = filterCategoria || filterMarca || filterEstado || Object.values(advancedFilters).some(value => value);
@@ -742,7 +742,7 @@ export default function InventarioPage() {
       } else if (modalMode === "process-carga") {
         // Process pending task
         if (processingTaskId) {
-          const task = state.pendingTasksData.find((t) => t.id === processingTaskId)
+          const task = state.tasks.find((t) => t.id === processingTaskId)
           if (!task) return
 
           const newId = Math.max(...state.inventoryData.map((item) => item.id)) + 1
@@ -765,7 +765,7 @@ export default function InventarioPage() {
           newInventory = [...state.inventoryData, newProduct]
 
           // Remove the processed task
-          const updatedTasks = state.pendingTasksData.filter((t) => t.id !== processingTaskId)
+          const updatedTasks = state.tasks.filter((t) => t.id !== processingTaskId)
           appDispatch({
             type: 'UPDATE_PENDING_TASK',
             payload: {
@@ -773,7 +773,7 @@ export default function InventarioPage() {
               updates: {
                 status: "Finalizada",
                 auditLog: [
-                  ...(state.pendingTasksData.find((t) => t.id === processingTaskId)?.auditLog || []),
+                  ...(state.tasks.find((t) => t.id === processingTaskId)?.auditLog || []),
                   {
                     event: "FINALIZACIÓN",
                     user: state.user?.nombre || "Sistema",
@@ -1547,7 +1547,6 @@ export default function InventarioPage() {
               data={paginatedData}
               searchQuery={searchTerm}
               columns={columns}
-              visibleColumns={Object.fromEntries(columns.filter(col => col.visible).map(col => [col.id, true]))}
               selectedRowIds={selectedRowIds}
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}

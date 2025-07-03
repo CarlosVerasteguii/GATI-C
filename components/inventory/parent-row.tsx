@@ -18,14 +18,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { GroupedProduct } from '@/types/inventory';
+import { GroupedProduct, ColumnDefinition } from '@/types/inventory';
 
 interface ParentRowProps {
     parentProduct: GroupedProduct;
     isExpanded: boolean;
     onToggle: () => void;
     onAction: (action: string, product: GroupedProduct) => void;
-    visibleColumns: Record<string, boolean>;
+    columns: ColumnDefinition[];
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
@@ -37,7 +37,7 @@ export function ParentRow({
     isExpanded,
     onToggle,
     onAction,
-    visibleColumns,
+    columns,
     selectedRowIds,
     onRowSelect,
     isLector,
@@ -78,25 +78,45 @@ export function ParentRow({
                     <span>{product.nombre}</span>
                 </div>
             </TableCell>
-            {visibleColumns.marca && <TableCell>{product.marca}</TableCell>}
-            {visibleColumns.modelo && <TableCell>{product.modelo}</TableCell>}
-            {visibleColumns.numeroSerie && <TableCell>N/A</TableCell>}
-            {visibleColumns.categoria && <TableCell>{product.categoria}</TableCell>}
-            {visibleColumns.estado && <TableCell>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="flex flex-col cursor-pointer">
-                                <span>{`${summary.total} en Total`}</span>
-                                <span className="text-xs text-green-600">{`${summary.disponible} Disp.`}</span>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {renderEstadoTooltip()}
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </TableCell>}
+            {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+                let content: React.ReactNode = null;
+                switch (col.id) {
+                    case 'marca':
+                        content = product.marca;
+                        break;
+                    case 'modelo':
+                        content = product.modelo;
+                        break;
+                    case 'numeroSerie':
+                        content = 'N/A';
+                        break;
+                    case 'categoria':
+                        content = product.categoria;
+                        break;
+                    case 'estado':
+                        content = (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="flex flex-col cursor-pointer">
+                                            <span>{`${summary.total} en Total`}</span>
+                                            <span className="text-xs text-green-600">{`${summary.disponible} Disp.`}</span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {renderEstadoTooltip()}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        );
+                        break;
+                    default:
+                        // Para otras columnas, podrías querer mostrar algo por defecto
+                        // o simplemente no renderizar la celda si no hay un caso para ella.
+                        content = parentProduct.product[col.id as keyof typeof parentProduct.product] || '';
+                }
+                return <TableCell key={col.id}>{content}</TableCell>;
+            })}
             <TableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -12,12 +12,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InventoryItem } from '@/types/inventory';
+import { InventoryItem, ColumnDefinition } from '@/types/inventory';
 
 interface ChildRowProps {
     asset: InventoryItem;
     isHighlighted: boolean;
-    visibleColumns: Record<string, boolean>;
+    columns: ColumnDefinition[];
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
@@ -27,7 +27,7 @@ interface ChildRowProps {
 export function ChildRow({
     asset,
     isHighlighted,
-    visibleColumns,
+    columns,
     selectedRowIds,
     onRowSelect,
     isLector,
@@ -44,11 +44,29 @@ export function ChildRow({
                 )}
             </TableCell>
             <TableCell />
-            {visibleColumns.marca && <TableCell>{asset.marca}</TableCell>}
-            {visibleColumns.modelo && <TableCell>{asset.modelo}</TableCell>}
-            {visibleColumns.numeroSerie && <TableCell className="text-sm">{asset.numeroSerie}</TableCell>}
-            {visibleColumns.categoria && <TableCell>{asset.categoria}</TableCell>}
-            {visibleColumns.estado && <TableCell className="text-sm">{asset.estado}</TableCell>}
+            {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+                const value = asset[col.id as keyof InventoryItem];
+                let content: React.ReactNode;
+
+                switch (col.type) {
+                    case 'string':
+                    case 'number':
+                    case 'date':
+                    case 'status':
+                        content = typeof value === 'string' || typeof value === 'number' ? value : String(value);
+                        break;
+                    default:
+                        if (typeof value === 'string' || typeof value === 'number') {
+                            content = value;
+                        } else if (value && typeof value.toString === 'function') {
+                            content = (value.toString() !== '[object Object]') ? value.toString() : 'N/A';
+                        } else {
+                            content = 'N/A';
+                        }
+                }
+                
+                return <TableCell key={col.id}>{content}</TableCell>;
+            })}
             <TableCell className="text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

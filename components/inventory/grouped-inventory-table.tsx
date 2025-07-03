@@ -15,14 +15,18 @@ import { ParentRow } from './parent-row';
 import { ChildRow } from './child-row';
 import { AssignModal } from './modals/assign-modal';
 import { QuickRetireModal } from './modals/quick-retire-modal';
-import { GroupedProduct, InventoryItem } from '@/types/inventory';
+import { GroupedProduct, InventoryItem, ColumnDefinition } from '@/types/inventory';
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortConfig = {
+    key: string;
+    direction: 'ascending' | 'descending';
+};
 
 type GroupedInventoryTableProps = {
     data: GroupedProduct[];
     searchQuery: string;
-    visibleColumns: Record<string, boolean>;
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     onSelectAll: (checked: boolean) => void;
@@ -32,7 +36,7 @@ type GroupedInventoryTableProps = {
     onSort: (columnId: string) => void;
     sortColumn: string | null;
     sortDirection: 'asc' | 'desc';
-    columns: Array<{ id: string; label: string; sortable: boolean }>;
+    columns: ColumnDefinition[];
 };
 
 const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
@@ -43,7 +47,6 @@ const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
 export function GroupedInventoryTable({
     data,
     searchQuery,
-    visibleColumns,
     selectedRowIds,
     onRowSelect,
     onSelectAll,
@@ -163,19 +166,17 @@ export function GroupedInventoryTable({
                             )}
                         </TableHead>
 
-                        {columns.map((column) => (
-                            visibleColumns[column.id] && (
-                                <TableHead key={column.id}>
-                                    {column.sortable ? (
-                                        <Button variant="ghost" onClick={() => onSort(column.id)}>
-                                            {column.label}
-                                            <SortIcon direction={sortColumn === column.id ? sortDirection : null} />
-                                        </Button>
-                                    ) : (
-                                        <span>{column.label}</span>
-                                    )}
-                                </TableHead>
-                            )
+                        {columns.filter(c => c.visible).map((column) => (
+                            <TableHead key={column.id}>
+                                {column.sortable ? (
+                                    <Button variant="ghost" onClick={() => onSort(column.id)}>
+                                        {column.label}
+                                        <SortIcon direction={sortColumn === column.id ? sortDirection : null} />
+                                    </Button>
+                                ) : (
+                                    <span>{column.label}</span>
+                                )}
+                            </TableHead>
                         ))}
                         <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
@@ -188,7 +189,7 @@ export function GroupedInventoryTable({
                                 isExpanded={!!expandedRows[parent.product.id]}
                                 onToggle={() => toggleRow(parent.product.id)}
                                 onAction={(action) => handleMenuAction(action, parent)}
-                                visibleColumns={visibleColumns}
+                                columns={columns}
                                 selectedRowIds={selectedRowIds}
                                 onRowSelect={onRowSelect}
                                 isLector={isLector}
@@ -200,7 +201,7 @@ export function GroupedInventoryTable({
                                         key={child.id}
                                         asset={child}
                                         isHighlighted={child.id.toString() === parent.highlightedChildId}
-                                        visibleColumns={visibleColumns}
+                                        columns={columns}
                                         selectedRowIds={selectedRowIds}
                                         onRowSelect={onRowSelect}
                                         isLector={isLector}

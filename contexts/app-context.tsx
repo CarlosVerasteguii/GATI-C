@@ -131,7 +131,7 @@ interface AppState {
   solicitudesAcceso: SolicitudAcceso[]
   pendingActionRequests: PendingActionRequest[]
   recentActivities: RecentActivity[]
-  pendingTasksData: PendingTask[]
+  tasks: PendingTask[]
   categorias: string[]
   marcas: string[]
   retirementReasons: string[]
@@ -478,7 +478,7 @@ const defaultInitialState: AppState = {
   solicitudesAcceso: [],
   pendingActionRequests: [],
   recentActivities: [],
-  pendingTasksData: defaultPendingTasksData,
+  tasks: defaultPendingTasksData,
   categorias: [
     "Laptops",
     "Monitores",
@@ -686,13 +686,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, [])
 
   const addPendingTask = useCallback((task: PendingTask) => {
-    setState((prevState) => ({ ...prevState, pendingTasksData: [...prevState.pendingTasksData, task] }))
+    setState((prevState) => ({ ...prevState, tasks: [...prevState.tasks, task] }))
   }, [])
 
   const updatePendingTask = useCallback((taskId: number, updates: Partial<PendingTask>) => {
     setState((prevState) => ({
       ...prevState,
-      pendingTasksData: prevState.pendingTasksData.map((task) => (task.id === taskId ? { ...task, ...updates } : task)),
+      tasks: prevState.tasks.map((task) => (task.id === taskId ? { ...task, ...updates } : task)),
     }))
   }, [])
 
@@ -794,7 +794,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       case 'UPDATE_PENDING_TASK':
         setState(prev => ({
           ...prev,
-          pendingTasksData: prev.pendingTasksData.map(task =>
+          tasks: prev.tasks.map(task =>
             task.id === action.payload.id
               ? { ...task, ...action.payload.updates }
               : task
