@@ -13,7 +13,7 @@ export interface InventoryItem {
     ubicacion?: string;
     proveedor?: string;
     costo?: number;
-    fechaCompra?: string;
+    fechaAdquisicion?: string;
     garantia?: string;
     vidaUtil?: string;
     mantenimiento?: string;
@@ -56,6 +56,12 @@ export interface GroupedProduct {
     };
     children: InventoryItem[];
     highlightedChildId?: string | null;
+}
+
+export interface AdvancedFilterState {
+  fechaInicio: Date | null;
+  fechaFin: Date | null;
+  proveedor: string;
 }
 
 // Definición de una columna en la tabla de inventario

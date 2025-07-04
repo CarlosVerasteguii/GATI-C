@@ -88,6 +88,8 @@ import { EditProductModal } from "@/components/edit-product-modal"
 import { MaintenanceModal } from "@/components/maintenance-modal"
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
 import { DateRange } from "react-day-picker"
+import { AdvancedFilterState } from "@/types/inventory"
+import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -238,12 +240,20 @@ export default function InventarioPage() {
   const [attachedDocuments, setAttachedDocuments] = useState<{ id: string, name: string, url: string, uploadDate: string }[]>([]);
   // Añadir estado para el modo de visualización
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string | null>>({});
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
+    fechaInicio: null,
+    fechaFin: null,
+    proveedor: '',
+  });
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+
+  React.useEffect(() => {
+    console.log("Debug: 3. useEffect detectó cambio. Valor de isAddProductModalOpen:", isAddProductModalOpen); // <-- LOG 3
+  }, [isAddProductModalOpen]);
 
   // Lista de motivos de retiro
   const retirementReasons = [
-    "Obsolescencia",
+    "Fin de vida útil",
     "Daño Irreparable",
     "Extravío",
     "Venta",
@@ -343,7 +353,7 @@ export default function InventarioPage() {
     setFilterCategoria("");
     setFilterMarca("");
     setFilterEstado("");
-    setAdvancedFilters({});
+    setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '' });
     setCurrentPage(1); // Volver a la primera página al limpiar filtros
   };
 
@@ -419,7 +429,7 @@ export default function InventarioPage() {
       case "proveedor":
         return item.proveedor || null;
       case "fechaAdquisicion":
-        return item.fechaCompra || null;
+        return item.fechaAdquisicion || null;
       case "contratoId":
         return ""; // Not sortable yet
       case "fechaIngreso":
@@ -447,8 +457,28 @@ export default function InventarioPage() {
       const matchesCategoria = !filterCategoria || item.categoria === filterCategoria;
       const matchesMarca = !filterMarca || item.marca === filterMarca;
       const matchesEstado = !filterEstado || item.estado === filterEstado;
+      const matchesSerialNumber = hasSerialNumber ? !!item.numeroSerie : true;
 
-      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
+      // Lógica para Filtros Avanzados
+      const matchesAdvancedFilters = () => {
+        // Filtro por Rango de Fechas
+        if (advancedFilters.fechaInicio && advancedFilters.fechaFin && item.fechaAdquisicion) {
+          const itemDate = new Date(item.fechaAdquisicion);
+          // Normalizamos las fechas para ignorar la hora
+          const startDate = new Date(advancedFilters.fechaInicio.setHours(0, 0, 0, 0));
+          const endDate = new Date(advancedFilters.fechaFin.setHours(23, 59, 59, 999));
+          
+          if (itemDate < startDate || itemDate > endDate) {
+            return false;
+          }
+        }
+
+        // Aquí añadiremos la lógica para otros filtros avanzados
+
+        return true; // Si pasa todos los filtros avanzados
+      };
+
+      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado && matchesSerialNumber && matchesAdvancedFilters();
     });
 
 
@@ -539,7 +569,7 @@ export default function InventarioPage() {
 
     return groupedData;
 
-  }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado, sortColumn, sortDirection]);
+  }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado, sortColumn, sortDirection, hasSerialNumber, advancedFilters]);
 
   // Datos paginados para la tabla
   const paginatedData = useMemo(() => {
@@ -652,11 +682,13 @@ export default function InventarioPage() {
   }
 
   const handleAddProduct = () => {
+    console.log("Debug: 1. handleAddProduct INICIADO"); // <-- LOG 1
     setSelectedProduct(null)
     setModalMode("add")
     setHasSerialNumber(false)
     setTempMarca("")
     setIsAddProductModalOpen(true)
+    console.log("Debug: 2. handleAddProduct FINALIZADO, isAddProductModalOpen debería ser true"); // <-- LOG 2
   }
 
   const executeSaveProduct = (productData: Partial<InventoryItem>) => {
@@ -763,7 +795,7 @@ export default function InventarioPage() {
             numeroSerie: task.details.serialNumbers?.[0] || null,
             fechaIngreso: new Date().toISOString().split("T")[0],
             proveedor: task.details.proveedor || null,
-            fechaCompra: task.details.fechaAdquisicion || null,
+            fechaAdquisicion: task.details.fechaAdquisicion || null,
             contratoId: task.details.contratoId || null,
           } as InventoryItem
 
@@ -858,7 +890,7 @@ export default function InventarioPage() {
       cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.get("cantidad") as string) || 1,
       numeroSerie: hasSerialNumber ? (formData.get("numerosSerie") as string) || null : null,
       proveedor: (formData.get("proveedor") as string | null) ?? undefined,
-      fechaCompra: (formData.get("fechaAdquisicion") as string | null) ?? undefined,
+      fechaAdquisicion: (formData.get("fechaAdquisicion") as string | null) ?? undefined,
       contratoId: (formData.get("contratoId") as string) || null,
       costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
       garantia: (formData.get("garantia") as string | null) ?? undefined,
@@ -1422,7 +1454,7 @@ export default function InventarioPage() {
 
               {/* Lado Derecho: Botones de Acción Globales */}
               <div className="flex items-center gap-2">
-                <Button onClick={() => setIsAddProductModalOpen(true)}>
+                <Button onClick={handleAddProduct}>
                   Añadir Producto
                 </Button>
                 <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
@@ -1683,36 +1715,19 @@ export default function InventarioPage() {
           <SheetHeader>
             <SheetTitle>Filtros Avanzados</SheetTitle>
             <SheetDescription>
-              Aplica filtros detallados para refinar tu búsqueda.
+              Aplica filtros detallados para refinar tu búsqueda en el inventario.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
-            <div className="flex flex-col space-y-2">
-              <Label htmlFor="date-range">Fecha de Adquisición</Label>
-              <DatePickerWithRange 
-                id="date-range"
-                date={dateRange}
-                onDateChange={setDateRange}
-                className="w-full"
-              />
-            </div>
-            {columns.filter(c => c.id === 'numeroSerie').map(column => (
-              column.visible ? (
-                <div key={column.id}>
-                  <Label className="text-xs font-semibold">{column.label}</Label>
-                  <FilterPopover
-                    title={`Seleccionar ${column.label}`}
-                    options={[...new Set(state.inventoryData.map(item => item.numeroSerie).filter(Boolean) as string[])]}
-                    selectedValue={advancedFilters[column.id] || null}
-                    onSelect={(value) => setAdvancedFilters(prev => ({ ...prev, [column.id]: value }))}
-                  />
-                </div>
-              ) : null
-            ))}
-          </div>
-          <SheetFooter>
-            <Button onClick={() => setIsAdvancedFilterOpen(false)}>Cerrar</Button>
-          </SheetFooter>
+          <AdvancedFilterForm
+            currentFilters={advancedFilters}
+            onApplyFilters={(newFilters) => {
+              setAdvancedFilters(newFilters);
+              setIsAdvancedFilterOpen(false);
+            }}
+            onClearFilters={() => {
+              setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '' });
+            }}
+          />
         </SheetContent>
       </Sheet>
     </TooltipProvider>

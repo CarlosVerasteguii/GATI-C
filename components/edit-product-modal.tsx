@@ -21,6 +21,7 @@ import { useApp } from "@/contexts/app-context"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BrandCombobox } from "./brand-combobox"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import type { InventoryItem } from "@/types/inventory";
 
 interface EditProductModalProps {
   open: boolean
@@ -30,7 +31,7 @@ interface EditProductModalProps {
 }
 
 export function EditProductModal({ open, onOpenChange, product, onSuccess }: EditProductModalProps) {
-  const { state, addPendingTask, addRecentActivity } = useApp()
+  const { state, addPendingTask, addInventoryItem, updateInventoryItem } = useApp()
   const [isLoading, setIsLoading] = useState(false)
   const [hasSerialNumber, setHasSerialNumber] = useState(product?.numeroSerie !== null)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
@@ -43,6 +44,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
     category: product?.categoria || "",
     description: product?.descripcion || "",
     proveedor: product?.proveedor || "",
+    fechaIngreso: product?.fechaIngreso || new Date().toISOString().split('T')[0],
     fechaAdquisicion: product?.fechaAdquisicion || "",
     contratoId: product?.contratoId || "",
     // For serialized items, quantity is always 1, serial number is direct
@@ -75,6 +77,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
         category: product.categoria || "",
         description: product.descripcion || "",
         proveedor: product.proveedor || "",
+        fechaIngreso: product.fechaIngreso || new Date().toISOString().split('T')[0],
         fechaAdquisicion: product.fechaAdquisicion || "",
         contratoId: product.contratoId || "",
         quantity: product.cantidad?.toString() || "1",
@@ -159,13 +162,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
 
   const handleSubmit = async () => {
     // Verificar campos obligatorios independientemente de la pestaña activa
-    if (!formData.productName || !formData.brand || !formData.model || !formData.category) {
+    if (!formData.productName || !formData.brand || !formData.model || !formData.category || !formData.fechaIngreso) {
       // Determinar qué campos están faltando para mostrar un mensaje más específico
       const missingFields = [];
       if (!formData.productName) missingFields.push("Nombre del Producto");
       if (!formData.brand) missingFields.push("Marca");
       if (!formData.model) missingFields.push("Modelo");
       if (!formData.category) missingFields.push("Categoría");
+      if (!formData.fechaIngreso) missingFields.push("Fecha de Ingreso");
 
       showError({
         title: "Campos requeridos",
@@ -186,6 +190,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       modelo: formData.model,
       categoria: formData.category,
       descripcion: formData.description,
+      fechaIngreso: formData.fechaIngreso,
       proveedor: formData.proveedor,
       fechaAdquisicion: formData.fechaAdquisicion,
       contratoId: formData.contratoId,
@@ -202,49 +207,70 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       }))
     }
 
-    // Simulate task creation for editing
-    setTimeout(() => {
-      addPendingTask({
-        id: Math.floor(Math.random() * 10000), // Añadir ID requerido
-        type: "Edición de Producto",
-        creationDate: new Date().toISOString(),
-        createdBy: state.user?.nombre || "Usuario Rápido",
-        status: "Pendiente",
-        details: {
-          originalProductId: product.id, // Keep track of the original product ID
-          updates: updates,
-        },
-        auditLog: [
-          {
-            event: "CREACIÓN",
-            user: state.user?.nombre || "Usuario Rápido",
-            dateTime: new Date().toISOString(),
-            description: `Solicitud de edición para el producto ${product.nombre} (ID: ${product.id}) creada.`,
+    const mode = product ? 'edit' : 'add';
+
+    if (state.user?.rol === 'Administrador') {
+      // --- FLUJO PARA ADMINISTRADOR: EJECUCIÓN DIRECTA ---
+      if (mode === 'edit' && product?.id) {
+        // Estamos editando un producto existente
+        updateInventoryItem(product.id, updates);
+        showSuccess({
+          title: "Producto Actualizado",
+          description: "Los cambios en el producto han sido guardados."
+        });
+      } else {
+        // Estamos creando un nuevo producto
+        const newItem: InventoryItem = {
+          id: Math.floor(Math.random() * 10000), // ID Temporal
+          estado: 'Disponible', // Estado por defecto
+          cantidad: hasSerialNumber ? 1 : Number(updates.cantidad),
+          ...updates
+        } as InventoryItem;
+        addInventoryItem(newItem);
+        showSuccess({
+          title: "Producto Añadido",
+          description: "El nuevo producto ha sido añadido al inventario."
+        });
+      }
+      setIsLoading(false);
+      onOpenChange(false);
+      onSuccess();
+    
+    } else {
+      // --- FLUJO PARA OTROS ROLES: CREAR TAREA PENDIENTE ---
+      setTimeout(() => {
+        addPendingTask({
+          id: Math.floor(Math.random() * 10000),
+          type: mode === 'edit' ? "Edición de Producto" : "Creación de Producto",
+          creationDate: new Date().toISOString(),
+          createdBy: state.user?.nombre || "Usuario Desconocido",
+          status: "Pendiente",
+          details: {
+            originalProductId: product?.id,
+            updates: updates,
           },
-        ],
-      })
-      showSuccess({
-        title: "Solicitud de Edición Enviada",
-        description: "Tu solicitud de edición ha sido enviada para aprobación y procesamiento."
-      })
-      addRecentActivity({
-        type: "Creación de Tarea",
-        description: `Tarea de edición para ${product.nombre} creada por ${state.user?.nombre || "Usuario Rápido"}`,
-        date: new Date().toLocaleString(),
-        details: {
-          productId: product.id,
-          productName: product.nombre,
-          updates: updates,
-          createdBy: state.user?.nombre || "Usuario Rápido",
-        },
-      })
-      setIsLoading(false)
-      onOpenChange(false)
-      onSuccess() // Notify parent component of success
-    }, 1000)
+          auditLog: [
+            {
+              event: "CREACIÓN",
+              user: state.user?.nombre || "Usuario Desconocido",
+              dateTime: new Date().toISOString(),
+              description: `Solicitud de ${mode === 'edit' ? 'edición' : 'creación'} para el producto ${updates.nombre} creada.`,
+            },
+          ],
+        });
+        showSuccess({
+          title: "Solicitud Enviada",
+          description: "Tu solicitud ha sido enviada para aprobación."
+        });
+        setIsLoading(false);
+        onOpenChange(false);
+        onSuccess();
+      }, 1000);
+    }
   }
 
-  if (!product) return null
+  // Si no hay producto, no retornamos null porque también necesitamos abrir el modal para añadir productos
+  // Antes: if (!product) return null
 
   return (
     <TooltipProvider>
@@ -253,9 +279,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5" />
-              Editar Producto
+              {product ? "Editar Producto" : "Añadir Producto"}
             </DialogTitle>
-            <DialogDescription>Modifica la información del producto "{product.nombre}".</DialogDescription>
+            <DialogDescription>
+              {product 
+                ? `Modifica la información del producto "${product.nombre}".`
+                : "Añade un nuevo producto al inventario."
+              }
+            </DialogDescription>
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "basic" | "details" | "documents")}>
@@ -325,7 +356,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                       id="hasSerial"
                       checked={hasSerialNumber}
                       onCheckedChange={setHasSerialNumber}
-                      disabled={product.numeroSerie !== null && product.cantidad === 1} // Disable if it's a serialized item that cannot be changed to non-serialized
+                      disabled={product?.numeroSerie !== null && product?.cantidad === 1} // Disable if it's a serialized item that cannot be changed to non-serialized
                     />
                     <Label htmlFor="hasSerial" className="flex items-center gap-1">
                       Este artículo tiene número de serie
@@ -350,7 +381,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                         id="serialNumber"
                         value={formData.serialNumber}
                         onChange={(e) => handleInputChange("serialNumber", e.target.value)}
-                        disabled={product.numeroSerie !== null} // Disable if it's an existing serialized item
+                        disabled={product?.numeroSerie !== null} // Disable if it's an existing serialized item
                       />
                     </div>
                   ) : (
@@ -373,11 +404,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
             <TabsContent value="details" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="proveedor">Proveedor</Label>
+                  <Label htmlFor="fechaIngreso">Fecha de Ingreso <span className="text-red-500">*</span></Label>
                   <Input
-                    id="proveedor"
-                    value={formData.proveedor}
-                    onChange={(e) => handleInputChange("proveedor", e.target.value)}
+                    id="fechaIngreso"
+                    type="date"
+                    value={formData.fechaIngreso}
+                    onChange={(e) => handleInputChange("fechaIngreso", e.target.value)}
+                    disabled={state.user?.rol !== "Administrador"}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -387,6 +421,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                     type="date"
                     value={formData.fechaAdquisicion}
                     onChange={(e) => handleInputChange("fechaAdquisicion", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="proveedor">Proveedor</Label>
+                  <Input
+                    id="proveedor"
+                    value={formData.proveedor}
+                    onChange={(e) => handleInputChange("proveedor", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
