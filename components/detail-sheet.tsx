@@ -2,16 +2,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { InventoryItem } from "@/types/inventory"
 
 interface DetailSheetProps {
-    isOpen: boolean
-    onClose: () => void
+    open: boolean
+    onOpenChange: (open: boolean) => void
     product: InventoryItem | null
 }
 
-export function DetailSheet({ isOpen, onClose, product }: DetailSheetProps) {
+export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
     if (!product) return null
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
+        <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent>
                 <SheetHeader>
                     <SheetTitle>Detalles del Activo</SheetTitle>
@@ -40,6 +40,10 @@ export function DetailSheet({ isOpen, onClose, product }: DetailSheetProps) {
                             <div>
                                 <span className="text-sm text-muted-foreground">Categoría:</span>
                                 <p>{product.categoria}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm text-muted-foreground">Proveedor:</span>
+                              <p>{product.proveedor || 'No especificado'}</p>
                             </div>
                             <div>
                                 <span className="text-sm text-muted-foreground">Estado:</span>

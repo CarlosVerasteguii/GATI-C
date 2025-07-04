@@ -404,4 +404,4 @@ Se pueden realizar las siguientes acciones sobre múltiples productos:
 - Exportación a Excel/CSV
 - Importación masiva con validación
 - Historial detallado por producto
-- Integración con sistema de códigos QR/barras 
+- Integración con sistema de códigos QR/barras (5% posibilidad q lo agreguemos, aun no seguros)
