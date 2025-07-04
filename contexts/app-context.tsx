@@ -103,6 +103,7 @@ interface AppState {
   tasks: PendingTask[]
   categorias: string[]
   marcas: string[]
+  proveedores: string[];
   retirementReasons: string[]
   userColumnPreferences: UserColumnPreference[]
   userTheme?: string // Añadimos el tema del usuario al estado
@@ -485,6 +486,7 @@ const defaultInitialState: AppState = {
     "Proyectores",
   ],
   marcas: ["Dell", "LG", "HyperX", "Logitech", "TP-Link", "HP", "Seagate", "Epson"],
+  proveedores: [],
   retirementReasons: ["Fin de vida útil", "Obsoleto", "Dañado", "Perdido", "Robado", "Donación"],
   userColumnPreferences: [],
   error: null,
@@ -503,9 +505,11 @@ type AppAction =
   | { type: 'UPDATE_PENDING_TASK'; payload: { id: number; updates: Partial<PendingTask> } }
   | { type: 'UPDATE_USER_COLUMN_PREFERENCES'; payload: { userId: number; pageId: string; columns: string[]; itemsPerPage?: number } }
   | { type: 'UPDATE_USER_THEME'; payload: string }
-  | { type: 'UPDATE_MARCAS'; payload: string[] }
+  | { type: 'SET_MARCAS'; payload: string[] }
+  | { type: 'SET_PROVEEDORES'; payload: string[] }
   | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest };
 
+// Definición del tipo para el contexto de la aplicación
 interface AppContextType {
   state: AppState
   dispatch: (action: AppAction) => void
@@ -536,8 +540,10 @@ interface AppContextType {
   updateUserColumnPreferences: (userId: number, pageId: string, columns: string[], itemsPerPage?: number) => void
   updateUserTheme: (theme: string) => void
   updateMarcas: (marcas: string[]) => void
+  updateProveedores: (proveedores: string[]) => void;
 }
 
+// Creación del contexto
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
@@ -563,6 +569,88 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       localStorage.setItem("gati-c-app-state", JSON.stringify(state))
     }
   }, [state])
+
+  const dispatch = useCallback((action: AppAction) => {
+    switch (action.type) {
+      case 'UPDATE_INVENTORY':
+        setState(prev => ({ ...prev, inventoryData: action.payload }));
+        break;
+      case 'UPDATE_INVENTORY_ITEM_STATUS':
+        setState(prev => ({
+          ...prev,
+          inventoryData: prev.inventoryData.map(item =>
+            item.id === action.payload.id
+              ? { ...item, estado: action.payload.status as any }
+              : item
+          ),
+        }));
+        break;
+      case 'ADD_RECENT_ACTIVITY':
+        setState(prev => ({
+          ...prev,
+          recentActivities: [action.payload, ...prev.recentActivities].slice(0, 50),
+        }));
+        break;
+      case 'UPDATE_PENDING_TASK':
+        setState(prev => ({
+          ...prev,
+          tasks: prev.tasks.map(task =>
+            task.id === action.payload.id
+              ? { ...task, ...action.payload.updates }
+              : task
+          ),
+        }));
+        break;
+      case 'UPDATE_USER_COLUMN_PREFERENCES':
+        setState(prev => {
+          const existingPreference = prev.userColumnPreferences.find(p => p.page === action.payload.pageId);
+          if (existingPreference) {
+            return {
+              ...prev,
+              userColumnPreferences: prev.userColumnPreferences.map(p =>
+                p.page === action.payload.pageId
+                  ? {
+                    ...p,
+                    preferences: p.preferences.map(col => ({
+                      ...col,
+                      visible: action.payload.columns.includes(col.id),
+                    })),
+                  }
+                  : p
+              ),
+            };
+          }
+          return prev;
+        });
+        break;
+      case 'UPDATE_USER_THEME':
+        setState(prev => ({
+          ...prev,
+          userTheme: action.payload
+        }));
+        break;
+      case 'SET_MARCAS':
+        setState(prev => ({
+          ...prev,
+          marcas: action.payload
+        }));
+        break;
+      case 'SET_PROVEEDORES':
+        setState(prev => ({
+          ...prev,
+          proveedores: action.payload
+        }));
+        break;
+      case 'ADD_PENDING_REQUEST':
+        setState(prev => ({
+          ...prev,
+          pendingActionRequests: [...prev.pendingActionRequests, action.payload]
+        }));
+        break;
+      default:
+        console.error('Unknown action type');
+    }
+  }, []);
 
   const setUser = useCallback((user: User | null) => {
     setState((prevState) => ({ ...prevState, user }))
@@ -759,87 +847,12 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const updateMarcas = useCallback((marcas: string[]) => {
-    setState((prevState) => ({
-      ...prevState,
-      marcas: marcas
-    }));
-  }, []);
+    dispatch({ type: 'SET_MARCAS', payload: marcas });
+  }, [dispatch]);
 
-  const dispatch = useCallback((action: AppAction) => {
-    switch (action.type) {
-      case 'UPDATE_INVENTORY':
-        setState(prev => ({ ...prev, inventoryData: action.payload }));
-        break;
-      case 'UPDATE_INVENTORY_ITEM_STATUS':
-        setState(prev => ({
-          ...prev,
-          inventoryData: prev.inventoryData.map(item =>
-            item.id === action.payload.id
-              ? { ...item, estado: action.payload.status as any }
-              : item
-          ),
-        }));
-        break;
-      case 'ADD_RECENT_ACTIVITY':
-        setState(prev => ({
-          ...prev,
-          recentActivities: [action.payload, ...prev.recentActivities].slice(0, 50),
-        }));
-        break;
-      case 'UPDATE_PENDING_TASK':
-        setState(prev => ({
-          ...prev,
-          tasks: prev.tasks.map(task =>
-            task.id === action.payload.id
-              ? { ...task, ...action.payload.updates }
-              : task
-          ),
-        }));
-        break;
-      case 'UPDATE_USER_COLUMN_PREFERENCES':
-        setState(prev => {
-          const existingPreference = prev.userColumnPreferences.find(p => p.page === action.payload.pageId);
-          if (existingPreference) {
-            return {
-              ...prev,
-              userColumnPreferences: prev.userColumnPreferences.map(p =>
-                p.page === action.payload.pageId
-                  ? {
-                    ...p,
-                    preferences: p.preferences.map(col => ({
-                      ...col,
-                      visible: action.payload.columns.includes(col.id),
-                    })),
-                  }
-                  : p
-              ),
-            };
-          }
-          return prev;
-        });
-        break;
-      case 'UPDATE_USER_THEME':
-        setState(prev => ({
-          ...prev,
-          userTheme: action.payload
-        }));
-        break;
-      case 'UPDATE_MARCAS':
-        setState(prev => ({
-          ...prev,
-          marcas: action.payload
-        }));
-        break;
-      case 'ADD_PENDING_REQUEST':
-        setState(prev => ({
-          ...prev,
-          pendingActionRequests: [...prev.pendingActionRequests, action.payload]
-        }));
-        break;
-      default:
-        console.error('Unknown action type');
-    }
-  }, []);
+  const updateProveedores = useCallback((proveedores: string[]) => {
+    dispatch({ type: 'SET_PROVEEDORES', payload: proveedores });
+  }, [dispatch]);
 
   const value = React.useMemo(
     () => ({
@@ -874,6 +887,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       updateUserColumnPreferences,
       updateUserTheme,
       updateMarcas,
+      updateProveedores,
     }),
     [
       state,
@@ -904,6 +918,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       updateUserColumnPreferences,
       updateUserTheme,
       updateMarcas,
+      updateProveedores,
     ],
   )
 
