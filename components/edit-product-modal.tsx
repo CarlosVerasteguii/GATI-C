@@ -20,6 +20,7 @@ import { Loader2, Edit, HelpCircle, ExternalLink, Trash2 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BrandCombobox } from "./brand-combobox"
+import { ProviderCombobox } from './provider-combobox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { InventoryItem } from "@/types/inventory";
 
@@ -424,11 +425,11 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="proveedor">Proveedor</Label>
-                  <Input
-                    id="proveedor"
-                    value={formData.proveedor}
-                    onChange={(e) => handleInputChange("proveedor", e.target.value)}
+                  <Label htmlFor="provider">Proveedor</Label>
+                  <ProviderCombobox
+                    value={formData.proveedor || ''}
+                    onValueChange={(val) => handleInputChange("proveedor", val)}
+                    placeholder="Selecciona o escribe un proveedor"
                   />
                 </div>
                 <div className="space-y-2">
