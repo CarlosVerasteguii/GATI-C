@@ -247,6 +247,11 @@ export default function InventarioPage() {
   });
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
+  const proveedoresUnicos = React.useMemo(() => {
+    const proveedores = new Set(state.inventoryData.map(item => item.proveedor).filter(Boolean));
+    return Array.from(proveedores) as string[];
+  }, [state.inventoryData]);
+
   React.useEffect(() => {
     console.log("Debug: 3. useEffect detectó cambio. Valor de isAddProductModalOpen:", isAddProductModalOpen); // <-- LOG 3
   }, [isAddProductModalOpen]);
@@ -469,6 +474,13 @@ export default function InventarioPage() {
           const endDate = new Date(advancedFilters.fechaFin.setHours(23, 59, 59, 999));
 
           if (itemDate < startDate || itemDate > endDate) {
+            return false;
+          }
+        }
+
+        // Filtro por Proveedor
+        if (advancedFilters.proveedor) {
+          if (item.proveedor !== advancedFilters.proveedor) {
             return false;
           }
         }
@@ -1720,6 +1732,7 @@ export default function InventarioPage() {
           </SheetHeader>
           <AdvancedFilterForm
             currentFilters={advancedFilters}
+            proveedores={proveedoresUnicos}
             onApplyFilters={(newFilters) => {
               setAdvancedFilters(newFilters);
               setIsAdvancedFilterOpen(false);

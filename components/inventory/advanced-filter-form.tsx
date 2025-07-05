@@ -6,14 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
 import { AdvancedFilterState } from '@/types/inventory';
+import { ProviderCombobox } from '@/components/provider-combobox'; // Importar ComboBox
 
 interface AdvancedFilterFormProps {
   currentFilters: AdvancedFilterState;
+  proveedores: string[]; // Añadir prop para la lista de proveedores
   onApplyFilters: (filters: AdvancedFilterState) => void;
   onClearFilters: () => void;
 }
 
-export function AdvancedFilterForm({ currentFilters, onApplyFilters, onClearFilters }: AdvancedFilterFormProps) {
+export function AdvancedFilterForm({
+  currentFilters,
+  proveedores, // Recibir la prop
+  onApplyFilters,
+  onClearFilters
+}: AdvancedFilterFormProps) {
   const [localFilters, setLocalFilters] = React.useState<AdvancedFilterState>(currentFilters);
   const initialFilters = React.useRef(currentFilters);
   // Sincroniza el estado local si los filtros principales cambian desde fuera
@@ -28,7 +35,7 @@ export function AdvancedFilterForm({ currentFilters, onApplyFilters, onClearFilt
       fechaFin: dateRange?.to || null,
     }));
   };
-  
+
   const handleReset = () => {
     setLocalFilters(initialFilters.current);
     onClearFilters()
@@ -50,15 +57,21 @@ export function AdvancedFilterForm({ currentFilters, onApplyFilters, onClearFilt
         />
       </div>
 
-      {/* Placeholder para el ComboBox de Proveedor */}
+      {/* ComboBox de Proveedor */}
       <div className="flex flex-col space-y-2">
-        <Label>Proveedor</Label>
-        <p className="text-sm text-muted-foreground">(ComboBox de Proveedor próximamente)</p>
+        <Label htmlFor="provider-filter">Proveedor</Label>
+        <ProviderCombobox
+          value={localFilters.proveedor}
+          onValueChange={(provider) => {
+            setLocalFilters(prev => ({ ...prev, proveedor: provider }));
+          }}
+          placeholder="Selecciona un proveedor"
+        />
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="ghost" onClick={handleReset}>Limpiar</Button>
-          <Button onClick={handleApply}>Aplicar Filtros</Button>
+        <Button variant="ghost" onClick={handleReset}>Limpiar</Button>
+        <Button onClick={handleApply}>Aplicar Filtros</Button>
       </div>
     </div>
   );
