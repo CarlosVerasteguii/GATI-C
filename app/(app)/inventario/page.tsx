@@ -61,6 +61,7 @@ import {
   LayoutList,
   LayoutGrid,
   X,
+  ListFilter,
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -1410,7 +1411,16 @@ export default function InventarioPage() {
   }) => (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">{title}</Button>
+        <Button
+          variant="ghost"
+          className={cn(
+            "text-sm transition-colors", // <-- AÑADIDO AQUÍ
+            selectedValue && "bg-cfe-green-very-light text-cfe-green hover:bg-cfe-green-very-light/80"
+          )}
+        >
+          <ListFilter className="mr-2 h-4 w-4" />
+          {title}
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
@@ -1459,150 +1469,138 @@ export default function InventarioPage() {
       <div className="space-y-4">
         {/* ... existing code ... */}
 
-        {/* --- INICIO DE LA BARRA DE ACCIONES MASIVAS --- */}
-        {selectedRowIds.length > 0 && (
-          <div className="flex items-center gap-4 rounded-md border bg-muted p-2 text-sm text-muted-foreground mb-4">
-            <div className="flex-1">
-              {selectedRowIds.length} elemento(s) seleccionado(s).
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds([])}>
-              Limpiar selección
-            </Button>
-            {/* Botones de acciones masivas */}
-            <Button
-              size="sm"
-              onClick={() => setIsBulkAssignModalOpen(true)}
-            >
-              Asignar Selección
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsBulkRetireModalOpen(true)}
-            >
-              Retirar Selección
-            </Button>
-          </div>
-        )}
-        {/* --- FIN DE LA BARRA DE ACCIONES MASIVAS --- */}
-
-        {/* Tabla anidada */}
-        <Card>
-          <CardHeader className="px-7">
-            <div className="flex items-center justify-between gap-4">
-              {/* Lado Izquierdo: Barra de Búsqueda */}
+        {/* NUEVA COMMAND BAR UNIFICADA */}
+        <div className="flex flex-col gap-4">
+          {/* BARRA DE ACCIONES MASIVAS (se queda como está si existe) */}
+          {selectedRowIds.length > 0 && (
+            <div className="flex items-center gap-4 rounded-md border bg-muted p-2 text-sm text-muted-foreground mb-4">
               <div className="flex-1">
-                <Input
-                  placeholder="Buscar por nombre, marca, modelo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full max-w-sm"
-                />
+                {selectedRowIds.length} elemento(s) seleccionado(s).
               </div>
-
-              {/* Lado Derecho: Botones de Acción Globales */}
-              <div className="flex items-center gap-2">
-                <Button onClick={handleAddProduct}>
-                  Añadir Producto
-                </Button>
-                <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
-                  Importar
-                </Button>
-                {selectedRowIds.length > 0 && (
-                  <Button variant="destructive" onClick={() => setIsBulkRetireModalOpen(true)}>
-                    Retirar Selección
-                  </Button>
-                )}
-              </div>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds([])}>
+                Limpiar selección
+              </Button>
+              {/* Botones de acciones masivas */}
+              <Button
+                size="sm"
+                onClick={() => setIsBulkAssignModalOpen(true)}
+              >
+                Asignar Selección
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsBulkRetireModalOpen(true)}
+              >
+                Retirar Selección
+              </Button>
             </div>
+          )}
 
-            {/* Fila Inferior: Filtros y Configuración de Vista */}
-            <div className="flex items-center justify-between gap-2 pt-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-semibold">Filtros:</p>
-                <FilterPopover
-                  title="Categoría"
-                  options={state.categorias}
-                  selectedValue={filterCategoria || null}
-                  onSelect={(value) => setFilterCategoria(value || "")}
-                />
-                <FilterPopover
-                  title="Marca"
-                  options={state.marcas}
-                  selectedValue={filterMarca || null}
-                  onSelect={(value) => setFilterMarca(value || "")}
-                />
-                <FilterPopover
-                  title="Estado"
-                  options={[...new Set(state.inventoryData.map(item => item.estado))]}
-                  selectedValue={filterEstado || null}
-                  onSelect={(value) => setFilterEstado(value || "")}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <ColumnToggleMenu
-                  columns={columns}
-                  onColumnsChange={setColumns}
-                />
-                <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
-                  Filtros Avanzados
-                </Button>
-                <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "cards")}>
-                  <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
-                  <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
+          {/* NUEVA COMMAND BAR PRINCIPAL */}
+          <div className="flex items-center justify-between">
+            {/* Grupo Izquierdo: Búsqueda y Filtros Rápidos */}
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                placeholder="Buscar por nombre, marca, modelo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full max-w-sm"
+              />
+              <FilterPopover
+                title="Categoría"
+                options={state.categorias}
+                selectedValue={filterCategoria || null}
+                onSelect={(value) => setFilterCategoria(value || "")}
+              />
+              <FilterPopover
+                title="Marca"
+                options={state.marcas}
+                selectedValue={filterMarca || null}
+                onSelect={(value) => setFilterMarca(value || "")}
+              />
+              <FilterPopover
+                title="Estado"
+                options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                selectedValue={filterEstado || null}
+                onSelect={(value) => setFilterEstado(value || "")}
+              />
             </div>
+            {/* Grupo Derecho: Acciones de Vista y Globales */}
+            <div className="flex items-center gap-2">
+              <ColumnToggleMenu
+                columns={columns}
+                onColumnsChange={setColumns}
+              />
+              <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
+                Filtros Avanzados
+              </Button>
+              <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "cards")}>
+                <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
+                <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
+              </ToggleGroup>
+              <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                Importar
+              </Button>
+              <Button onClick={handleAddProduct}>
+                Añadir Producto
+              </Button>
+            </div>
+          </div>
 
-            {(filterCategoria || filterMarca || filterEstado) && (
-              <div className="flex items-center gap-2 mb-4">
-                <p className="text-sm text-muted-foreground">Filtros activos:</p>
+          {/* BARRA DE FILTROS ACTIVOS (se queda como está si existe) */}
+          {(filterCategoria || filterMarca || filterEstado) && (
+            <div className="flex items-center gap-2 mb-4">
+              <p className="text-sm text-muted-foreground">Filtros activos:</p>
 
-                {filterCategoria && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Categoría: {filterCategoria}
-                    <X
-                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                      onClick={() => setFilterCategoria("")}
-                    />
-                  </Badge>
-                )}
+              {filterCategoria && (
+                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
+                  Categoría: {filterCategoria}
+                  <X
+                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                    onClick={() => setFilterCategoria("")}
+                  />
+                </Badge>
+              )}
 
-                {filterMarca && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Marca: {filterMarca}
-                    <X
-                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                      onClick={() => setFilterMarca("")}
-                    />
-                  </Badge>
-                )}
+              {filterMarca && (
+                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
+                  Marca: {filterMarca}
+                  <X
+                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                    onClick={() => setFilterMarca("")}
+                  />
+                </Badge>
+              )}
 
-                {filterEstado && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Estado: {filterEstado}
-                    <X
-                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                      onClick={() => setFilterEstado("")}
-                    />
-                  </Badge>
-                )}
+              {filterEstado && (
+                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
+                  Estado: {filterEstado}
+                  <X
+                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                    onClick={() => setFilterEstado("")}
+                  />
+                </Badge>
+              )}
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto px-2 py-1 text-xs"
-                  onClick={() => {
-                    setFilterCategoria("");
-                    setFilterMarca("");
-                    setFilterEstado("");
-                  }}
-                >
-                  Limpiar todos
-                </Button>
-              </div>
-            )}
-          </CardHeader>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto px-2 py-1 text-xs"
+                onClick={() => {
+                  setFilterCategoria("");
+                  setFilterMarca("");
+                  setFilterEstado("");
+                }}
+              >
+                Limpiar todos
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* El Card ahora solo contiene la tabla */}
+        <Card>
           <Separator />
           <CardContent className="p-0">
             <GroupedInventoryTable
