@@ -21,6 +21,7 @@ import { useApp } from "@/contexts/app-context"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BrandCombobox } from "./brand-combobox"
 import { ProviderCombobox } from './provider-combobox';
+import { LocationCombobox } from './location-combobox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { InventoryItem } from "@/types/inventory";
 
@@ -45,6 +46,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
     category: product?.categoria || "",
     description: product?.descripcion || "",
     proveedor: product?.proveedor || "",
+    ubicacion: product?.ubicacion || "",
     fechaIngreso: product?.fechaIngreso || new Date().toISOString().split('T')[0],
     fechaAdquisicion: product?.fechaAdquisicion || "",
     contratoId: product?.contratoId || "",
@@ -78,6 +80,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
         category: product.categoria || "",
         description: product.descripcion || "",
         proveedor: product.proveedor || "",
+        ubicacion: product.ubicacion || "",
         fechaIngreso: product.fechaIngreso || new Date().toISOString().split('T')[0],
         fechaAdquisicion: product.fechaAdquisicion || "",
         contratoId: product.contratoId || "",
@@ -193,10 +196,9 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       descripcion: formData.description,
       fechaIngreso: formData.fechaIngreso,
       proveedor: formData.proveedor,
+      ubicacion: formData.ubicacion,
       fechaAdquisicion: formData.fechaAdquisicion,
       contratoId: formData.contratoId,
-      // Only update quantity/serial if the type (serialized/non-serialized) matches the original
-      // Or if the user explicitly changes the serial number toggle and provides valid input
       cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.quantity),
       numeroSerie: hasSerialNumber ? formData.serialNumber : null,
       costo: formData.costo ? parseFloat(formData.costo) : undefined,
@@ -224,7 +226,6 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
         const newItem: InventoryItem = {
           id: Math.floor(Math.random() * 10000), // ID Temporal
           estado: 'Disponible', // Estado por defecto
-          cantidad: hasSerialNumber ? 1 : Number(updates.cantidad),
           ...updates
         } as InventoryItem;
         addInventoryItem(newItem);
@@ -236,7 +237,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       setIsLoading(false);
       onOpenChange(false);
       onSuccess();
-    
+
     } else {
       // --- FLUJO PARA OTROS ROLES: CREAR TAREA PENDIENTE ---
       setTimeout(() => {
@@ -283,7 +284,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
               {product ? "Editar Producto" : "Añadir Producto"}
             </DialogTitle>
             <DialogDescription>
-              {product 
+              {product
                 ? `Modifica la información del producto "${product.nombre}".`
                 : "Añade un nuevo producto al inventario."
               }
@@ -340,6 +341,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Ubicación</Label>
+                  <LocationCombobox
+                    value={formData.ubicacion || ''}
+                    onValueChange={(val) => handleInputChange("ubicacion", val)}
+                    placeholder="Selecciona o escribe una ubicación"
+                  />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description">Descripción (opcional)</Label>

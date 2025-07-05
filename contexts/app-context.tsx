@@ -104,6 +104,7 @@ interface AppState {
   categorias: string[]
   marcas: string[]
   proveedores: string[];
+  ubicaciones: string[];
   retirementReasons: string[]
   userColumnPreferences: UserColumnPreference[]
   userTheme?: string // Añadimos el tema del usuario al estado
@@ -123,189 +124,36 @@ const defaultUsersData: User[] = [
 ]
 
 const defaultInventoryData: InventoryItem[] = [
-  {
-    id: 1,
-    nombre: "Laptop Dell XPS 15",
-    marca: "Dell",
-    modelo: "XPS 15",
-    categoria: "Laptops",
-    estado: "Disponible",
-    cantidad: 5,
-    numeroSerie: null,
-    fechaIngreso: "2023-01-15",
-    descripcion: "Laptop de alto rendimiento para uso profesional.",
-    isSerialized: false,
-    contratoId: null
-  },
-  {
-    id: 2,
-    nombre: "Monitor LG UltraWide",
-    marca: "LG",
-    modelo: "34WN780-B",
-    categoria: "Monitores",
-    estado: "Disponible",
-    cantidad: 10,
-    numeroSerie: null,
-    fechaIngreso: "2023-02-01",
-    descripcion: "Monitor ultrawide para productividad y multitarea.",
-    isSerialized: false,
-    contratoId: null
-  },
-  {
-    id: 3,
-    nombre: "Teclado Mecánico HyperX",
-    marca: "HyperX",
-    modelo: "Alloy Origins",
-    categoria: "Periféricos",
-    estado: "Asignado",
-    cantidad: 1,
-    numeroSerie: "HX-KB7RD2-US/RD",
-    fechaIngreso: "2023-03-10",
-    descripcion: "Teclado mecánico con switches rojos.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0015"
-  },
-  {
-    id: 4,
-    nombre: "Mouse Logitech MX Master 3",
-    marca: "Logitech",
-    modelo: "MX Master 3",
-    categoria: "Periféricos",
-    estado: "Prestado",
-    cantidad: 1,
-    numeroSerie: "910-005647",
-    fechaIngreso: "2023-04-05",
-    descripcion: "Mouse ergonómico de alta precisión.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0022"
-  },
-  {
-    id: 5,
-    nombre: "Servidor Dell PowerEdge R740",
-    marca: "Dell",
-    modelo: "PowerEdge R740",
-    categoria: "Servidores",
-    estado: "Retirado",
-    cantidad: 1,
-    numeroSerie: "SN-R740-001",
-    fechaIngreso: "2022-11-20",
-    descripcion: "Servidor de rack para centro de datos.",
-    isSerialized: true,
-    contratoId: "CONT-2022-0089"
-  },
-  {
-    id: 6,
-    nombre: "Router Wi-Fi TP-Link",
-    marca: "TP-Link",
-    modelo: "Archer AX50",
-    categoria: "Redes",
-    estado: "En Mantenimiento",
-    cantidad: 1,
-    numeroSerie: "AX50-SN-001",
-    fechaIngreso: "2023-05-12",
-    descripcion: "Router Wi-Fi 6 de doble banda.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0031"
-  },
-  {
-    id: 7,
-    nombre: "Impresora Multifuncional HP",
-    marca: "HP",
-    modelo: "OfficeJet Pro 9015",
-    categoria: "Impresoras",
-    estado: "Disponible",
-    cantidad: 3,
-    numeroSerie: null,
-    fechaIngreso: "2023-06-01",
-    descripcion: "Impresora multifuncional para oficina.",
-    isSerialized: false,
-    contratoId: "CONT-2023-0042"
-  },
-  {
-    id: 8,
-    nombre: "Cámara Web Logitech C920",
-    marca: "Logitech",
-    modelo: "C920",
-    categoria: "Periféricos",
-    estado: "Disponible",
-    cantidad: 7,
-    numeroSerie: null,
-    fechaIngreso: "2023-07-20",
-    descripcion: "Cámara web Full HD para videollamadas.",
-    isSerialized: false,
-    contratoId: null
-  },
-  {
-    id: 9,
-    nombre: "Disco Duro Externo Seagate",
-    marca: "Seagate",
-    modelo: "Expansion 2TB",
-    categoria: "Almacenamiento",
-    estado: "Disponible",
-    cantidad: 12,
-    numeroSerie: null,
-    fechaIngreso: "2023-08-01",
-    descripcion: "Disco duro externo USB 3.0 de 2TB.",
-    isSerialized: false,
-    contratoId: "CONT-2023-0053"
-  },
-  {
-    id: 10,
-    nombre: "Proyector Epson PowerLite",
-    marca: "Epson",
-    modelo: "1781W",
-    categoria: "Proyectores",
-    estado: "Disponible",
-    cantidad: 2,
-    numeroSerie: null,
-    fechaIngreso: "2023-09-10",
-    descripcion: "Proyector portátil para presentaciones.",
-    isSerialized: false,
-    contratoId: null
-  },
-  {
-    id: 11,
-    nombre: "Laptop Dell XPS 15",
-    marca: "Dell",
-    modelo: "XPS 15",
-    categoria: "Laptops",
-    estado: "Asignado",
-    cantidad: 1,
-    numeroSerie: "SN-XPS15-002",
-    fechaIngreso: "2023-01-15",
-    descripcion: "Laptop de alto rendimiento para uso profesional.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0015"
-  },
-  {
-    id: 12,
-    nombre: "Laptop Dell XPS 15",
-    marca: "Dell",
-    modelo: "XPS 15",
-    categoria: "Laptops",
-    estado: "Prestado",
-    cantidad: 1,
-    numeroSerie: "SN-XPS15-003",
-    fechaIngreso: "2023-01-15",
-    descripcion: "Laptop de alto rendimiento para uso profesional.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0015"
-  },
-  {
-    id: 13,
-    nombre: "Laptop Dell XPS 15",
-    marca: "Dell",
-    modelo: "XPS 15",
-    categoria: "Laptops",
-    estado: "PENDIENTE_DE_RETIRO",
-    cantidad: 1,
-    numeroSerie: "SN-XPS15-004",
-    fechaIngreso: "2023-01-15",
-    descripcion: "Laptop de alto rendimiento para uso profesional.",
-    isSerialized: true,
-    contratoId: "CONT-2023-0015"
-  },
-]
+  // Laptops
+  { id: 1, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-001", categoria: "Laptops", estado: "Asignado", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Oficina Principal - Piso 2", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true },
+  { id: 2, nombre: "Laptop de Gerencia", marca: "Apple", modelo: "MacBook Pro 16", numeroSerie: "AMBP16-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-03-20", ubicacion: "Almacén Central", proveedor: "iShop", costo: 2500, fechaAdquisicion: "2023-03-15", isSerialized: true },
+  { id: 3, nombre: "Estación de Trabajo Móvil", marca: "HP", modelo: "ZBook Fury G8", numeroSerie: "HPZF-003", categoria: "Laptops", estado: "En Mantenimiento", cantidad: 1, fechaIngreso: "2022-11-05", ubicacion: "Soporte Técnico", proveedor: "HP Directo", costo: 3100, fechaAdquisicion: "2022-10-25", isSerialized: true },
+  { id: 4, nombre: "Laptop para Viajes", marca: "Lenovo", modelo: "ThinkPad X1 Carbon", numeroSerie: "LTPX1-004", categoria: "Laptops", estado: "Prestado", cantidad: 1, fechaIngreso: "2023-05-10", ubicacion: "Oficina Principal - Piso 2", proveedor: "Compudel", costo: 1800, fechaAdquisicion: "2023-05-01", isSerialized: true },
+  { id: 20, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true },
+
+  // Monitores
+  { id: 5, nombre: "Monitor Curvo UltraWide", marca: "LG", modelo: "34WN780-B", numeroSerie: "LG34-005", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-02-01", ubicacion: "Oficina Principal - Piso 1", proveedor: "TecnoMundo", costo: 750, fechaAdquisicion: "2023-01-25", isSerialized: true },
+  { id: 6, nombre: "Monitor para Diseño Gráfico 4K", marca: "Dell", modelo: "UltraSharp U2721Q", numeroSerie: "DU27-006", categoria: "Monitores", estado: "Asignado", cantidad: 1, fechaIngreso: "2022-09-15", ubicacion: "Área de Diseño", proveedor: "Compudel", costo: 850, fechaAdquisicion: "2022-09-10", isSerialized: true },
+  { id: 7, nombre: "Monitor de Alta Tasa de Refresco", marca: "ASUS", modelo: "ROG Swift PG279Q", numeroSerie: "ASUSROG-007", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-06-01", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 650, fechaAdquisicion: "2023-05-28", isSerialized: true },
+
+  // Periféricos
+  { id: 8, nombre: "Teclado Mecánico Inalámbrico", marca: "Logitech", modelo: "MX Mechanical", numeroSerie: null, categoria: "Periféricos", estado: "Disponible", cantidad: 10, fechaIngreso: "2023-04-10", ubicacion: "Almacén Central", proveedor: "OfficeDepot", costo: 170, fechaAdquisicion: "2023-04-05", isSerialized: false },
+  { id: 9, nombre: "Mouse Ergonómico Vertical", marca: "Logitech", modelo: "MX Vertical", numeroSerie: "LOGIMXV-009", categoria: "Periféricos", estado: "Asignado", cantidad: 1, fechaIngreso: "2023-02-20", ubicacion: "Oficina Principal - Piso 2", proveedor: "OfficeDepot", costo: 100, fechaAdquisicion: "2023-02-15", isSerialized: true },
+  { id: 10, nombre: "Webcam 4K", marca: "Logitech", modelo: "Brio 4K", numeroSerie: null, categoria: "Periféricos", estado: "Disponible", cantidad: 5, fechaIngreso: "2023-05-30", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 200, fechaAdquisicion: "2023-05-25", isSerialized: false },
+
+  // Servidores y Redes
+  { id: 11, nombre: "Servidor de Rack 2U", marca: "Dell", modelo: "PowerEdge R740", numeroSerie: "DPER740-011", categoria: "Servidores", estado: "Retirado", cantidad: 1, fechaIngreso: "2020-05-15", ubicacion: "Data Center A", proveedor: "HP Directo", costo: 5000, fechaAdquisicion: "2020-05-01", isSerialized: true },
+  { id: 12, nombre: "Switch Gestionable 48 Puertos", marca: "Cisco", modelo: "Catalyst 2960", numeroSerie: "CISCO2960-012", categoria: "Redes", estado: "En Mantenimiento", cantidad: 1, fechaIngreso: "2021-08-10", ubicacion: "Data Center A", proveedor: "TecnoMundo", costo: 1200, fechaAdquisicion: "2021-08-01", isSerialized: true },
+  { id: 13, nombre: "Firewall de Próxima Generación", marca: "Palo Alto", modelo: "PA-220", numeroSerie: "PALO-220-013", categoria: "Seguridad", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-07-01", ubicacion: "Data Center B", proveedor: "HP Directo", costo: 900, fechaAdquisicion: "2023-06-20", isSerialized: true },
+
+  // Otros
+  { id: 14, nombre: "Proyector Full HD para Sala de Juntas", marca: "Epson", modelo: "PowerLite 1080", numeroSerie: "EPSONPL-014", categoria: "Audiovisual", estado: "Disponible", cantidad: 1, fechaIngreso: "2022-06-10", ubicacion: "Sala de Juntas 1", proveedor: "OfficeDepot", costo: 800, fechaAdquisicion: "2022-06-01", isSerialized: true },
+  { id: 15, nombre: "Impresora Multifuncional Láser", marca: "HP", modelo: "LaserJet Pro M428fdw", numeroSerie: "HPLJM-015", categoria: "Impresoras", estado: "PENDIENTE_DE_RETIRO", cantidad: 1, fechaIngreso: "2021-01-20", ubicacion: "Área de Copiado", proveedor: "HP Directo", costo: 450, fechaAdquisicion: "2021-01-15", isSerialized: true },
+  { id: 16, nombre: "Tableta Gráfica Profesional", marca: "Wacom", modelo: "Intuos Pro M", numeroSerie: "WIPM-016", categoria: "Periféricos", estado: "Prestado", cantidad: 1, fechaIngreso: "2023-08-01", ubicacion: "Área de Diseño", proveedor: "TecnoMundo", costo: 380, fechaAdquisicion: "2023-07-25", isSerialized: true },
+  { id: 17, nombre: "Docking Station USB-C", marca: "Dell", modelo: "WD19S", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 20, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 250, fechaAdquisicion: "2023-01-10", isSerialized: false },
+  { id: 18, nombre: "Router Wi-Fi Mesh (Pack de 3)", marca: "Google", modelo: "Nest Wifi", numeroSerie: null, categoria: "Redes", estado: "Disponible", cantidad: 2, fechaIngreso: "2023-09-01", ubicacion: "Almacén Central", proveedor: "iShop", costo: 300, fechaAdquisicion: "2023-08-20", isSerialized: false },
+  { id: 19, nombre: "Lector de Código de Barras", marca: "Zebra", modelo: "DS2208", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 8, fechaIngreso: "2022-12-10", ubicacion: "Almacén de Activos", proveedor: "Compudel", costo: 150, fechaAdquisicion: "2022-12-01", isSerialized: false }
+];
 
 const defaultAsignadosData: AsignadoItem[] = [
   {
@@ -485,9 +333,10 @@ const defaultInitialState: AppState = {
     "Almacenamiento",
     "Proyectores",
   ],
-  marcas: ["Dell", "LG", "HyperX", "Logitech", "TP-Link", "HP", "Seagate", "Epson"],
+  marcas: [],
   proveedores: [],
-  retirementReasons: ["Fin de vida útil", "Obsoleto", "Dañado", "Perdido", "Robado", "Donación"],
+  ubicaciones: [],
+  retirementReasons: ["Fin de vida útil", "Dañado sin reparación"],
   userColumnPreferences: [],
   error: null,
   isDragOver: false,
@@ -507,9 +356,10 @@ type AppAction =
   | { type: 'UPDATE_USER_THEME'; payload: string }
   | { type: 'SET_MARCAS'; payload: string[] }
   | { type: 'SET_PROVEEDORES'; payload: string[] }
+  | { type: 'SET_UBICACIONES'; payload: string[] }
   | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest };
 
-// Definición del tipo para el contexto de la aplicación
+// Definición de la interfaz para el valor del contexto
 interface AppContextType {
   state: AppState
   dispatch: (action: AppAction) => void
@@ -541,6 +391,7 @@ interface AppContextType {
   updateUserTheme: (theme: string) => void
   updateMarcas: (marcas: string[]) => void
   updateProveedores: (proveedores: string[]) => void;
+  updateUbicaciones: (ubicaciones: string[]) => void;
 }
 
 // Creación del contexto
@@ -639,6 +490,12 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setState(prev => ({
           ...prev,
           proveedores: action.payload
+        }));
+        break;
+      case 'SET_UBICACIONES':
+        setState(prev => ({
+          ...prev,
+          ubicaciones: action.payload
         }));
         break;
       case 'ADD_PENDING_REQUEST':
@@ -854,73 +711,58 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     dispatch({ type: 'SET_PROVEEDORES', payload: proveedores });
   }, [dispatch]);
 
-  const value = React.useMemo(
-    () => ({
-      state,
-      dispatch,
-      setUser,
-      updateInventory,
-      addInventoryItem,
-      updateInventoryItem,
-      updateInventoryItemStatus: (id: number, status: string) => {
-        updateInventoryItem(id, { estado: status as "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO" })
-      },
-      removeInventoryItem,
-      updateAsignados,
-      addAssignment,
-      removeAssignment,
-      updateAssignmentStatus,
-      updatePrestamos,
-      addLoan,
-      removeLoan,
-      updateLoanStatus,
-      updateSolicitudes,
-      addSolicitudAcceso,
-      updateSolicitudStatus,
-      updatePendingActionRequests,
-      addPendingRequest,
-      addRecentActivity,
-      updateUserInUsersData,
-      addUserToUsersData,
-      addPendingTask,
-      updatePendingTask,
-      updateUserColumnPreferences,
-      updateUserTheme,
-      updateMarcas,
-      updateProveedores,
-    }),
-    [
-      state,
-      dispatch,
-      setUser,
-      updateInventory,
-      addInventoryItem,
-      updateInventoryItem,
-      removeInventoryItem,
-      updateAsignados,
-      addAssignment,
-      removeAssignment,
-      updateAssignmentStatus,
-      updatePrestamos,
-      addLoan,
-      removeLoan,
-      updateLoanStatus,
-      updateSolicitudes,
-      addSolicitudAcceso,
-      updateSolicitudStatus,
-      updatePendingActionRequests,
-      addPendingRequest,
-      addRecentActivity,
-      updateUserInUsersData,
-      addUserToUsersData,
-      addPendingTask,
-      updatePendingTask,
-      updateUserColumnPreferences,
-      updateUserTheme,
-      updateMarcas,
-      updateProveedores,
-    ],
-  )
+  const updateUbicaciones = useCallback((ubicaciones: string[]) => {
+    dispatch({ type: 'SET_UBICACIONES', payload: ubicaciones });
+  }, [dispatch]);
+
+  // Efecto para inicializar marcas y proveedores desde los datos de inventario
+  useEffect(() => {
+    const allMarcas = [...new Set(state.inventoryData.map(item => item.marca))];
+    updateMarcas(allMarcas);
+
+    const allProveedores = [...new Set(state.inventoryData.map(item => item.proveedor).filter(Boolean) as string[])];
+    updateProveedores(allProveedores);
+
+    const allUbicaciones = [...new Set(state.inventoryData.map(item => item.ubicacion).filter(Boolean) as string[])];
+    updateUbicaciones(allUbicaciones);
+
+  }, [state.inventoryData, updateMarcas, updateProveedores, updateUbicaciones]);
+
+  const value = {
+    state,
+    dispatch,
+    setUser,
+    updateInventory,
+    addInventoryItem,
+    updateInventoryItem,
+    updateInventoryItemStatus: (id: number, status: string) => {
+      updateInventoryItem(id, { estado: status as "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO" })
+    },
+    removeInventoryItem,
+    updateAsignados,
+    addAssignment,
+    removeAssignment,
+    updateAssignmentStatus,
+    updatePrestamos,
+    addLoan,
+    removeLoan,
+    updateLoanStatus,
+    updateSolicitudes,
+    addSolicitudAcceso,
+    updateSolicitudStatus,
+    updatePendingActionRequests,
+    addPendingRequest,
+    addRecentActivity,
+    updateUserInUsersData,
+    addUserToUsersData,
+    addPendingTask,
+    updatePendingTask,
+    updateUserColumnPreferences,
+    updateUserTheme,
+    updateMarcas,
+    updateProveedores,
+    updateUbicaciones,
+  }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }

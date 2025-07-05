@@ -42,8 +42,12 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                                 <p>{product.categoria}</p>
                             </div>
                             <div>
-                              <span className="text-sm text-muted-foreground">Proveedor:</span>
-                              <p>{product.proveedor || 'No especificado'}</p>
+                                <span className="text-sm text-muted-foreground">Proveedor:</span>
+                                <p>{product.proveedor || 'No especificado'}</p>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted-foreground">Ubicación:</span>
+                                <p>{product.ubicacion || 'No especificada'}</p>
                             </div>
                             <div>
                                 <span className="text-sm text-muted-foreground">Estado:</span>
@@ -59,7 +63,7 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                                 <span className="text-sm text-muted-foreground">Descripción:</span>
                                 <p>{product.descripcion}</p>
                             </div>
-                            {product.asignadoA && (
+                            {/* {product.asignadoA && (
                                 <div>
                                     <span className="text-sm text-muted-foreground">Asignado a:</span>
                                     <p>{product.asignadoA}</p>
@@ -70,7 +74,7 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                                     <span className="text-sm text-muted-foreground">Fecha de Asignación:</span>
                                     <p>{new Date(product.fechaAsignacion).toLocaleDateString()}</p>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 </div>

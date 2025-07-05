@@ -90,6 +90,7 @@ import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
 import { DateRange } from "react-day-picker"
 import { AdvancedFilterState } from "@/types/inventory"
 import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
+import { LocationCombobox } from '@/components/location-combobox';
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -142,6 +143,7 @@ const allColumns: ColumnDefinition[] = [
   { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true, type: 'string' },
   { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: false },
   { id: "categoria", label: "Categoría", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "ubicacion", label: "Ubicación", defaultVisible: false, sortable: true, type: 'string' },
   { id: "estado", label: "Estado", defaultVisible: true, sortable: true, type: 'status' },
   { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: true, type: 'string' },
   { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: true, type: 'date' },
@@ -425,12 +427,14 @@ export default function InventarioPage() {
         return item.marca;
       case "modelo":
         return item.modelo;
-      case "categoria":
-        return item.categoria;
-      case "estado":
-        return item.estado;
       case "numeroSerie":
         return item.numeroSerie || "";
+      case "categoria":
+        return item.categoria;
+      case "ubicacion":
+        return item.ubicacion || null;
+      case "estado":
+        return item.estado;
       case "proveedor":
         return item.proveedor || null;
       case "fechaAdquisicion":
@@ -906,7 +910,8 @@ export default function InventarioPage() {
       contratoId: (formData.get("contratoId") as string) || null,
       costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
       garantia: (formData.get("garantia") as string | null) ?? undefined,
-      vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined
+      vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined,
+      ubicacion: formData.get("ubicacion") as string || null,
     }
 
     if (state.user?.rol === "Editor") {

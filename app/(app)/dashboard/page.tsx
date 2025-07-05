@@ -59,7 +59,7 @@ export default function DashboardPage() {
   const lentProducts = state.prestamosData.filter((item) => item.estado === "Activo").length
   const retiredProducts = state.inventoryData.filter((item) => item.estado === "Retirado").length
 
-  const pendingTasks = state.pendingTasksData.filter((task) => task.status === "Pendiente").length
+  const pendingTasks = state.tasks ? state.tasks.filter((task) => task.status === "Pendiente").length : 0;
 
   const prestamosVencidos = state.prestamosData.filter((p) => p.estado === "Vencido") as PrestamoItemExtended[];
   const prestamosPorVencer = state.prestamosData.filter(
