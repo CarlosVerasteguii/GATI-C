@@ -467,7 +467,7 @@ export default function InventarioPage() {
           // Normalizamos las fechas para ignorar la hora
           const startDate = new Date(advancedFilters.fechaInicio.setHours(0, 0, 0, 0));
           const endDate = new Date(advancedFilters.fechaFin.setHours(23, 59, 59, 999));
-          
+
           if (itemDate < startDate || itemDate > endDate) {
             return false;
           }
@@ -1274,10 +1274,10 @@ export default function InventarioPage() {
     const column = columns.find((col) => col.id === columnId)
     if (column?.fixed) return // Prevent toggling fixed columns
 
-    setColumns((prev) => 
-      prev.map(col => 
-        col.id === columnId 
-          ? { ...col, visible: checked } 
+    setColumns((prev) =>
+      prev.map(col =>
+        col.id === columnId
+          ? { ...col, visible: checked }
           : col
       )
     )
@@ -1506,54 +1506,54 @@ export default function InventarioPage() {
               </div>
             </div>
 
-            { (filterCategoria || filterMarca || filterEstado) && (
-  <div className="flex items-center gap-2 mb-4">
-    <p className="text-sm text-muted-foreground">Filtros activos:</p>
+            {(filterCategoria || filterMarca || filterEstado) && (
+              <div className="flex items-center gap-2 mb-4">
+                <p className="text-sm text-muted-foreground">Filtros activos:</p>
 
-    {filterCategoria && (
-      <Badge variant="secondary" className="flex items-center gap-1">
-        Categoría: {filterCategoria}
-        <X
-          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-          onClick={() => setFilterCategoria("")}
-        />
-      </Badge>
-    )}
+                {filterCategoria && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    Categoría: {filterCategoria}
+                    <X
+                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                      onClick={() => setFilterCategoria("")}
+                    />
+                  </Badge>
+                )}
 
-    {filterMarca && (
-      <Badge variant="secondary" className="flex items-center gap-1">
-        Marca: {filterMarca}
-        <X
-          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-          onClick={() => setFilterMarca("")}
-        />
-      </Badge>
-    )}
+                {filterMarca && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    Marca: {filterMarca}
+                    <X
+                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                      onClick={() => setFilterMarca("")}
+                    />
+                  </Badge>
+                )}
 
-    {filterEstado && (
-      <Badge variant="secondary" className="flex items-center gap-1">
-        Estado: {filterEstado}
-        <X
-          className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-          onClick={() => setFilterEstado("")}
-        />
-      </Badge>
-    )}
+                {filterEstado && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    Estado: {filterEstado}
+                    <X
+                      className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+                      onClick={() => setFilterEstado("")}
+                    />
+                  </Badge>
+                )}
 
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-auto px-2 py-1 text-xs"
-      onClick={() => {
-        setFilterCategoria("");
-        setFilterMarca("");
-        setFilterEstado("");
-      }}
-    >
-      Limpiar todos
-    </Button>
-  </div>
-)}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs"
+                  onClick={() => {
+                    setFilterCategoria("");
+                    setFilterMarca("");
+                    setFilterEstado("");
+                  }}
+                >
+                  Limpiar todos
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <Separator />
           <CardContent className="p-0">
@@ -1657,8 +1657,8 @@ export default function InventarioPage() {
 
       {/* Panel de Detalles */}
       <DetailSheet
-        isOpen={isDetailSheetOpen}
-        onClose={() => setIsDetailSheetOpen(false)}
+        open={isDetailSheetOpen}
+        onOpenChange={setIsDetailSheetOpen}
         product={selectedProduct}
       />
 
