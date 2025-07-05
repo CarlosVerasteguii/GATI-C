@@ -50,6 +50,10 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                                 <p>{product.ubicacion || 'No especificada'}</p>
                             </div>
                             <div>
+                                <span className="text-sm text-muted-foreground">ID de Contrato:</span>
+                                <p>{product.contratoId || 'No especificado'}</p>
+                            </div>
+                            <div>
                                 <span className="text-sm text-muted-foreground">Estado:</span>
                                 <p>{product.estado}</p>
                             </div>

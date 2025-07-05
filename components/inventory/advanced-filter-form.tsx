@@ -4,6 +4,7 @@ import * as React from 'react';
 import { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
 import { AdvancedFilterState } from '@/types/inventory';
 import { ProviderCombobox } from '@/components/provider-combobox'; // Importar ComboBox
@@ -66,6 +67,16 @@ export function AdvancedFilterForm({
             setLocalFilters(prev => ({ ...prev, proveedor: provider }));
           }}
           placeholder="Selecciona un proveedor"
+        />
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <Label htmlFor="contrato-filter">ID de Contrato</Label>
+        <Input
+          id="contrato-filter"
+          placeholder="Ej: CFE-2024-001"
+          value={localFilters.contratoId || ''}
+          onChange={(e) => setLocalFilters(prev => ({ ...prev, contratoId: e.target.value }))}
         />
       </div>
 

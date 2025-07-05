@@ -59,9 +59,10 @@ export interface GroupedProduct {
 }
 
 export interface AdvancedFilterState {
-  fechaInicio: Date | null;
-  fechaFin: Date | null;
-  proveedor: string;
+    fechaInicio: Date | null;
+    fechaFin: Date | null;
+    proveedor: string;
+    contratoId: string;
 }
 
 // Definición de una columna en la tabla de inventario

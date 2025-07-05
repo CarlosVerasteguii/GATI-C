@@ -60,7 +60,6 @@ export default function DashboardPage() {
   const assignedProducts = state.inventoryData.filter(item => item.estado === 'Asignado').length;
   const lentProducts = state.inventoryData.filter(item => item.estado === 'Prestado').length;
   const retiredProducts = state.inventoryData.filter(item => item.estado === 'Retirado').length;
-  const maintenanceProducts = state.inventoryData.filter(item => item.estado === 'En Mantenimiento').length;
 
   // Lógica de Tareas Pendientes (ya estaba correcta)
   const pendingTasks = state.tasks ? state.tasks.filter(task => task.status === 'Pendiente').length : 0;

@@ -442,11 +442,12 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contratoId">SICE / Contrato ID</Label>
+                  <Label htmlFor="contratoId">ID de Contrato</Label>
                   <Input
                     id="contratoId"
-                    value={formData.contratoId}
+                    value={formData.contratoId || ''}
                     onChange={(e) => handleInputChange("contratoId", e.target.value)}
+                    placeholder="Ej: CFE-2024-001"
                   />
                 </div>
                 <div className="space-y-2">

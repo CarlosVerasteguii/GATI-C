@@ -246,6 +246,7 @@ export default function InventarioPage() {
     fechaInicio: null,
     fechaFin: null,
     proveedor: '',
+    contratoId: '',
   });
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
@@ -360,7 +361,7 @@ export default function InventarioPage() {
     setFilterCategoria("");
     setFilterMarca("");
     setFilterEstado("");
-    setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '' });
+    setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '', contratoId: '' });
     setCurrentPage(1); // Volver a la primera página al limpiar filtros
   };
 
@@ -489,7 +490,12 @@ export default function InventarioPage() {
           }
         }
 
-        // Aquí añadiremos la lógica para otros filtros avanzados
+        // Filtro por ID de Contrato
+        if (advancedFilters.contratoId) {
+          if (!item.contratoId || !item.contratoId.toLowerCase().includes(advancedFilters.contratoId.toLowerCase())) {
+            return false;
+          }
+        }
 
         return true; // Si pasa todos los filtros avanzados
       };
