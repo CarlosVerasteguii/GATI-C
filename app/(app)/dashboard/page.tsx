@@ -55,16 +55,21 @@ export default function DashboardPage() {
 
   const totalProducts = state.inventoryData.length
   const availableProducts = state.inventoryData.filter((item) => item.estado === "Disponible").length
-  const assignedProducts = state.asignadosData.filter((item) => item.estado === "Activo").length
-  const lentProducts = state.prestamosData.filter((item) => item.estado === "Activo").length
-  const retiredProducts = state.inventoryData.filter((item) => item.estado === "Retirado").length
 
-  const pendingTasks = state.tasks ? state.tasks.filter((task) => task.status === "Pendiente").length : 0;
+  // Derivar todas las métricas del inventario principal
+  const assignedProducts = state.inventoryData.filter(item => item.estado === 'Asignado').length;
+  const lentProducts = state.inventoryData.filter(item => item.estado === 'Prestado').length;
+  const retiredProducts = state.inventoryData.filter(item => item.estado === 'Retirado').length;
+  const maintenanceProducts = state.inventoryData.filter(item => item.estado === 'En Mantenimiento').length;
 
-  const prestamosVencidos = state.prestamosData.filter((p) => p.estado === "Vencido") as PrestamoItemExtended[];
-  const prestamosPorVencer = state.prestamosData.filter(
-    (p) => p.estado === "Activo" && p.diasRestantes && p.diasRestantes <= 7,
-  );
+  // Lógica de Tareas Pendientes (ya estaba correcta)
+  const pendingTasks = state.tasks ? state.tasks.filter(task => task.status === 'Pendiente').length : 0;
+
+  // --- Lógica para Préstamos Vencidos y Por Vencer (Placeholder) ---
+  // NOTA: La estructura de `InventoryItem` no tiene `diasRestantes` o estado de préstamo "Vencido".
+  // Dejaremos esto como un placeholder para una futura implementación.
+  const prestamosVencidos: PrestamoItemExtended[] = [];
+  const prestamosPorVencer: PrestamoItemExtended[] = [];
 
   const handleLoanClick = (loan: any, type: "overdue" | "expiring") => {
     setSelectedLoan(loan)
