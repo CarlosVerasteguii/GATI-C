@@ -247,6 +247,8 @@ export default function InventarioPage() {
     fechaFin: null,
     proveedor: '',
     contratoId: '',
+    costoMin: null,
+    costoMax: null,
   });
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
@@ -361,7 +363,15 @@ export default function InventarioPage() {
     setFilterCategoria("");
     setFilterMarca("");
     setFilterEstado("");
-    setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '', contratoId: '' });
+    setHasSerialNumber(false);
+    setAdvancedFilters({
+      fechaInicio: null,
+      fechaFin: null,
+      proveedor: "",
+      contratoId: "",
+      costoMin: null,
+      costoMax: null,
+    });
     setCurrentPage(1); // Volver a la primera página al limpiar filtros
   };
 
@@ -493,6 +503,21 @@ export default function InventarioPage() {
         // Filtro por ID de Contrato
         if (advancedFilters.contratoId) {
           if (!item.contratoId || !item.contratoId.toLowerCase().includes(advancedFilters.contratoId.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Filtro por Rango de Costo
+        if (item.costo !== null && item.costo !== undefined) {
+          if (advancedFilters.costoMin !== null && item.costo < advancedFilters.costoMin) {
+            return false;
+          }
+          if (advancedFilters.costoMax !== null && item.costo > advancedFilters.costoMax) {
+            return false;
+          }
+        } else {
+          // Si el ítem no tiene costo, no coincide si se especifica un rango
+          if (advancedFilters.costoMin !== null || advancedFilters.costoMax !== null) {
             return false;
           }
         }

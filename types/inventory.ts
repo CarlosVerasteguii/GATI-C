@@ -63,6 +63,8 @@ export interface AdvancedFilterState {
     fechaFin: Date | null;
     proveedor: string;
     contratoId: string;
+    costoMin: number | null;
+    costoMax: number | null;
 }
 
 // Definición de una columna en la tabla de inventario
