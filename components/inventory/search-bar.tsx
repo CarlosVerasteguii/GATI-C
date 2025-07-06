@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Search, X } from 'lucide-react';
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface SearchBarProps {
     initialValue?: string;
@@ -12,10 +13,20 @@ interface SearchBarProps {
 
 export function SearchBar({ initialValue = '', onSearchChange, placeholder, className }: SearchBarProps) {
     const [value, setValue] = React.useState(initialValue);
+    const debouncedValue = useDebounce(value, 300); // 300ms de retraso
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
-        onSearchChange(e.target.value);
+    };
+
+    // Este useEffect ahora notificará al padre solo cuando el valor "debounced" cambie
+    React.useEffect(() => {
+        onSearchChange(debouncedValue);
+    }, [debouncedValue, onSearchChange]);
+
+    // El botón de limpiar ahora solo necesita setear el valor local
+    const handleClear = () => {
+        setValue('');
     };
 
     return (
@@ -29,10 +40,7 @@ export function SearchBar({ initialValue = '', onSearchChange, placeholder, clas
             />
             {value && (
                 <button
-                    onClick={() => {
-                        setValue('');
-                        onSearchChange('');
-                    }}
+                    onClick={handleClear} // Usar el nuevo handler
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
                     aria-label="Limpiar búsqueda"
                 >

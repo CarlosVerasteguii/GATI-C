@@ -4,6 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,6 +14,19 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { InventoryItem, ColumnDefinition } from '@/types/inventory';
+import { cn } from "@/lib/utils";
+
+const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'destructive' | 'outline' | 'secondary' => {
+    switch (status) {
+        case 'Disponible': return 'default';
+        case 'Asignado':
+        case 'Prestado': return 'secondary';
+        case 'En Mantenimiento': return 'outline';
+        case 'PENDIENTE_DE_RETIRO':
+        case 'Retirado': return 'destructive';
+        default: return 'secondary';
+    }
+};
 
 interface ChildRowProps {
     asset: InventoryItem;
@@ -33,18 +47,36 @@ export function ChildRow({
     isLector,
     onAction
 }: ChildRowProps) {
+    const isSelected = selectedRowIds.includes(asset.id);
+
     return (
-        <TableRow className={isHighlighted ? "bg-green-100 dark:bg-green-900/30" : ""}>
+        <TableRow className={cn(
+            isHighlighted && "bg-green-100 dark:bg-green-900/30",
+            isSelected && "bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-100/90 dark:hover:bg-blue-900/50"
+        )}>
             <TableCell className="pl-12">
                 {!isLector && (
                     <Checkbox
-                        checked={selectedRowIds.includes(asset.id)}
+                        checked={isSelected}
                         onCheckedChange={(checked) => onRowSelect(asset.id, !!checked)}
                     />
                 )}
             </TableCell>
             <TableCell />
             {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+                // Si la columna es 'marca' o 'modelo', renderiza una celda vacía para mantener la alineación.
+                if (col.id === 'marca' || col.id === 'modelo') {
+                    return <TableCell key={col.id} />;
+                }
+
+                if (col.id === 'estado') {
+                    return (
+                        <TableCell key={col.id}>
+                            <Badge variant={getStatusVariant(asset.estado)}>{asset.estado}</Badge>
+                        </TableCell>
+                    );
+                }
+
                 const value = asset[col.id as keyof InventoryItem];
                 let content: React.ReactNode;
 
@@ -64,7 +96,7 @@ export function ChildRow({
                             content = 'N/A';
                         }
                 }
-                
+
                 return <TableCell key={col.id}>{content}</TableCell>;
             })}
             <TableCell className="text-right">

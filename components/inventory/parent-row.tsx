@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GroupedProduct, ColumnDefinition } from '@/types/inventory';
+import { cn } from "@/lib/utils";
 
 interface ParentRowProps {
     parentProduct: GroupedProduct;
@@ -45,6 +46,8 @@ export function ParentRow({
 }: ParentRowProps) {
     const { product, summary } = parentProduct;
 
+    const areAllChildrenSelected = parentProduct.children.length > 0 && parentProduct.children.every(child => selectedRowIds.includes(child.id));
+
     const renderEstadoTooltip = () => (
         <div className="flex flex-col gap-1 p-1 text-xs">
             <h4 className="font-bold text-sm mb-1">Desglose de Stock</h4>
@@ -55,11 +58,14 @@ export function ParentRow({
     );
 
     return (
-        <TableRow className="bg-muted/50 hover:bg-muted/80">
+        <TableRow className={cn(
+            "bg-muted/50 hover:bg-muted/80",
+            areAllChildrenSelected && "bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-100/90 dark:hover:bg-blue-900/50"
+        )}>
             <TableCell>
                 {!isLector && (
                     <Checkbox
-                        checked={parentProduct.children.every(child => selectedRowIds.includes(child.id))}
+                        checked={areAllChildrenSelected}
                         onCheckedChange={(checked) => onParentRowSelect(parentProduct, !!checked)}
                     />
                 )}
@@ -75,7 +81,7 @@ export function ParentRow({
                             className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
                         />
                     </Button>
-                    <span>{product.nombre}</span>
+                    <span className="font-semibold">{product.nombre}</span>
                 </div>
             </TableCell>
             {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
