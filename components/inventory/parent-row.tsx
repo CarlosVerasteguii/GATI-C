@@ -59,8 +59,9 @@ export function ParentRow({
 
     return (
         <TableRow className={cn(
-            "bg-muted/50 hover:bg-muted/80",
-            areAllChildrenSelected && "bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-100/90 dark:hover:bg-blue-900/50"
+            "bg-muted/50",
+            areAllChildrenSelected && "bg-blue-100 dark:bg-blue-900/40",
+            "hover:border-l-4 hover:border-l-green-500 transition-all duration-150"
         )}>
             <TableCell>
                 {!isLector && (
