@@ -92,6 +92,7 @@ import { DateRange } from "react-day-picker"
 import { AdvancedFilterState } from "@/types/inventory"
 import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
 import { LocationCombobox } from '@/components/location-combobox';
+import { SearchBar } from "@/components/inventory/search-bar";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -1501,10 +1502,10 @@ export default function InventarioPage() {
           <div className="flex items-center justify-between">
             {/* Grupo Izquierdo: Búsqueda y Filtros Rápidos */}
             <div className="flex items-center gap-2 flex-1">
-              <Input
+              <SearchBar
+                initialValue={searchTerm}
+                onSearchChange={setSearchTerm}
                 placeholder="Buscar por nombre, marca, modelo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full max-w-sm"
               />
               <FilterPopover
