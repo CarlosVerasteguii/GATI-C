@@ -57,6 +57,18 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                                 <span className="text-sm text-muted-foreground">Estado:</span>
                                 <p>{product.estado}</p>
                             </div>
+                            {product.estado === 'Asignado' && (
+                                <>
+                                    <div>
+                                        <span className="text-sm text-muted-foreground">Asignado a:</span>
+                                        <p>{product.asignadoA || 'No especificado'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-sm text-muted-foreground">Fecha de Asignación:</span>
+                                        <p>{product.fechaAsignacion || 'No especificada'}</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 

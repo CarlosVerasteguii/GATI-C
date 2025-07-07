@@ -155,7 +155,7 @@ const allColumns: ColumnDefinition[] = [
 ]
 
 export default function InventarioPage() {
-  const { state, dispatch: appDispatch } = useApp()
+  const { state, dispatch: appDispatch, liberarAsignacion } = useApp()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -467,8 +467,24 @@ export default function InventarioPage() {
 
   // Unified filtering, sorting and grouping logic
   const groupedAndFilteredData: any[] = useMemo(() => { // <-- Usamos any[] temporalmente
-    // 1. LÓGICA DE FILTRADO Y ORDENAMIENTO
-    let data = state.inventoryData.filter((item: InventoryItem) => { // <-- Usamos any
+    // 1. EXPANSIÓN VIRTUAL (NUEVO PASO)
+    const expandedInventory = state.inventoryData.flatMap(item => {
+      if (item.isSerialized === false && item.cantidad > 1) {
+        // Si no es serializado y es un stack, crea un array de items virtuales
+        return Array.from({ length: item.cantidad }, (_, index) => ({
+          ...item,
+          id: Number(`${item.id}.${index}`), // ID virtual único para la key de React
+          cantidad: 1, // Cada item virtual es una unidad
+          isVirtual: true, // Flag para saber que es una copia
+          originalId: item.id // Referencia al stack original
+        }));
+      }
+      // Los items serializados o con cantidad 1 pasan tal cual
+      return { ...item, isVirtual: false };
+    });
+
+    // 2. LÓGICA DE FILTRADO (AHORA OPERA SOBRE expandedInventory)
+    const filteredData = expandedInventory.filter((item: InventoryItem) => {
       const lowercasedQuery = searchTerm.toLowerCase();
       const matchesSearch = searchTerm === "" ||
         (item.nombre?.toLowerCase().includes(lowercasedQuery)) ||
@@ -530,11 +546,9 @@ export default function InventarioPage() {
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado && matchesSerialNumber && matchesAdvancedFilters();
     });
 
-
-
-    // 2. LÓGICA DE AGRUPAMIENTO
+    // 3. LÓGICA DE AGRUPAMIENTO (SIN CAMBIOS, AHORA RECIBE DATOS "CORRECTOS")
     const productGroups: { [key: string]: any } = {};
-    data.forEach((item: InventoryItem) => { // <-- Agregamos tipo explícito InventoryItem
+    filteredData.forEach((item: any) => {
       const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
       if (!productGroups[groupKey]) {
         productGroups[groupKey] = {
@@ -675,7 +689,7 @@ export default function InventarioPage() {
   const handleEdit = (product: InventoryItem) => {
     setSelectedProduct(product)
     setModalMode("edit")
-    setHasSerialNumber(!!product.numeroSerie)
+    setHasSerialNumber(product.numeroSerie !== null && product.numeroSerie !== '')
     setTempMarca(product.marca)
     setIsAddProductModalOpen(true)
   }
@@ -731,13 +745,11 @@ export default function InventarioPage() {
   }
 
   const handleAddProduct = () => {
-    console.log("Debug: 1. handleAddProduct INICIADO"); // <-- LOG 1
     setSelectedProduct(null)
     setModalMode("add")
     setHasSerialNumber(false)
     setTempMarca("")
     setIsAddProductModalOpen(true)
-    console.log("Debug: 2. handleAddProduct FINALIZADO, isAddProductModalOpen debería ser true"); // <-- LOG 2
   }
 
   const executeSaveProduct = (productData: Partial<InventoryItem>) => {
@@ -1398,6 +1410,15 @@ export default function InventarioPage() {
       case 'Reactivar':
         handleReactivate(targetItem);
         break;
+      case 'liberar':
+        if ('id' in targetItem) {
+          liberarAsignacion(targetItem.id);
+          showSuccess({
+            title: "Activo Liberado",
+            description: `El activo "${targetItem.nombre}" ha sido marcado como Disponible.`,
+          });
+        }
+        break;
       default:
         console.warn(`Acción no manejada: ${action}`);
     }
@@ -1715,6 +1736,8 @@ export default function InventarioPage() {
         onOpenChange={setIsAddProductModalOpen}
         product={selectedProduct}
         onSuccess={handleBulkSuccess}
+        hasSerialNumber={hasSerialNumber}
+        setHasSerialNumber={setHasSerialNumber}
       />
 
       {/* Modal de Mantenimiento */}

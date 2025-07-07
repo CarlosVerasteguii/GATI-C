@@ -367,6 +367,7 @@ interface AppContextType {
   updateInventory: (inventory: InventoryItem[]) => void
   addInventoryItem: (item: InventoryItem) => void
   updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void
+  liberarAsignacion: (itemId: number) => void
   updateInventoryItemStatus: (id: number, status: string) => void
   removeInventoryItem: (id: number) => void
   updateAsignados: (asignados: AsignadoItem[]) => void
@@ -518,6 +519,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, [])
 
   const addInventoryItem = useCallback((item: InventoryItem) => {
+    console.log("Debug 4 (AppContext - Received Item):", item);
     setState((prevState) => ({ ...prevState, inventoryData: [...prevState.inventoryData, item] }))
   }, [])
 
@@ -715,6 +717,23 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     dispatch({ type: 'SET_UBICACIONES', payload: ubicaciones });
   }, [dispatch]);
 
+  const liberarAsignacion = useCallback((itemId: number) => {
+    updateInventoryItem(itemId, {
+      estado: 'Disponible',
+      asignadoA: null,
+      fechaAsignacion: null
+    });
+    // Opcional: añadir actividad reciente
+    const item = state.inventoryData.find(i => i.id === itemId);
+    if (item) {
+      addRecentActivity({
+        type: 'Liberación de Activo',
+        description: `El activo "${item.nombre}" (${item.numeroSerie || 'N/S'}) ha sido liberado.`,
+        date: new Date().toLocaleString(),
+      });
+    }
+  }, [state.inventoryData, updateInventoryItem, addRecentActivity]);
+
   // Efecto para inicializar marcas y proveedores desde los datos de inventario
   useEffect(() => {
     const allMarcas = [...new Set(state.inventoryData.map(item => item.marca))];
@@ -735,6 +754,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updateInventory,
     addInventoryItem,
     updateInventoryItem,
+    liberarAsignacion,
     updateInventoryItemStatus: (id: number, status: string) => {
       updateInventoryItem(id, { estado: status as "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO" })
     },

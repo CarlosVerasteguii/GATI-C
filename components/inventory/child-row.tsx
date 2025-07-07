@@ -136,7 +136,18 @@ export function ChildRow({
                             </>
                         )}
 
-                        {(asset.estado === 'Asignado' || asset.estado === 'Prestado') && (
+                        {asset.estado === 'Asignado' && (
+                            <>
+                                <DropdownMenuItem onSelect={() => onAction('liberar', asset)}>
+                                    Liberar Asignación
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                    Re-asignar
+                                </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {(asset.estado === 'Prestado') && (
                             <DropdownMenuItem onSelect={() => onAction('Marcar como Retirado', asset)}>
                                 Devolver / Liberar
                             </DropdownMenuItem>

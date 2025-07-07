@@ -30,12 +30,13 @@ interface EditProductModalProps {
   onOpenChange: (open: boolean) => void
   product: any // The product object to edit
   onSuccess: () => void
+  hasSerialNumber: boolean;
+  setHasSerialNumber: (value: boolean) => void;
 }
 
-export function EditProductModal({ open, onOpenChange, product, onSuccess }: EditProductModalProps) {
+export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSerialNumber, setHasSerialNumber }: EditProductModalProps) {
   const { state, addPendingTask, addInventoryItem, updateInventoryItem } = useApp()
   const [isLoading, setIsLoading] = useState(false)
-  const [hasSerialNumber, setHasSerialNumber] = useState(product?.numeroSerie !== null)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
   const [uploadingFiles, setUploadingFiles] = useState(false)
@@ -101,8 +102,31 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
           uploadDate: new Date().toISOString().split('T')[0]
         })) || []
       )
+    } else {
+      // Si estamos creando un nuevo producto, asegurarnos de que el estado esté limpio
+      // Esto es crucial para cuando el modal se reutiliza sin un "product"
+      setFormData({
+        productName: "",
+        brand: "",
+        model: "",
+        category: "",
+        description: "",
+        proveedor: "",
+        ubicacion: "",
+        fechaIngreso: new Date().toISOString().split('T')[0],
+        fechaAdquisicion: "",
+        contratoId: "",
+        quantity: "1",
+        serialNumber: "",
+        costo: "",
+        garantia: "",
+        vidaUtil: "",
+      });
+      setHasSerialNumber(false); // For new products, default to non-serialized
+      setAttachedDocuments([]);
     }
-  }, [product])
+  }, [product, open]); // Añadimos 'open' para que se resetee cada vez que se abre para un nuevo producto
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -185,6 +209,14 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       return;
     }
 
+    if (!hasSerialNumber && (!formData.quantity || Number(formData.quantity) < 1)) {
+      showError({
+        title: "Cantidad Inválida",
+        description: "Por favor, especifica una cantidad válida (mínimo 1) para productos no serializados."
+      });
+      return;
+    }
+
     setIsLoading(true)
 
     // Prepare updates based on whether it's serialized or not
@@ -199,7 +231,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       ubicacion: formData.ubicacion,
       fechaAdquisicion: formData.fechaAdquisicion,
       contratoId: formData.contratoId,
-      cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.quantity),
+      cantidad: hasSerialNumber ? 1 : (Number(formData.quantity) || 1),
       numeroSerie: hasSerialNumber ? formData.serialNumber : null,
       costo: formData.costo ? parseFloat(formData.costo) : undefined,
       garantia: formData.garantia || undefined,
@@ -209,6 +241,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
         url: doc.url
       }))
     }
+
 
     const mode = product ? 'edit' : 'add';
 
@@ -224,10 +257,26 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess }: Edi
       } else {
         // Estamos creando un nuevo producto
         const newItem: InventoryItem = {
-          id: Math.floor(Math.random() * 10000), // ID Temporal
-          estado: 'Disponible', // Estado por defecto
-          ...updates
-        } as InventoryItem;
+          id: Math.floor(Math.random() * 100000) + 1000,
+          nombre: updates.nombre,
+          marca: updates.marca,
+          modelo: updates.modelo,
+          categoria: updates.categoria,
+          descripcion: updates.descripcion,
+          estado: 'Disponible',
+          cantidad: hasSerialNumber ? 1 : Number(updates.cantidad) || 1,
+          numeroSerie: hasSerialNumber ? updates.numeroSerie : null,
+          isSerialized: hasSerialNumber, // <-- PROPIEDAD CLAVE
+          fechaIngreso: updates.fechaIngreso,
+          fechaAdquisicion: updates.fechaAdquisicion,
+          costo: updates.costo,
+          proveedor: updates.proveedor,
+          ubicacion: updates.ubicacion,
+          contratoId: updates.contratoId,
+          garantia: updates.garantia,
+          vidaUtil: updates.vidaUtil,
+          documentosAdjuntos: updates.documentosAdjuntos
+        };
         addInventoryItem(newItem);
         showSuccess({
           title: "Producto Añadido",

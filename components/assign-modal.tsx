@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { InventoryItem } from "@/types/inventory"
 
 import { useState } from "react"
 import {
@@ -19,23 +20,26 @@ import { Loader2 } from "lucide-react"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
+import { UserCombobox } from '@/components/ui/user-combobox';
 
 interface AssignModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  product: any
+  product: InventoryItem | null
   onSuccess: () => void
 }
 
 export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignModalProps) {
-  const { state, updateInventoryItemStatus, addPendingRequest, addRecentActivity, updateInventory } = useApp()
+  const { state, updateInventoryItem, addPendingRequest, addRecentActivity, addInventoryItem, updateInventory } = useApp()
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
   const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
+  const [assignedToUser, setAssignedToUser] = useState<string>('');
 
+  if (!product) return null
 
   const availableQuantity =
-    product?.numeroSerie === null
+    product.numeroSerie === null
       ? state.inventoryData
         .filter(
           (item) => item.nombre === product.nombre && item.modelo === product.modelo && item.estado === "Disponible",
@@ -48,14 +52,14 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const assignedTo = formData.get("assignedTo") as string
+    const assignedTo = assignedToUser;
     const notes = formData.get("notes") as string
     const quantity = product.numeroSerie === null ? Number.parseInt(formData.get("quantity") as string) : 1
 
     if (!assignedTo) {
       showError({
         title: "Error",
-        description: "Por favor, ingresa a quién se asigna el producto."
+        description: "Por favor, selecciona un usuario para la asignación."
       })
       setIsLoading(false)
       return
@@ -92,51 +96,66 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
 
   const executeAssignment = (details: any) => {
     setTimeout(() => {
-      if (details.productSerialNumber !== null) {
-        // Serialized item
-        updateInventoryItemStatus(details.productId, "Asignado", details.assignedTo)
-      } else {
-        // Non-serialized item: find and update available units
-        let remainingToAssign = details.quantity
-        const updatedInventory = state.inventoryData.map((item) => {
-          if (
-            item.nombre === details.productName &&
-            item.modelo === details.productModel &&
-            item.numeroSerie === null &&
-            item.estado === "Disponible" &&
-            remainingToAssign > 0
-          ) {
-            const qtyToTake = Math.min(item.cantidad, remainingToAssign)
-            remainingToAssign -= qtyToTake
-            return {
-              ...item,
-              cantidad: item.cantidad - qtyToTake,
-              estado: item.cantidad - qtyToTake === 0 ? "Asignado" : item.estado,
-            } // Mark as assigned if quantity becomes 0
-          }
-          return item
-        })
+      // Ya no se llama a addAssignment, los datos se guardan en el item.
 
-        // Add new assigned entries for the non-serialized items
-        if (details.quantity > 0) {
-          const newAssignedItem = {
-            id: Math.max(...state.inventoryData.map((item) => item.id)) + 1, // Generate new ID
-            nombre: details.productName,
-            marca: product.marca, // Assuming product has brand
-            modelo: product.modelo,
-            categoria: product.categoria,
-            descripcion: product.descripcion,
-            estado: "Asignado",
-            cantidad: details.quantity,
-            numeroSerie: null,
-            fechaIngreso: product.fechaIngreso, // Keep original entry date
-            usuario: details.assignedTo,
-            fechaAsignacion: new Date().toISOString().split("T")[0],
-            notasAsignacion: details.notes,
-          }
-          updatedInventory.push(newAssignedItem)
+      // Actualizar el estado en el inventario
+      if (details.productSerialNumber !== null) {
+        // Ítem serializado: se actualiza el estado y los detalles de asignación.
+        updateInventoryItem(details.productId, {
+          estado: "Asignado",
+          asignadoA: details.assignedTo,
+          fechaAsignacion: new Date().toISOString().split("T")[0]
+        });
+      } else {
+        // --- LÓGICA PARA ITEMS NO SERIALIZADOS (DIVISIÓN DE REGISTRO) ---
+
+        // 1. Encontrar el stack de items disponibles que coincida
+        const sourceStack = state.inventoryData.find(
+          (item) => item.id === details.productId && item.estado === 'Disponible'
+        );
+
+        if (!sourceStack) {
+          showError({ title: "Error de Stock", description: "No se encontró el grupo de productos disponibles." });
+          setIsLoading(false);
+          return;
         }
-        updateInventory(updatedInventory)
+
+        // 2. Actualizar el stack de origen
+        const updatedSourceStack = {
+          ...sourceStack,
+          cantidad: sourceStack.cantidad - details.quantity,
+        };
+        updateInventoryItem(sourceStack.id, { cantidad: updatedSourceStack.cantidad });
+
+        // 3. Crear el nuevo stack de items asignados
+        // Primero, buscamos si ya existe un stack asignado a la misma persona para agruparlos
+        const existingAssignedStack = state.inventoryData.find(
+          (item) =>
+            item.nombre === details.productName &&
+            item.estado === 'Asignado' &&
+            item.asignadoA === details.assignedTo
+        );
+
+        if (existingAssignedStack) {
+          // Si ya existe, solo actualizamos su cantidad
+          updateInventoryItem(existingAssignedStack.id, {
+            cantidad: existingAssignedStack.cantidad + details.quantity,
+            fechaAsignacion: new Date().toISOString().split('T')[0], // Actualizar fecha a la más reciente
+            // Podríamos añadir notas aquí si el modelo de datos lo permite
+          });
+        } else {
+          // Si no existe, creamos una nueva entrada en el inventario
+          const newAssignedItem: InventoryItem = {
+            ...sourceStack, // Hereda todos los datos base
+            id: Math.floor(Math.random() * 100000) + 1000, // ID Temporal único
+            estado: 'Asignado',
+            cantidad: details.quantity,
+            asignadoA: details.assignedTo,
+            fechaAsignacion: new Date().toISOString().split('T')[0],
+            numeroSerie: null, // Asegurarnos de que sea null
+          };
+          addInventoryItem(newAssignedItem);
+        }
       }
 
       showSuccess({
@@ -162,19 +181,12 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
 
   const handleConfirmEditorAction = () => {
     addPendingRequest({
+      id: Date.now(),
       type: pendingActionDetails.type,
       details: pendingActionDetails,
       requestedBy: state.user?.nombre || "Editor",
       date: new Date().toISOString(),
       status: "Pendiente",
-      auditLog: [
-        {
-          event: "CREACIÓN",
-          user: state.user?.nombre || "Editor",
-          dateTime: new Date().toISOString(),
-          description: `Solicitud de ${pendingActionDetails.type.toLowerCase()} creada.`,
-        },
-      ],
     })
     showInfo({
       title: "Solicitud enviada",
@@ -184,7 +196,6 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
     onOpenChange(false)
   }
 
-  if (!product) return null
 
   return (
     <>
@@ -198,7 +209,11 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="assignedTo">Asignar a</Label>
-                <Input id="assignedTo" name="assignedTo" placeholder="Nombre del usuario o departamento" required />
+                <UserCombobox
+                  value={assignedToUser}
+                  onValueChange={setAssignedToUser}
+                  placeholder="Selecciona o crea un usuario"
+                />
               </div>
               {product.numeroSerie === null && (
                 <div className="space-y-2">

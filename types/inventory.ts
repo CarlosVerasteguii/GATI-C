@@ -21,6 +21,8 @@ export interface InventoryItem {
     documentosAdjuntos?: { name: string; url: string }[];
     isSerialized?: boolean;
     contratoId?: string | null;
+    asignadoA?: string | null;
+    fechaAsignacion?: string | null;
 }
 
 
