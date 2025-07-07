@@ -93,6 +93,7 @@ import { AdvancedFilterState } from "@/types/inventory"
 import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
 import { LocationCombobox } from '@/components/location-combobox';
 import { SearchBar } from "@/components/inventory/search-bar";
+import { FilterBadge } from "@/components/ui/filter-badge";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -359,22 +360,19 @@ export default function InventarioPage() {
   // Calcular si hay filtros activos
   const hasActiveFilters = filterCategoria || filterMarca || filterEstado || Object.values(advancedFilters).some(value => value);
 
-  // Añadir función para limpiar todos los filtros
   const clearAllFilters = () => {
-    setSearchTerm("");
-    setFilterCategoria("");
-    setFilterMarca("");
-    setFilterEstado("");
-    setHasSerialNumber(false);
+    setSearchTerm('');
+    setFilterCategoria(null);
+    setFilterMarca(null);
+    setFilterEstado(null);
     setAdvancedFilters({
       fechaInicio: null,
       fechaFin: null,
-      proveedor: "",
-      contratoId: "",
+      proveedor: '',
+      contratoId: '',
       costoMin: null,
       costoMax: null,
     });
-    setCurrentPage(1); // Volver a la primera página al limpiar filtros
   };
 
   // Actualizar URL con filtros
@@ -1570,55 +1568,56 @@ export default function InventarioPage() {
             </div>
           </div>
 
-          {/* BARRA DE FILTROS ACTIVOS (se queda como está si existe) */}
-          {(filterCategoria || filterMarca || filterEstado) && (
-            <div className="flex items-center gap-2 mb-4">
-              <p className="text-sm text-muted-foreground">Filtros activos:</p>
-
-              {filterCategoria && (
-                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
-                  Categoría: {filterCategoria}
-                  <X
-                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                    onClick={() => setFilterCategoria("")}
-                  />
-                </Badge>
-              )}
-
-              {filterMarca && (
-                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
-                  Marca: {filterMarca}
-                  <X
-                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                    onClick={() => setFilterMarca("")}
-                  />
-                </Badge>
-              )}
-
-              {filterEstado && (
-                <Badge variant="secondary" className="flex items-center gap-1 transition-all">
-                  Estado: {filterEstado}
-                  <X
-                    className="h-3 w-3 cursor-pointer rounded-full hover:bg-muted-foreground/20"
-                    onClick={() => setFilterEstado("")}
-                  />
-                </Badge>
-              )}
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto px-2 py-1 text-xs"
-                onClick={() => {
-                  setFilterCategoria("");
-                  setFilterMarca("");
-                  setFilterEstado("");
-                }}
-              >
-                Limpiar todos
-              </Button>
-            </div>
-          )}
+          {/* Sección de Filtros Activos */}
+          {(() => {
+            const hasActiveFilters = filterCategoria || filterMarca || filterEstado || advancedFilters.fechaInicio || advancedFilters.proveedor || advancedFilters.contratoId || advancedFilters.costoMin !== null || advancedFilters.costoMax !== null;
+            if (hasActiveFilters) {
+              return (
+                <div className="flex items-center flex-wrap gap-2 mb-4">
+                  <span className="text-sm font-semibold">Filtros activos:</span>
+                  {filterCategoria && (
+                    <FilterBadge onRemove={() => setFilterCategoria(null)}>
+                      Categoría: {filterCategoria}
+                    </FilterBadge>
+                  )}
+                  {filterMarca && (
+                    <FilterBadge onRemove={() => setFilterMarca(null)}>
+                      Marca: {filterMarca}
+                    </FilterBadge>
+                  )}
+                  {filterEstado && (
+                    <FilterBadge onRemove={() => setFilterEstado(null)}>
+                      Estado: {filterEstado}
+                    </FilterBadge>
+                  )}
+                  {advancedFilters.fechaInicio && advancedFilters.fechaFin && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, fechaInicio: null, fechaFin: null }))}>
+                      Fecha: {advancedFilters.fechaInicio.toLocaleDateString()} - {advancedFilters.fechaFin.toLocaleDateString()}
+                    </FilterBadge>
+                  )}
+                  {advancedFilters.proveedor && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, proveedor: '' }))}>
+                      Proveedor: {advancedFilters.proveedor}
+                    </FilterBadge>
+                  )}
+                  {advancedFilters.contratoId && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, contratoId: '' }))}>
+                      Contrato: {advancedFilters.contratoId}
+                    </FilterBadge>
+                  )}
+                  {(advancedFilters.costoMin !== null || advancedFilters.costoMax !== null) && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, costoMin: null, costoMax: null }))}>
+                      Costo: {advancedFilters.costoMin ?? 'Min'} - {advancedFilters.costoMax ?? 'Max'}
+                    </FilterBadge>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-red-500 hover:text-red-600">
+                    Limpiar todos
+                  </Button>
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
 
         {/* El Card ahora solo contiene la tabla */}
