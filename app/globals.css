@@ -189,3 +189,10 @@
 .toast-container:not(:first-child):not(:second-child) {
   opacity: 0.9;
 }
+
+/* Add smooth transition for theme changes */
+* {
+  transition-property: background-color, color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
