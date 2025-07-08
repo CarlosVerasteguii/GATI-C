@@ -40,7 +40,7 @@ o	Forms: React Hook Form.
 o	Data Fetching: SWR o React Query.
 •	Backend:
 o	Environment/Framework: Node.js (LTS), Express.js, TypeScript 5+.
-o	Database ORM: Prisma.
+o	Database ORM: 4.
 o	Schema Validation: Zod.
 •	Database:
 o	System: MySQL 8.0+.

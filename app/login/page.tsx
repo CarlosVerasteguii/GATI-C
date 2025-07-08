@@ -18,6 +18,7 @@ import { QuickRetireModal } from "@/components/quick-retire-modal" // New QuickR
 import { AccessRequestModal } from "@/components/access-request-modal"
 import { HelpModal } from "@/components/help-modal"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import ParticleBackground from "@/components/ui/particle-background"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -127,120 +128,123 @@ export default function LoginPage() {
   const showQuickActions = !!trustedUserForQuickActions
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-4">
-        <Card>
-          <CardHeader className="space-y-1">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold text-cfe-green">GATI-C</CardTitle>
-              <div className="flex gap-2 items-center">
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsAboutOpen(true)}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Acerca de GATI-C"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsHelpOpen(true)}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Ayuda"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
+    <div className="relative w-full h-screen overflow-hidden">
+      <ParticleBackground />
+      <div className="relative z-10 flex items-center justify-center h-full">
+        <div className="w-full max-w-md space-y-4">
+          <Card>
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-bold text-cfe-green">GATI-C</CardTitle>
+                <div className="flex gap-2 items-center">
+                  <ThemeToggle />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsAboutOpen(true)}
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Acerca de GATI-C"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsHelpOpen(true)}
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Ayuda"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-            <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Usuario</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Ingresa tu usuario"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="focus:ring-2 focus:ring-primary transition-colors duration-200"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="focus:ring-2 focus:ring-primary transition-colors duration-200"
-                  required
-                />
-              </div>
-
-              {/* Remember Me Checkbox */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember-me"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <Label
-                  htmlFor="remember-me"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  Recordar mis credenciales
-                </Label>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary-hover transition-colors duration-200"
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <LogIn className="mr-2 h-4 w-4" />
-                Iniciar Sesión
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="text-center">
-          <Button variant="link" onClick={() => setIsAccessRequestModalOpen(true)} className="text-sm">
-            ¿No tienes cuenta? Solicitar Acceso
-          </Button>
-        </div>
-
-        {/* Quick Actions Card for Trusted IP */}
-        {showQuickActions && (
-          <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-            {" "}
-            {/* Added dark mode styles */}
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Acciones Rápidas para {trustedUserForQuickActions?.nombre || "Usuario Rápido"}
-              </CardTitle>
-              <CardDescription>Realiza cargas o retiros sin iniciar sesión completa.</CardDescription>
+              <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <Button variant="outline" onClick={() => setIsQuickLoadModalOpen(true)}>
-                <PackagePlus className="mr-2 h-4 w-4" />
-                Registrar Carga Rápida
-              </Button>
-              <Button variant="outline" onClick={() => setIsQuickRetireModalOpen(true)}>
-                <PackageMinus className="mr-2 h-4 w-4" />
-                Registrar Retiro Rápido
-              </Button>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Usuario</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Ingresa tu usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="focus:ring-2 focus:ring-primary transition-colors duration-200"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Ingresa tu contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="focus:ring-2 focus:ring-primary transition-colors duration-200"
+                    required
+                  />
+                </div>
+
+                {/* Remember Me Checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <Label
+                    htmlFor="remember-me"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    Recordar mis credenciales
+                  </Label>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary-hover transition-colors duration-200"
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Iniciar Sesión
+                </Button>
+              </form>
             </CardContent>
           </Card>
-        )}
+
+          <div className="text-center">
+            <Button variant="link" onClick={() => setIsAccessRequestModalOpen(true)} className="text-sm text-white hover:text-blue-200">
+              ¿No tienes cuenta? Solicitar Acceso
+            </Button>
+          </div>
+
+          {/* Quick Actions Card for Trusted IP */}
+          {showQuickActions && (
+            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+              {" "}
+              {/* Added dark mode styles */}
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Acciones Rápidas para {trustedUserForQuickActions?.nombre || "Usuario Rápido"}
+                </CardTitle>
+                <CardDescription>Realiza cargas o retiros sin iniciar sesión completa.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <Button variant="outline" onClick={() => setIsQuickLoadModalOpen(true)}>
+                  <PackagePlus className="mr-2 h-4 w-4" />
+                  Registrar Carga Rápida
+                </Button>
+                <Button variant="outline" onClick={() => setIsQuickRetireModalOpen(true)}>
+                  <PackageMinus className="mr-2 h-4 w-4" />
+                  Registrar Retiro Rápido
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
       {/* Easter Egg - About Dialog */}
