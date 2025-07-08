@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { useTheme } from "next-themes"
 
 const colorThemes = {
-  cfe: { name: "CFE", colors: ["#008E5A", "#FFFFFF", "#BDBDBD", "#111111"] }, // Verde, Blanco, Gris, Negro
+  cfe: { name: "CFE", colors: ["#008E5A", "#FFFFFF", "#BDBDBD", "#9E9E9E"] }, // Verde, Blanco, Gris, Gris Claro
   cosmic: { name: "Cosmic", colors: ["#9C27B0", "#673AB7", "#3F51B5", "#2196F3", "#03A9F4"] },
 }
 
@@ -17,8 +17,8 @@ export default function ParticleBackground() {
   const { theme } = useTheme()
   const isDarkMode = theme === "dark"
 
-  const particleCount = 250
-  const particleSpeed = 2
+  const particleCount = 120
+  const particleSpeed = .48
   const particleSize = 3
   const randomizeSizes = true
   const colorThemeKey = "cfe"
@@ -124,8 +124,8 @@ export default function ParticleBackground() {
         if (distance < 150) {
           const angle = Math.atan2(dy, dx)
           const force = (150 - distance) / 10
-          this.speedX += Math.cos(angle) * force * 0.05
-          this.speedY += Math.sin(angle) * force * 0.05
+          this.speedX += Math.cos(angle) * force * 0.009
+          this.speedY += Math.sin(angle) * force * 0.009
         }
 
         const maxSpeed = particleSpeed * 2

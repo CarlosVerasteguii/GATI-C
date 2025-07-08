@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import * as React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -19,8 +19,21 @@ import { AccessRequestModal } from "@/components/access-request-modal"
 import { HelpModal } from "@/components/help-modal"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import ParticleBackground from "@/components/ui/particle-background"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    // Pequeño retraso para dar tiempo al fondo a renderizarse primero
+    const timer = setTimeout(() => {
+      setIsMounted(true)
+    }, 100) // 100ms es suficiente
+
+    return () => clearTimeout(timer)
+  }, [])
+
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -134,36 +147,64 @@ export default function LoginPage() {
 
       {/* Capa 2: El Contenido del Login. Se superpone y centra. */}
       <div className="absolute inset-0 z-10 flex items-center justify-center">
-        <div className="w-full max-w-md space-y-4">
-          <Card>
-            <CardHeader className="space-y-1">
+        <div className="w-full max-w-2xl space-y-4"> {/* <-- VALOR CAMBIADO */}
+          <Card
+            className={cn(
+              "bg-card/95 backdrop-blur-sm border-white/20 shadow-xl transition-all duration-700",
+              isMounted
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-5"
+            )}
+          >
+            <CardHeader className="space-y-1 p-8"> {/* <-- PADDING AÑADIDO */}
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-cfe-green">GATI-C</CardTitle>
+                <CardTitle className="text-3xl font-bold text-cfe-green">GATI-C</CardTitle> {/* <-- TAMAÑO CAMBIADO */}
                 <div className="flex gap-2 items-center">
-                  <ThemeToggle />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsAboutOpen(true)}
-                    className="text-muted-foreground hover:text-foreground"
-                    title="Acerca de GATI-C"
-                  >
-                    <Info className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsHelpOpen(true)}
-                    className="text-muted-foreground hover:text-foreground"
-                    title="Ayuda"
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ThemeToggle />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Cambiar tema</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsAboutOpen(true)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acerca de GATI-C</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsHelpOpen(true)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Ayuda</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
               <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-8 pt-0"> {/* <-- PADDING AÑADIDO Y AJUSTADO */}
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username">Usuario</Label>
@@ -219,7 +260,14 @@ export default function LoginPage() {
           </Card>
 
           <div className="text-center">
-            <Button variant="link" onClick={() => setIsAccessRequestModalOpen(true)} className="text-sm text-cfe-green dark:text-muted-foreground hover:underline">
+            <Button
+              variant="link"
+              onClick={() => setIsAccessRequestModalOpen(true)}
+              className={cn(
+                "text-sm text-cfe-green dark:text-muted-foreground hover:underline transition-opacity duration-700",
+                isMounted ? "opacity-100" : "opacity-0"
+              )}
+            >
               ¿No tienes cuenta? Solicitar Acceso
             </Button>
           </div>
