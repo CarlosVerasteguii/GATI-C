@@ -128,9 +128,12 @@ export default function LoginPage() {
   const showQuickActions = !!trustedUserForQuickActions
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <>
+      {/* Capa 1: El Fondo de Partículas. Ocupa todo y está detrás. */}
       <ParticleBackground />
-      <div className="relative z-10 flex items-center justify-center h-full">
+
+      {/* Capa 2: El Contenido del Login. Se superpone y centra. */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center">
         <div className="w-full max-w-md space-y-4">
           <Card>
             <CardHeader className="space-y-1">
@@ -216,7 +219,7 @@ export default function LoginPage() {
           </Card>
 
           <div className="text-center">
-            <Button variant="link" onClick={() => setIsAccessRequestModalOpen(true)} className="text-sm text-white hover:text-blue-200">
+            <Button variant="link" onClick={() => setIsAccessRequestModalOpen(true)} className="text-sm text-cfe-green dark:text-muted-foreground hover:underline">
               ¿No tienes cuenta? Solicitar Acceso
             </Button>
           </div>
@@ -224,8 +227,6 @@ export default function LoginPage() {
           {/* Quick Actions Card for Trusted IP */}
           {showQuickActions && (
             <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-              {" "}
-              {/* Added dark mode styles */}
               <CardHeader>
                 <CardTitle className="text-lg">
                   Acciones Rápidas para {trustedUserForQuickActions?.nombre || "Usuario Rápido"}
@@ -247,7 +248,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Easter Egg - About Dialog */}
+      {/* Los modales pueden quedar fuera de la capa principal, ya que se renderizan en un portal */}
       <Dialog open={isAboutOpen} onOpenChange={setIsAboutOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -284,7 +285,6 @@ export default function LoginPage() {
           </div>
         </DialogContent>
       </Dialog>
-
       <AccessRequestModal open={isAccessRequestModalOpen} onOpenChange={setIsAccessRequestModalOpen} />
       <HelpModal open={isHelpOpen} onOpenChange={setIsHelpOpen} />
       {showQuickActions && (
@@ -293,6 +293,6 @@ export default function LoginPage() {
           <QuickRetireModal open={isQuickRetireModalOpen} onOpenChange={setIsQuickRetireModalOpen} />
         </>
       )}
-    </div>
+    </>
   )
 }

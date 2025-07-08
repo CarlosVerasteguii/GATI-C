@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { useTheme } from "next-themes"
 
 const colorThemes = {
+  cfe: { name: "CFE", colors: ["#008E5A", "#FFFFFF", "#BDBDBD", "#111111"] }, // Verde, Blanco, Gris, Negro
   cosmic: { name: "Cosmic", colors: ["#9C27B0", "#673AB7", "#3F51B5", "#2196F3", "#03A9F4"] },
 }
 
@@ -16,11 +17,11 @@ export default function ParticleBackground() {
   const { theme } = useTheme()
   const isDarkMode = theme === "dark"
 
-  const particleCount = 150
+  const particleCount = 250
   const particleSpeed = 2
   const particleSize = 3
   const randomizeSizes = true
-  const colorThemeKey = "cosmic"
+  const colorThemeKey = "cfe"
   const particleShapeKey: ParticleShape = "circle"
   const showConnections = true
   const connectionDistance = 100
@@ -33,8 +34,8 @@ export default function ParticleBackground() {
     if (!ctx) return
 
     const setCanvasDimensions = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      canvas!.width = window.innerWidth
+      canvas!.height = window.innerHeight
       isLargeScreen.current = window.innerWidth > 1920
     }
 
@@ -57,9 +58,17 @@ export default function ParticleBackground() {
       }
     }
 
-    canvas.addEventListener("mousemove", updateMousePosition)
-    canvas.addEventListener("touchmove", updateTouchPosition, { passive: false })
-    canvas.addEventListener("touchstart", updateTouchPosition, { passive: false })
+    window.addEventListener("mousemove", updateMousePosition)
+    window.addEventListener("touchmove", updateTouchPosition, { passive: false })
+    window.addEventListener("touchstart", updateTouchPosition, { passive: false })
+    
+    let isMouseDown = false;
+    const handleMouseDown = () => { isMouseDown = true; };
+    const handleMouseUp = () => { isMouseDown = false; };
+    
+    window.addEventListener("mousedown", handleMouseDown)
+    window.addEventListener("mouseup", handleMouseUp)
+    window.addEventListener("touchend", handleMouseUp)
 
     class Particle {
       x: number
@@ -76,8 +85,8 @@ export default function ParticleBackground() {
       shape: ParticleShape
 
       constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+        this.x = Math.random() * canvas!.width
+        this.y = Math.random() * canvas!.height
         this.baseSize = randomizeSizes ? Math.random() * particleSize * 2 + 1 : particleSize
         if (isLargeScreen.current) {
           this.baseSize *= 1.5
@@ -99,10 +108,10 @@ export default function ParticleBackground() {
         this.x += this.speedX
         this.y += this.speedY
 
-        if (this.x < 0) this.x = canvas.width
-        if (this.x > canvas.width) this.x = 0
-        if (this.y < 0) this.y = canvas.height
-        if (this.y > canvas.height) this.y = 0
+        if (this.x < 0) this.x = canvas!.width
+        if (this.x > canvas!.width) this.x = 0
+        if (this.y < 0) this.y = canvas!.height
+        if (this.y > canvas!.height) this.y = 0
 
         this.angle += this.rotationSpeed
       }
@@ -112,11 +121,11 @@ export default function ParticleBackground() {
         const dy = this.y - mouseY
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        if (distance < 100) {
+        if (distance < 150) {
           const angle = Math.atan2(dy, dx)
-          const force = (100 - distance) / 10
-          this.speedX += Math.cos(angle) * force * 0.2
-          this.speedY += Math.sin(angle) * force * 0.2
+          const force = (150 - distance) / 10
+          this.speedX += Math.cos(angle) * force * 0.05
+          this.speedY += Math.sin(angle) * force * 0.05
         }
 
         const maxSpeed = particleSpeed * 2
@@ -128,14 +137,14 @@ export default function ParticleBackground() {
       }
 
       draw() {
-        ctx.fillStyle = this.color
+        ctx!.fillStyle = this.color
         this.drawCircle()
       }
 
       drawCircle() {
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-        ctx.fill()
+        ctx!.beginPath()
+        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+        ctx!.fill()
       }
     }
 
@@ -154,8 +163,8 @@ export default function ParticleBackground() {
     createParticles()
 
     const animate = () => {
-      ctx.fillStyle = isDarkMode ? "rgba(10, 10, 20, 0.8)" : "rgba(240, 240, 255, 0.8)"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx!.fillStyle = isDarkMode ? "rgba(10, 10, 20, 0.8)" : "rgba(240, 240, 255, 0.8)"
+      ctx!.fillRect(0, 0, canvas!.width, canvas!.height)
 
       for (const particle of particles) {
         particle.update()
@@ -179,14 +188,14 @@ export default function ParticleBackground() {
 
             if (distance < connectionDistance) {
               const opacity = 1 - distance / connectionDistance
-              ctx.strokeStyle = isDarkMode
+              ctx!.strokeStyle = isDarkMode
                 ? `rgba(150, 150, 255, ${opacity * 0.15})`
                 : `rgba(70, 70, 150, ${opacity * 0.15})`
-              ctx.lineWidth = 0.5
-              ctx.beginPath()
-              ctx.moveTo(particles[i].x, particles[i].y)
-              ctx.lineTo(particles[j].x, particles[j].y)
-              ctx.stroke()
+              ctx!.lineWidth = 0.5
+              ctx!.beginPath()
+              ctx!.moveTo(particles[i].x, particles[i].y)
+              ctx!.lineTo(particles[j].x, particles[j].y)
+              ctx!.stroke()
               connectionCount++
             }
           }
@@ -200,9 +209,12 @@ export default function ParticleBackground() {
 
     return () => {
       window.removeEventListener("resize", setCanvasDimensions)
-      canvas.removeEventListener("mousemove", updateMousePosition)
-      canvas.removeEventListener("touchmove", updateTouchPosition)
-      canvas.removeEventListener("touchstart", updateTouchPosition)
+      window.removeEventListener("mousemove", updateMousePosition)
+      window.removeEventListener("touchmove", updateTouchPosition)
+      window.removeEventListener("touchstart", updateTouchPosition)
+      window.removeEventListener("mousedown", handleMouseDown)
+      window.removeEventListener("mouseup", handleMouseUp)
+      window.removeEventListener("touchend", handleMouseUp)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
