@@ -17,7 +17,7 @@ import { QuickLoadModal } from "@/components/quick-load-modal"
 import { QuickRetireModal } from "@/components/quick-retire-modal" // New QuickRetireModal
 import { AccessRequestModal } from "@/components/access-request-modal"
 import { HelpModal } from "@/components/help-modal"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import ParticleBackground from "@/components/ui/particle-background"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -143,7 +143,9 @@ export default function LoginPage() {
   return (
     <>
       {/* Capa 1: Fondo de Partículas */}
-      <ParticleBackground />
+      <ParticleBackground
+        isModalOpen={isAccessRequestModalOpen || isAboutOpen || isHelpOpen || isQuickLoadModalOpen || isQuickRetireModalOpen}
+      />
 
       {/* Capa 2: Contenido Principal (Formulario Centrado) */}
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -256,81 +258,131 @@ export default function LoginPage() {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsHelpOpen(true)}
+                      className={cn(
+                        "text-muted-foreground hover:text-foreground transition-opacity duration-700",
+                        isMounted ? "opacity-100" : "opacity-0"
+                      )}
+                    >
+                      <HelpCircle className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Ayuda</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {showQuickActions && (
+                <>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsQuickLoadModalOpen(true)}
+                          className={cn(
+                            "text-muted-foreground hover:text-foreground transition-opacity duration-700",
+                            isMounted ? "opacity-100" : "opacity-0"
+                          )}
+                        >
+                          <PackagePlus className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Carga Rápida</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsQuickRetireModalOpen(true)}
+                          className={cn(
+                            "text-muted-foreground hover:text-foreground transition-opacity duration-700",
+                            isMounted ? "opacity-100" : "opacity-0"
+                          )}
+                        >
+                          <PackageMinus className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Baja Rápida</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
+              )}
             </CardFooter>
           </Card>
-
-          {/* Quick Actions Card for Trusted IP */}
-          {showQuickActions && (
-            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Acciones Rápidas para {trustedUserForQuickActions?.nombre || "Usuario Rápido"}
-                </CardTitle>
-                <CardDescription>Realiza cargas o retiros sin iniciar sesión completa.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <Button variant="outline" onClick={() => setIsQuickLoadModalOpen(true)}>
-                  <PackagePlus className="mr-2 h-4 w-4" />
-                  Registrar Carga Rápida
-                </Button>
-                <Button variant="outline" onClick={() => setIsQuickRetireModalOpen(true)}>
-                  <PackageMinus className="mr-2 h-4 w-4" />
-                  Registrar Retiro Rápido
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
 
-      {/* Capa 3: Modales (Se renderizan en el nivel superior) */}
+      {/* Capa 3: Modales (renderizados al nivel superior) */}
       <AccessRequestModal
         open={isAccessRequestModalOpen}
         onOpenChange={setIsAccessRequestModalOpen}
       />
+
+      <QuickLoadModal
+        open={isQuickLoadModalOpen}
+        onOpenChange={setIsQuickLoadModalOpen}
+      />
+
+      <QuickRetireModal
+        open={isQuickRetireModalOpen}
+        onOpenChange={setIsQuickRetireModalOpen}
+      />
+
+      <HelpModal
+        open={isHelpOpen}
+        onOpenChange={setIsHelpOpen}
+      />
+
       <Dialog open={isAboutOpen} onOpenChange={setIsAboutOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-status-maintenance" />
+              <Info className="h-5 w-5" />
               Acerca de GATI-C
             </DialogTitle>
-            <DialogDescription>Sistema de Gestión de Activos Tecnológicos e Inventario - CFE</DialogDescription>
+            <DialogDescription>
+              Sistema de Gestión de Activos y Tareas de Infraestructura de Cómputo (GATI-C)
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Versión</h4>
-              <p className="text-sm text-muted-foreground">v11.0 - Edición CFE</p>
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col space-y-2">
+              <p className="text-sm font-medium">Versión:</p>
+              <p className="text-sm text-muted-foreground">2.0.0 (Enterprise-Grade)</p>
             </div>
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Desarrollado para</h4>
-              <p className="text-sm text-muted-foreground">Comisión Federal de Electricidad (CFE)</p>
+            <div className="flex flex-col space-y-2">
+              <p className="text-sm font-medium">Desarrollado por:</p>
+              <p className="text-sm text-muted-foreground">Equipo de Desarrollo de TI - CFE</p>
             </div>
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Características</h4>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Gestión integral de inventario</li>
-                <li>• Control de préstamos y asignaciones</li>
-                <li>• Flujo de tareas pendientes</li>
-                <li>• Auditoría completa de actividades</li>
-                <li>• Interfaz optimizada para CFE</li>
-                <li>• Recordar credenciales de usuario</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Soporte</h4>
-              <p className="text-sm text-muted-foreground">Para soporte técnico, contacta al departamento de TI.</p>
+            <div className="flex flex-col space-y-2">
+              <p className="text-sm font-medium">Contacto:</p>
+              <p className="text-sm text-muted-foreground">soporte.gatic@cfe.mx</p>
             </div>
           </div>
+          <DialogFooter>
+            <Button onClick={() => setIsAboutOpen(false)} className="bg-primary hover:bg-primary-hover">
+              Cerrar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-      <HelpModal open={isHelpOpen} onOpenChange={setIsHelpOpen} />
-      {showQuickActions && (
-        <>
-          <QuickLoadModal open={isQuickLoadModalOpen} onOpenChange={setIsQuickLoadModalOpen} />
-          <QuickRetireModal open={isQuickRetireModalOpen} onOpenChange={setIsQuickRetireModalOpen} />
-        </>
-      )}
     </>
   )
 }

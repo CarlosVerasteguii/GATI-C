@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { useTheme } from "next-themes"
+import { cn } from "@/lib/utils"
 
 const colorThemes = {
   cfe: { name: "CFE", colors: ["#008E5A", "#FFFFFF", "#BDBDBD", "#9E9E9E"] }, // Verde, Blanco, Gris, Gris Claro
@@ -10,7 +11,7 @@ const colorThemes = {
 
 type ParticleShape = "circle" | "square" | "triangle" | "star"
 
-export default function ParticleBackground() {
+export default function ParticleBackground({ isModalOpen }: { isModalOpen?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationFrameRef = useRef<number | null>(null)
   const isLargeScreen = useRef(false)
@@ -207,6 +208,18 @@ export default function ParticleBackground() {
 
     animationFrameRef.current = requestAnimationFrame(animate)
 
+    // New logic for pausing/resuming animation based on isModalOpen
+    if (isModalOpen) {
+      // Si un modal está abierto, detenemos la animación
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    } else {
+      // Si no hay modales abiertos, nos aseguramos de que la animación corra
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }
+
     return () => {
       window.removeEventListener("resize", setCanvasDimensions)
       window.removeEventListener("mousemove", updateMousePosition)
@@ -219,7 +232,15 @@ export default function ParticleBackground() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isDarkMode])
+  }, [isDarkMode, isModalOpen]) // Add isModalOpen to dependencies
 
-  return <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full z-10" />
+  return (
+    <canvas
+      ref={canvasRef}
+      className={cn(
+        "absolute top-0 left-0 w-full h-full -z-10 transition-all duration-300",
+        isModalOpen && "blur-sm scale-105"
+      )}
+    />
+  )
 } 
