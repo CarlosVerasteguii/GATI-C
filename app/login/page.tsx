@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -142,12 +142,12 @@ export default function LoginPage() {
 
   return (
     <>
-      {/* Capa 1: El Fondo de Partículas. Ocupa todo y está detrás. */}
+      {/* Capa 1: Fondo de Partículas */}
       <ParticleBackground />
 
-      {/* Capa 2: El Contenido del Login. Se superpone y centra. */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
-        <div className="w-full max-w-2xl space-y-4"> {/* <-- VALOR CAMBIADO */}
+      {/* Capa 2: Contenido Principal (Formulario Centrado) */}
+      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+        <div className="w-full max-w-2xl pointer-events-auto">
           <Card
             className={cn(
               "bg-card/95 backdrop-blur-sm border-white/20 shadow-xl transition-all duration-700",
@@ -156,55 +156,23 @@ export default function LoginPage() {
                 : "opacity-0 translate-y-5"
             )}
           >
-            <CardHeader className="space-y-1 p-8"> {/* <-- PADDING AÑADIDO */}
+            <CardHeader className="space-y-1 p-8">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-3xl font-bold text-cfe-green">GATI-C</CardTitle> {/* <-- TAMAÑO CAMBIADO */}
-                <div className="flex gap-2 items-center">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <ThemeToggle />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Cambiar tema</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsAboutOpen(true)}
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          <Info className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Acerca de GATI-C</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsHelpOpen(true)}
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          <HelpCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Ayuda</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                <CardTitle className="text-3xl font-bold text-cfe-green">GATI-C</CardTitle>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ThemeToggle />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Cambiar tema</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
             </CardHeader>
-            <CardContent className="p-8 pt-0"> {/* <-- PADDING AÑADIDO Y AJUSTADO */}
+            <CardContent className="p-8 pt-0">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username">Usuario</Label>
@@ -257,20 +225,39 @@ export default function LoginPage() {
                 </Button>
               </form>
             </CardContent>
+            <CardFooter className="flex justify-between items-center p-8 pt-0">
+              <Button
+                variant="link"
+                onClick={() => setIsAccessRequestModalOpen(true)}
+                className={cn(
+                  "text-sm p-0 h-auto text-cfe-green dark:text-muted-foreground hover:underline transition-opacity duration-700",
+                  isMounted ? "opacity-100" : "opacity-0"
+                )}
+              >
+                ¿No tienes cuenta? Solicitar Acceso
+              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsAboutOpen(true)}
+                      className={cn(
+                        "text-muted-foreground hover:text-foreground transition-opacity duration-700",
+                        isMounted ? "opacity-100" : "opacity-0"
+                      )}
+                    >
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Acerca de GATI-C</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </CardFooter>
           </Card>
-
-          <div className="text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsAccessRequestModalOpen(true)}
-              className={cn(
-                "text-sm text-cfe-green dark:text-muted-foreground hover:underline transition-opacity duration-700",
-                isMounted ? "opacity-100" : "opacity-0"
-              )}
-            >
-              ¿No tienes cuenta? Solicitar Acceso
-            </Button>
-          </div>
 
           {/* Quick Actions Card for Trusted IP */}
           {showQuickActions && (
@@ -296,7 +283,11 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Los modales pueden quedar fuera de la capa principal, ya que se renderizan en un portal */}
+      {/* Capa 3: Modales (Se renderizan en el nivel superior) */}
+      <AccessRequestModal
+        open={isAccessRequestModalOpen}
+        onOpenChange={setIsAccessRequestModalOpen}
+      />
       <Dialog open={isAboutOpen} onOpenChange={setIsAboutOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -333,7 +324,6 @@ export default function LoginPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <AccessRequestModal open={isAccessRequestModalOpen} onOpenChange={setIsAccessRequestModalOpen} />
       <HelpModal open={isHelpOpen} onOpenChange={setIsHelpOpen} />
       {showQuickActions && (
         <>
