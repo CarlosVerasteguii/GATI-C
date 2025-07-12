@@ -14,6 +14,7 @@ interface SearchBarProps {
 export function SearchBar({ initialValue = '', onSearchChange, placeholder, className }: SearchBarProps) {
     const [value, setValue] = React.useState(initialValue);
     const debouncedValue = useDebounce(value, 300); // 300ms de retraso
+    const isInitialMount = React.useRef(true);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
@@ -21,6 +22,11 @@ export function SearchBar({ initialValue = '', onSearchChange, placeholder, clas
 
     // Este useEffect ahora notificará al padre solo cuando el valor "debounced" cambie
     React.useEffect(() => {
+        if (isInitialMount.current) {
+            // En el primer montaje, no hagas nada, solo cambia la bandera.
+            isInitialMount.current = false;
+            return;
+        }
         onSearchChange(debouncedValue);
     }, [debouncedValue, onSearchChange]);
 

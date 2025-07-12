@@ -207,11 +207,18 @@ export default function InventarioPage() {
   const [importProgress, setImportProgress] = useState(0)
   const [showImportProgress, setShowImportProgress] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "")
-  const [filterCategoria, setFilterCategoria] = useState(searchParams.get("categoria") || "")
-  const [filterMarca, setFilterMarca] = useState(searchParams.get("marca") || "")
-  const [filterEstado, setFilterEstado] = useState(searchParams.get("estado") || "")
+  const [searchTerm, setSearchTerm] = useState<string | null>(searchParams.get("search"))
+  const [filterCategoria, setFilterCategoria] = useState<string | null>(searchParams.get("categoria"))
+  const [filterMarca, setFilterMarca] = useState<string | null>(searchParams.get("marca"))
+  const [filterEstado, setFilterEstado] = useState<string | null>(searchParams.get("estado"))
   const [hasSerialNumber, setHasSerialNumber] = useState(false)
+
+  const handleFilterChange = (filterType: 'categoria' | 'marca' | 'estado', value: string | null) => {
+    if (filterType === 'categoria') setFilterCategoria(value);
+    if (filterType === 'marca') setFilterMarca(value);
+    if (filterType === 'estado') setFilterEstado(value);
+  };
+
   // Estado para las pestañas del formulario de edición
   const [activeFormTab, setActiveFormTab] = useState<"basic" | "details" | "documents">("basic")
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
@@ -361,7 +368,7 @@ export default function InventarioPage() {
   const hasActiveFilters = filterCategoria || filterMarca || filterEstado || Object.values(advancedFilters).some(value => value);
 
   const clearAllFilters = () => {
-    setSearchTerm('');
+    setSearchTerm(null);
     setFilterCategoria(null);
     setFilterMarca(null);
     setFilterEstado(null);
@@ -377,6 +384,7 @@ export default function InventarioPage() {
 
   // Actualizar URL con filtros
   useEffect(() => {
+    console.log("DEBUG: useEffect de URL se disparó. searchParams actuales:", searchParams.toString());
     const params = new URLSearchParams()
     if (searchTerm) params.set("search", searchTerm)
     if (filterCategoria && filterCategoria !== "all") params.set("categoria", filterCategoria)
@@ -483,7 +491,7 @@ export default function InventarioPage() {
 
     // 2. LÓGICA DE FILTRADO (AHORA OPERA SOBRE expandedInventory)
     const filteredData = expandedInventory.filter((item: InventoryItem) => {
-      const lowercasedQuery = searchTerm.toLowerCase();
+      const lowercasedQuery = searchTerm?.toLowerCase() || "";
       const matchesSearch = searchTerm === "" ||
         (item.nombre?.toLowerCase().includes(lowercasedQuery)) ||
         (item.marca?.toLowerCase().includes(lowercasedQuery)) ||
@@ -944,7 +952,7 @@ export default function InventarioPage() {
       marca: marca,
       modelo: modelo,
       categoria: categoria,
-      descripcion: (formData.get("descripcion") as string | null) ?? undefined,
+      descripcion: (formData.get("descripcion") as string || '').trim() || undefined,
       estado: selectedProduct?.estado || "Disponible",
       cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.get("cantidad") as string) || 1,
       numeroSerie: hasSerialNumber ? (formData.get("numerosSerie") as string) || null : null,
@@ -1522,7 +1530,7 @@ export default function InventarioPage() {
             {/* Grupo Izquierdo: Búsqueda y Filtros Rápidos */}
             <div className="flex items-center gap-2 flex-1">
               <SearchBar
-                initialValue={searchTerm}
+                initialValue={searchTerm || ''}
                 onSearchChange={setSearchTerm}
                 placeholder="Buscar por nombre, marca, modelo..."
                 className="w-full max-w-sm"
@@ -1531,19 +1539,19 @@ export default function InventarioPage() {
                 title="Categoría"
                 options={state.categorias}
                 selectedValue={filterCategoria || null}
-                onSelect={(value) => setFilterCategoria(value || "")}
+                onSelect={(value) => handleFilterChange('categoria', value)}
               />
               <FilterPopover
                 title="Marca"
                 options={state.marcas}
                 selectedValue={filterMarca || null}
-                onSelect={(value) => setFilterMarca(value || "")}
+                onSelect={(value) => handleFilterChange('marca', value)}
               />
               <FilterPopover
                 title="Estado"
-                options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                options={[...new Set(state.inventoryData.map(item => item.estado))]} 
                 selectedValue={filterEstado || null}
-                onSelect={(value) => setFilterEstado(value || "")}
+                onSelect={(value) => handleFilterChange('estado', value)}
               />
             </div>
             {/* Grupo Derecho: Acciones de Vista y Globales */}
@@ -1626,7 +1634,7 @@ export default function InventarioPage() {
           <CardContent className="p-0">
             <GroupedInventoryTable
               data={paginatedData}
-              searchQuery={searchTerm}
+              searchQuery={searchTerm || ''}
               columns={columns}
               selectedRowIds={selectedRowIds}
               onRowSelect={handleRowSelect}
