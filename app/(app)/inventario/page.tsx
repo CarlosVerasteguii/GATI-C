@@ -219,6 +219,12 @@ export default function InventarioPage() {
     if (filterType === 'estado') setFilterEstado(value);
   };
 
+  // Modify handleSerialNumberFilterChange to use local state
+  const handleSerialNumberFilterChange = (isChecked: boolean) => {
+    console.log(`Changing serial number filter to: ${isChecked}`);
+    setHasSerialNumber(isChecked);
+  };
+
   // Estado para las pestañas del formulario de edición
   const [activeFormTab, setActiveFormTab] = useState<"basic" | "details" | "documents">("basic")
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
@@ -342,7 +348,6 @@ export default function InventarioPage() {
         setSelectedProduct(productData as InventoryItem);
         setTempMarca(task.details.brand || "")
         setModalMode("process-carga")
-        setHasSerialNumber(!!task.details.serialNumbers && task.details.serialNumbers.length > 0)
         setIsAddProductModalOpen(true)
         setProcessingTaskId(taskId)
         router.replace("/inventario", { scroll: false })
@@ -471,32 +476,52 @@ export default function InventarioPage() {
     }
   };
 
-  // Unified filtering, sorting and grouping logic
-  const groupedAndFilteredData: any[] = useMemo(() => { // <-- Usamos any[] temporalmente
-    // 1. EXPANSIÓN VIRTUAL (NUEVO PASO)
-    const expandedInventory = state.inventoryData.flatMap(item => {
+  // Hooks de Procesamiento de Datos - Cadena de Transformación
+  const expandedInventory = React.useMemo(() => {
+    return state.inventoryData.flatMap(item => {
       if (item.isSerialized === false && item.cantidad > 1) {
-        // Si no es serializado y es un stack, crea un array de items virtuales
+        // Para stacks, expandir en items virtuales
         return Array.from({ length: item.cantidad }, (_, index) => ({
           ...item,
-          id: Number(`${item.id}.${index}`), // ID virtual único para la key de React
-          cantidad: 1, // Cada item virtual es una unidad
-          isVirtual: true, // Flag para saber que es una copia
-          originalId: item.id // Referencia al stack original
+          reactKey: `${item.id}-${item.estado}-${index}`, // Key única para React
+          isVirtual: true,
+          originalId: item.id, // Guardar referencia al ID original
+          cantidad: 1,
         }));
       }
-      // Los items serializados o con cantidad 1 pasan tal cual
-      return { ...item, isVirtual: false };
+      // Para items normales, solo añadir la reactKey
+      return { ...item, reactKey: item.id.toString(), isVirtual: false };
+    });
+  }, [state.inventoryData]);
+
+  const filteredData = React.useMemo(() => {
+    console.group('🔍 Inventory Filtering Diagnostics');
+    console.log('Input Inventory Size:', expandedInventory.length);
+    console.log('Current Filters:', {
+      searchTerm,
+      filterCategoria,
+      filterMarca,
+      filterEstado,
+      hasSerialNumber,
+      advancedFilters: JSON.stringify(advancedFilters, null, 2)
     });
 
-    // 2. LÓGICA DE FILTRADO (AHORA OPERA SOBRE expandedInventory)
-    const filteredData = expandedInventory.filter((item: InventoryItem) => {
+    const results = expandedInventory.filter((item: InventoryItem) => {
+      // --- INICIO DE BLOQUE DE DIAGNÓSTICO DE PROPIEDADES NULAS ---
+      if (item.nombre === null || item.marca === null || item.modelo === null) {
+        console.warn("¡ALERTA DE DATO NULO! Ítem con propiedad nula encontrado:", item);
+      }
+      // --- FIN DE BLOQUE DE DIAGNÓSTICO ---
+
       const lowercasedQuery = searchTerm?.toLowerCase() || "";
       const matchesSearch = searchTerm === "" ||
-        (item.nombre?.toLowerCase().includes(lowercasedQuery)) ||
-        (item.marca?.toLowerCase().includes(lowercasedQuery)) ||
-        (item.modelo?.toLowerCase().includes(lowercasedQuery)) ||
-        (item.numeroSerie && item.numeroSerie.toLowerCase().includes(lowercasedQuery));
+        (item.nombre && item.nombre.toLowerCase().includes(lowercasedQuery)) ||
+        (item.marca && item.marca.toLowerCase().includes(lowercasedQuery)) ||
+        (item.modelo && item.modelo.toLowerCase().includes(lowercasedQuery)) ||
+        (item.numeroSerie && item.numeroSerie.toLowerCase().includes(lowercasedQuery)) ||
+        (item.categoria && item.categoria.toLowerCase().includes(lowercasedQuery)) ||
+        (item.estado && item.estado.toLowerCase().includes(lowercasedQuery)) ||
+        (item.asignadoA && item.asignadoA.toLowerCase().includes(lowercasedQuery));
 
       const matchesCategoria = !filterCategoria || item.categoria === filterCategoria;
       const matchesMarca = !filterMarca || item.marca === filterMarca;
@@ -549,13 +574,51 @@ export default function InventarioPage() {
         return true; // Si pasa todos los filtros avanzados
       };
 
-      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado && matchesSerialNumber && matchesAdvancedFilters();
+      const passesAllFilters = matchesSearch &&
+        matchesCategoria &&
+        matchesMarca &&
+        matchesEstado &&
+        matchesSerialNumber &&
+        matchesAdvancedFilters();
+
+      // Detailed logging for each filter
+      if (!passesAllFilters) {
+        console.log('Filtered Out Item:', {
+          item,
+          matchesSearch,
+          matchesCategoria,
+          matchesMarca,
+          matchesEstado,
+          matchesSerialNumber,
+          matchesAdvancedFilters: matchesAdvancedFilters()
+        });
+      }
+
+      return passesAllFilters;
     });
 
-    // 3. LÓGICA DE AGRUPAMIENTO (SIN CAMBIOS, AHORA RECIBE DATOS "CORRECTOS")
+    console.log('Filtered Inventory Size:', results.length);
+    console.groupEnd();
+
+    return results;
+  }, [
+    expandedInventory,
+    searchTerm,
+    filterCategoria,
+    filterMarca,
+    filterEstado,
+    hasSerialNumber,
+    advancedFilters
+  ]);
+
+  const groupedData = React.useMemo(() => {
+    console.group('📦 Inventory Grouping Diagnostics');
+    console.log('Input Filtered Data Size:', filteredData.length);
+
     const productGroups: { [key: string]: any } = {};
     filteredData.forEach((item: any) => {
       const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
+
       if (!productGroups[groupKey]) {
         productGroups[groupKey] = {
           isParent: true,
@@ -571,15 +634,34 @@ export default function InventarioPage() {
           children: [],
         };
       }
+
       productGroups[groupKey].children.push(item);
       productGroups[groupKey].summary.total++;
+
       if (item.estado === 'Disponible') {
         productGroups[groupKey].summary.disponible++;
       }
-      productGroups[groupKey].summary.estados[item.estado] = (productGroups[groupKey].summary.estados[item.estado] || 0) + 1;
+
+      productGroups[groupKey].summary.estados[item.estado] =
+        (productGroups[groupKey].summary.estados[item.estado] || 0) + 1;
     });
 
-    let groupedData = Object.values(productGroups);
+    const groupedResults = Object.values(productGroups);
+
+    console.log('Grouped Inventory Size:', groupedResults.length);
+    console.log('Group Summaries:', groupedResults.map(group => ({
+      key: group.product.id,
+      total: group.summary.total,
+      disponible: group.summary.disponible,
+      estados: group.summary.estados
+    })));
+    console.groupEnd();
+
+    return groupedResults;
+  }, [filteredData]);
+
+  const groupedAndFilteredData = React.useMemo(() => {
+    let sortedData = [...groupedData];
 
     if (sortColumn) {
       const getGroupStatus = (group: any) => {
@@ -597,7 +679,7 @@ export default function InventarioPage() {
         return group.product?.[column];
       };
 
-      groupedData.sort((a, b) => {
+      sortedData.sort((a, b) => {
         const aValue = getGroupValue(a, sortColumn);
         const bValue = getGroupValue(b, sortColumn);
 
@@ -636,9 +718,8 @@ export default function InventarioPage() {
       });
     }
 
-    return groupedData;
-
-  }, [state.inventoryData, searchTerm, filterCategoria, filterMarca, filterEstado, sortColumn, sortDirection, hasSerialNumber, advancedFilters]);
+    return sortedData;
+  }, [groupedData, sortColumn, sortDirection, allColumns]);
 
   // Datos paginados para la tabla
   const paginatedData = useMemo(() => {
@@ -695,7 +776,6 @@ export default function InventarioPage() {
   const handleEdit = (product: InventoryItem) => {
     setSelectedProduct(product)
     setModalMode("edit")
-    setHasSerialNumber(product.numeroSerie !== null && product.numeroSerie !== '')
     setTempMarca(product.marca)
     setIsAddProductModalOpen(true)
   }
@@ -703,7 +783,6 @@ export default function InventarioPage() {
   const handleDuplicate = (product: InventoryItem) => {
     setSelectedProduct(product)
     setModalMode("duplicate")
-    setHasSerialNumber(!!product.numeroSerie)
     setTempMarca(product.marca)
     setIsAddProductModalOpen(true)
   }
@@ -753,7 +832,6 @@ export default function InventarioPage() {
   const handleAddProduct = () => {
     setSelectedProduct(null)
     setModalMode("add")
-    setHasSerialNumber(false)
     setTempMarca("")
     setIsAddProductModalOpen(true)
   }
@@ -916,7 +994,6 @@ export default function InventarioPage() {
       setModalMode("add")
       setActiveFormTab("basic")
       setTempMarca("")
-      setHasSerialNumber(false)
       // Clear form data after successful save
       const form = document.getElementById("product-form") as HTMLFormElement
       if (form) {
@@ -1475,21 +1552,21 @@ export default function InventarioPage() {
 
   const filteredProducts = useMemo(() => {
     return (state.inventoryData || []).filter((product: InventoryItem) => {
-      const matchesSearch = searchTerm === "" || (
-        (product.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (product.marca?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (product.modelo?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (product.numeroSerie && product.numeroSerie.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (product.proveedor && product.proveedor.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (product.contratoId && product.contratoId.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      const lowercasedQuery = searchTerm?.toLowerCase() || "";
+      const matchesSearch = searchTerm === "" ||
+        (product.nombre && product.nombre.toLowerCase().includes(lowercasedQuery)) ||
+        (product.marca && product.marca.toLowerCase().includes(lowercasedQuery)) ||
+        (product.modelo && product.modelo.toLowerCase().includes(lowercasedQuery)) ||
+        (product.numeroSerie && product.numeroSerie.toLowerCase().includes(lowercasedQuery)) ||
+        (product.proveedor && product.proveedor.toLowerCase().includes(lowercasedQuery)) ||
+        (product.contratoId && product.contratoId.toLowerCase().includes(lowercasedQuery));
 
-      const matchesCategoria = !filterCategoria || filterCategoria === "" || filterCategoria === "all" || filterCategoria === "__all__" || product.categoria === filterCategoria
-      const matchesMarca = !filterMarca || filterMarca === "" || filterMarca === "all" || filterMarca === "__all__" || product.marca === filterMarca
-      const matchesEstado = !filterEstado || filterEstado === "" || filterEstado === "all" || filterEstado === "__all__" || product.estado === filterEstado
+      const matchesCategoria = !filterCategoria || product.categoria === filterCategoria;
+      const matchesMarca = !filterMarca || product.marca === filterMarca;
+      const matchesEstado = !filterEstado || product.estado === filterEstado;
 
-      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado
-    })
+      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
+    });
   }, [searchTerm, filterCategoria, filterMarca, filterEstado, state.inventoryData])
 
   return (
@@ -1549,7 +1626,7 @@ export default function InventarioPage() {
               />
               <FilterPopover
                 title="Estado"
-                options={[...new Set(state.inventoryData.map(item => item.estado))]} 
+                options={[...new Set(state.inventoryData.map(item => item.estado))]}
                 selectedValue={filterEstado || null}
                 onSelect={(value) => handleFilterChange('estado', value)}
               />
@@ -1743,8 +1820,6 @@ export default function InventarioPage() {
         onOpenChange={setIsAddProductModalOpen}
         product={selectedProduct}
         onSuccess={handleBulkSuccess}
-        hasSerialNumber={hasSerialNumber}
-        setHasSerialNumber={setHasSerialNumber}
       />
 
       {/* Modal de Mantenimiento */}
@@ -1805,6 +1880,8 @@ export default function InventarioPage() {
             onClearFilters={() => {
               setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '' });
             }}
+            hasSerialNumber={hasSerialNumber}
+            onSerialNumberFilterChange={handleSerialNumberFilterChange}
           />
         </SheetContent>
       </Sheet>

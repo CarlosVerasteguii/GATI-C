@@ -24,17 +24,21 @@ import { ProviderCombobox } from './provider-combobox';
 import { LocationCombobox } from './location-combobox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { InventoryItem } from "@/types/inventory";
+import React from "react";
 
-interface EditProductModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  product: any // The product object to edit
-  onSuccess: () => void
-  hasSerialNumber: boolean;
-  setHasSerialNumber: (value: boolean) => void;
+export interface EditProductModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  product?: InventoryItem | null;
+  onSuccess?: (product: InventoryItem) => void;
 }
 
-export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSerialNumber, setHasSerialNumber }: EditProductModalProps) {
+export function EditProductModal({
+  open,
+  onOpenChange,
+  product,
+  onSuccess
+}: EditProductModalProps) {
   const { state, addPendingTask, addInventoryItem, updateInventoryItem } = useApp()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
@@ -59,6 +63,9 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
     garantia: product?.garantia || "",
     vidaUtil: product?.vidaUtil || "",
   })
+
+  // Add local state for serialization
+  const [modalHasSerial, setModalHasSerial] = React.useState(false);
 
 
   // Documentos adjuntos (simulados)
@@ -91,7 +98,8 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
         garantia: product.garantia || "",
         vidaUtil: product.vidaUtil || "",
       })
-      setHasSerialNumber(product.numeroSerie !== null)
+      // Set local state based on product's serial number
+      setModalHasSerial(!!product.numeroSerie);
 
       // Actualizar documentos adjuntos
       setAttachedDocuments(
@@ -122,20 +130,21 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
         garantia: "",
         vidaUtil: "",
       });
-      setHasSerialNumber(false); // For new products, default to non-serialized
+      // For new products, default to non-serialized
+      setModalHasSerial(false);
       setAttachedDocuments([]);
     }
   }, [product, open]); // Añadimos 'open' para que se resetee cada vez que se abre para un nuevo producto
 
-
+  // Modify handleInputChange to use local state
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
     // Validación inteligente en tiempo real
-    if (field === "serialNumber" && value.trim() && hasSerialNumber) {
+    if (field === "serialNumber" && value.trim() && modalHasSerial) {
       // Verificar si el número de serie ya existe (excluyendo el producto actual)
       const existingProduct = state.inventoryData.find(
-        (item) => item.numeroSerie === value.trim() && item.id !== product.id
+        (item) => item.numeroSerie === value.trim() && item.id !== product?.id
       )
 
       if (existingProduct) {
@@ -188,6 +197,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
     }, 1000);
   };
 
+  // Modify handleSubmit to use local state
   const handleSubmit = async () => {
     // Verificar campos obligatorios independientemente de la pestaña activa
     if (!formData.productName || !formData.brand || !formData.model || !formData.category || !formData.fechaIngreso) {
@@ -209,7 +219,11 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
       return;
     }
 
-    if (!hasSerialNumber && (!formData.quantity || Number(formData.quantity) < 1)) {
+    // Use modalHasSerial instead of hasSerialNumber
+    const tempCantidad = modalHasSerial ? 1 : (Number(formData.quantity) || 1);
+    const tempNumeroSerie = modalHasSerial ? formData.serialNumber : null;
+
+    if (!tempCantidad || tempCantidad < 1) {
       showError({
         title: "Cantidad Inválida",
         description: "Por favor, especifica una cantidad válida (mínimo 1) para productos no serializados."
@@ -231,8 +245,8 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
       ubicacion: formData.ubicacion,
       fechaAdquisicion: formData.fechaAdquisicion,
       contratoId: formData.contratoId,
-      cantidad: hasSerialNumber ? 1 : (Number(formData.quantity) || 1),
-      numeroSerie: hasSerialNumber ? formData.serialNumber : null,
+      cantidad: tempCantidad,
+      numeroSerie: tempNumeroSerie,
       costo: formData.costo ? parseFloat(formData.costo) : undefined,
       garantia: formData.garantia || undefined,
       vidaUtil: formData.vidaUtil || undefined,
@@ -264,9 +278,9 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
           categoria: updates.categoria,
           descripcion: updates.descripcion,
           estado: 'Disponible',
-          cantidad: hasSerialNumber ? 1 : Number(updates.cantidad) || 1,
-          numeroSerie: hasSerialNumber ? updates.numeroSerie : null,
-          isSerialized: hasSerialNumber, // <-- PROPIEDAD CLAVE
+          cantidad: tempCantidad,
+          numeroSerie: tempNumeroSerie,
+          isSerialized: modalHasSerial, // <-- PROPIEDAD CLAVE
           fechaIngreso: updates.fechaIngreso,
           fechaAdquisicion: updates.fechaAdquisicion,
           costo: updates.costo,
@@ -285,7 +299,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
       }
       setIsLoading(false);
       onOpenChange(false);
-      onSuccess();
+      onSuccess?.(product || ({} as InventoryItem)); // Pass the product if it exists
 
     } else {
       // --- FLUJO PARA OTROS ROLES: CREAR TAREA PENDIENTE ---
@@ -315,7 +329,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
         });
         setIsLoading(false);
         onOpenChange(false);
-        onSuccess();
+        onSuccess?.(product || ({} as InventoryItem)); // Pass the product if it exists
       }, 1000);
     }
   }
@@ -413,8 +427,8 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="hasSerial"
-                      checked={hasSerialNumber}
-                      onCheckedChange={setHasSerialNumber}
+                      checked={modalHasSerial}
+                      onCheckedChange={setModalHasSerial}
                       disabled={product?.numeroSerie !== null && product?.cantidad === 1} // Disable if it's a serialized item that cannot be changed to non-serialized
                     />
                     <Label htmlFor="hasSerial" className="flex items-center gap-1">
@@ -433,7 +447,7 @@ export function EditProductModal({ open, onOpenChange, product, onSuccess, hasSe
                     </Label>
                   </div>
 
-                  {hasSerialNumber ? (
+                  {modalHasSerial ? (
                     <div className="space-y-2">
                       <Label htmlFor="serialNumber">Número de Serie</Label>
                       <Input

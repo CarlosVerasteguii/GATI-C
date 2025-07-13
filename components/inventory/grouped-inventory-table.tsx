@@ -198,7 +198,7 @@ export function GroupedInventoryTable({
                             {expandedRows[parent.product.id] && (
                                 parent.children.map((child) => (
                                     <ChildRow
-                                        key={child.id}
+                                        key={child.reactKey || child.id.toString()}
                                         asset={child}
                                         isHighlighted={child.id.toString() === parent.highlightedChildId}
                                         columns={columns}

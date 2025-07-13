@@ -160,6 +160,13 @@ export function QuickLoadModal({
     }, 1000)
   }
 
+  const debugSetHasSerialNumber = (value: boolean) => {
+    console.log(`%cDEBUG: setHasSerialNumber llamado en QuickLoadModal con valor: ${value}`, 'color: orange; font-weight: bold;');
+    const stack = new Error().stack;
+    console.log(stack);
+    setHasSerialNumber(value);
+  };
+
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -258,7 +265,7 @@ export function QuickLoadModal({
             <div className="space-y-4 border-t pt-4">
               <h3 className="col-span-full text-lg font-semibold border-b pb-2 mb-2">Cantidad y Número de Serie</h3>
               <div className="flex items-center space-x-2">
-                <Switch id="hasSerial" checked={hasSerialNumber} onCheckedChange={setHasSerialNumber} />
+                <Switch id="hasSerial" checked={hasSerialNumber} onCheckedChange={debugSetHasSerialNumber} />
                 <Label htmlFor="hasSerial" className="flex items-center gap-1">
                   Este artículo tiene número de serie
                   <Tooltip>

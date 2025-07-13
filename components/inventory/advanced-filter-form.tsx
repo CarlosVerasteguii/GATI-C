@@ -8,19 +8,26 @@ import { Input } from '@/components/ui/input';
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
 import { AdvancedFilterState } from '@/types/inventory';
 import { ProviderCombobox } from '@/components/provider-combobox'; // Importar ComboBox
+import { Checkbox } from '@/components/ui/checkbox'; // Importar Checkbox
 
 interface AdvancedFilterFormProps {
   currentFilters: AdvancedFilterState;
   proveedores: string[]; // Añadir prop para la lista de proveedores
   onApplyFilters: (filters: AdvancedFilterState) => void;
   onClearFilters: () => void;
+  // New props for serial number filter
+  hasSerialNumber?: boolean;
+  onSerialNumberFilterChange?: (isChecked: boolean) => void;
 }
 
 export function AdvancedFilterForm({
   currentFilters,
   proveedores, // Recibir la prop
   onApplyFilters,
-  onClearFilters
+  onClearFilters,
+  // New props
+  hasSerialNumber,
+  onSerialNumberFilterChange
 }: AdvancedFilterFormProps) {
   const [localFilters, setLocalFilters] = React.useState<AdvancedFilterState>(currentFilters);
 
@@ -109,6 +116,25 @@ export function AdvancedFilterForm({
             onChange={(e) => setLocalFilters(prev => ({ ...prev, costoMax: e.target.value ? parseFloat(e.target.value) : null }))}
           />
         </div>
+      </div>
+
+      {/* Serial Number Filter */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="serial-number-filter"
+          checked={hasSerialNumber}
+          onCheckedChange={(checked) => {
+            // Ensure it's a boolean value
+            const isChecked = checked === true;
+            onSerialNumberFilterChange?.(isChecked);
+          }}
+        />
+        <Label
+          htmlFor="serial-number-filter"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Solo mostrar productos con Número de Serie
+        </Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
