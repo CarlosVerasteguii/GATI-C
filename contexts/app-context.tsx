@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react"
-import type { InventoryItem, User } from "@/types/inventory"
+import type { InventoryItem, User, HistoryEvent } from "@/types/inventory"
 
 // Definición de tipos para el estado de la aplicación
 interface AsignadoItem {
@@ -125,10 +125,112 @@ const defaultUsersData: User[] = [
 
 const defaultInventoryData: InventoryItem[] = [
   // Laptops
-  { id: 1, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-001", categoria: "Laptops", estado: "Asignado", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Oficina Principal - Piso 2", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true },
-  { id: 2, nombre: "Laptop de Gerencia", marca: "Apple", modelo: "MacBook Pro 16", numeroSerie: "AMBP16-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-03-20", ubicacion: "Almacén Central", proveedor: "iShop", costo: 2500, fechaAdquisicion: "2023-03-15", isSerialized: true },
-  { id: 3, nombre: "Estación de Trabajo Móvil", marca: "HP", modelo: "ZBook Fury G8", numeroSerie: "HPZF-003", categoria: "Laptops", estado: "En Mantenimiento", cantidad: 1, fechaIngreso: "2022-11-05", ubicacion: "Soporte Técnico", proveedor: "HP Directo", costo: 3100, fechaAdquisicion: "2022-10-25", isSerialized: true },
-  { id: 4, nombre: "Laptop para Viajes", marca: "Lenovo", modelo: "ThinkPad X1 Carbon", numeroSerie: "LTPX1-004", categoria: "Laptops", estado: "Prestado", cantidad: 1, fechaIngreso: "2023-05-10", ubicacion: "Oficina Principal - Piso 2", proveedor: "Compudel", costo: 1800, fechaAdquisicion: "2023-05-01", isSerialized: true },
+  {
+    id: 1,
+    nombre: "Laptop de Desarrollo Avanzado",
+    marca: "Dell",
+    modelo: "XPS 15",
+    numeroSerie: "DXPS15-001",
+    categoria: "Laptops",
+    estado: "Asignado",
+    cantidad: 1,
+    fechaIngreso: "2023-01-15",
+    ubicacion: "Oficina Principal - Piso 2",
+    proveedor: "Compudel",
+    costo: 2200,
+    fechaAdquisicion: "2023-01-10",
+    isSerialized: true,
+    historial: [
+      {
+        fecha: "2023-01-15",
+        usuario: "Carlos Vera",
+        accion: "Ingreso de Producto",
+        detalles: "Nuevo producto agregado al inventario"
+      },
+      {
+        fecha: "2023-03-20",
+        usuario: "Ana López",
+        accion: "Asignación",
+        detalles: "Asignado al departamento de Desarrollo"
+      }
+    ]
+  },
+  {
+    id: 2,
+    nombre: "Laptop de Gerencia",
+    marca: "Apple",
+    modelo: "MacBook Pro 16",
+    numeroSerie: "AMBP16-002",
+    categoria: "Laptops",
+    estado: "Disponible",
+    cantidad: 1,
+    fechaIngreso: "2023-03-20",
+    ubicacion: "Almacén Central",
+    proveedor: "iShop",
+    costo: 2500,
+    fechaAdquisicion: "2023-03-15",
+    isSerialized: true,
+    historial: [
+      {
+        fecha: "2023-03-20",
+        usuario: "Carlos Vera",
+        accion: "Ingreso de Producto",
+        detalles: "Nuevo MacBook Pro ingresado al inventario"
+      },
+      {
+        fecha: "2023-05-10",
+        usuario: "Ana López",
+        accion: "Actualización de Estado",
+        detalles: "Movido a estado Disponible después de configuración inicial"
+      }
+    ]
+  },
+  {
+    id: 3,
+    nombre: "Estación de Trabajo Móvil",
+    marca: "HP",
+    modelo: "ZBook Fury G8",
+    numeroSerie: "HPZF-003",
+    categoria: "Laptops",
+    estado: "En Mantenimiento",
+    cantidad: 1,
+    fechaIngreso: "2022-11-05",
+    ubicacion: "Soporte Técnico",
+    proveedor: "HP Directo",
+    costo: 3100,
+    fechaAdquisicion: "2022-10-25",
+    isSerialized: true,
+    historial: [
+      {
+        fecha: "2022-11-05",
+        usuario: "Carlos Vera",
+        accion: "Ingreso de Producto",
+        detalles: "Nuevo ZBook Fury G8 ingresado al inventario"
+      },
+      {
+        fecha: "2023-06-15",
+        usuario: "Pedro García",
+        accion: "Mantenimiento",
+        detalles: "Enviado a mantenimiento por problemas en batería"
+      }
+    ]
+  },
+  {
+    id: 4,
+    nombre: "Laptop para Viajes",
+    marca: "Lenovo",
+    modelo: "ThinkPad X1 Carbon",
+    numeroSerie: "LTPX1-004",
+    categoria: "Laptops",
+    estado: "Prestado",
+    cantidad: 1,
+    fechaIngreso: "2023-05-10",
+    ubicacion: "Oficina Principal - Piso 2",
+    proveedor: "Compudel",
+    costo: 1800,
+    fechaAdquisicion: "2023-05-01",
+    isSerialized: true
+  },
   { id: 20, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true },
 
   // Monitores
@@ -357,7 +459,8 @@ type AppAction =
   | { type: 'SET_MARCAS'; payload: string[] }
   | { type: 'SET_PROVEEDORES'; payload: string[] }
   | { type: 'SET_UBICACIONES'; payload: string[] }
-  | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest };
+  | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest }
+  | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }; // Add this line
 
 // Definición de la interfaz para el valor del contexto
 interface AppContextType {
@@ -435,6 +538,12 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
               ? { ...item, estado: action.payload.status as any }
               : item
           ),
+        }));
+        break;
+      case 'ADD_INVENTORY_ITEM':
+        setState(prev => ({
+          ...prev,
+          inventoryData: [...prev.inventoryData, action.payload]
         }));
         break;
       case 'ADD_RECENT_ACTIVITY':
@@ -519,9 +628,22 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, [])
 
   const addInventoryItem = useCallback((item: InventoryItem) => {
-    console.log("Debug 4 (AppContext - Received Item):", item);
-    setState((prevState) => ({ ...prevState, inventoryData: [...prevState.inventoryData, item] }))
-  }, [])
+    // Prepara el evento de historial inicial
+    const creationEvent: HistoryEvent = {
+      fecha: new Date().toISOString(),
+      usuario: state.user?.nombre || 'Sistema', // Usar el nombre del usuario actual
+      accion: 'Creación',
+      detalles: `El activo fue creado en el sistema.`
+    };
+
+    // Añade el evento al historial del nuevo ítem
+    const itemWithHistory = {
+      ...item,
+      historial: [creationEvent]
+    };
+
+    dispatch({ type: 'ADD_INVENTORY_ITEM', payload: itemWithHistory });
+  }, [state.user, dispatch]);
 
   const updateInventoryItem = useCallback((id: number, updates: Partial<InventoryItem>) => {
     setState((prevState) => ({

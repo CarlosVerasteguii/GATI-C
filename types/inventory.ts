@@ -1,3 +1,11 @@
+// Nuevo tipo para eventos de historial
+export interface HistoryEvent {
+    fecha: string;
+    usuario: string;
+    accion: string;
+    detalles: string;
+}
+
 // Este tipo representa un item individual en la base de datos o el contexto.
 export interface InventoryItem {
     id: number;
@@ -17,7 +25,7 @@ export interface InventoryItem {
     garantia?: string;
     vidaUtil?: string;
     mantenimiento?: string;
-    historialMantenimiento?: { date: string; description: string }[];
+    historial?: HistoryEvent[];
     documentosAdjuntos?: { name: string; url: string }[];
     isSerialized?: boolean;
     contratoId?: string | null;
