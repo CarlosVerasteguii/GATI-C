@@ -460,7 +460,8 @@ type AppAction =
   | { type: 'SET_PROVEEDORES'; payload: string[] }
   | { type: 'SET_UBICACIONES'; payload: string[] }
   | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest }
-  | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }; // Add this line
+  | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }
+  | { type: 'ADD_HISTORY_EVENT'; payload: { itemId: number; event: HistoryEvent } };
 
 // Definición de la interfaz para el valor del contexto
 interface AppContextType {
@@ -496,6 +497,7 @@ interface AppContextType {
   updateMarcas: (marcas: string[]) => void
   updateProveedores: (proveedores: string[]) => void;
   updateUbicaciones: (ubicaciones: string[]) => void;
+  addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
 }
 
 // Creación del contexto
@@ -612,6 +614,19 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setState(prev => ({
           ...prev,
           pendingActionRequests: [...prev.pendingActionRequests, action.payload]
+        }));
+        break;
+      case 'ADD_HISTORY_EVENT':
+        setState(prev => ({
+          ...prev,
+          inventoryData: prev.inventoryData.map(item =>
+            item.id === action.payload.itemId
+              ? {
+                ...item,
+                historial: [...(item.historial || []), action.payload.event]
+              }
+              : item
+          ),
         }));
         break;
       default:
@@ -839,22 +854,23 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     dispatch({ type: 'SET_UBICACIONES', payload: ubicaciones });
   }, [dispatch]);
 
+  const addHistoryEvent = useCallback((itemId: number, event: HistoryEvent) => {
+    dispatch({ type: 'ADD_HISTORY_EVENT', payload: { itemId, event } });
+  }, [dispatch]);
+
   const liberarAsignacion = useCallback((itemId: number) => {
-    updateInventoryItem(itemId, {
-      estado: 'Disponible',
-      asignadoA: null,
-      fechaAsignacion: null
+    dispatch({
+      type: 'UPDATE_INVENTORY_ITEM_STATUS',
+      payload: { id: itemId, status: 'Disponible' }
     });
-    // Opcional: añadir actividad reciente
-    const item = state.inventoryData.find(i => i.id === itemId);
-    if (item) {
-      addRecentActivity({
-        type: 'Liberación de Activo',
-        description: `El activo "${item.nombre}" (${item.numeroSerie || 'N/S'}) ha sido liberado.`,
-        date: new Date().toLocaleString(),
-      });
-    }
-  }, [state.inventoryData, updateInventoryItem, addRecentActivity]);
+
+    addHistoryEvent(itemId, {
+      fecha: new Date().toISOString(),
+      usuario: state.user?.nombre || 'Sistema',
+      accion: 'Liberación',
+      detalles: 'El activo ha sido devuelto al stock.'
+    });
+  }, [dispatch, state.user, addHistoryEvent])
 
   // Efecto para inicializar marcas y proveedores desde los datos de inventario
   useEffect(() => {
@@ -904,6 +920,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updateMarcas,
     updateProveedores,
     updateUbicaciones,
+    addHistoryEvent,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

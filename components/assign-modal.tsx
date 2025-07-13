@@ -30,7 +30,7 @@ interface AssignModalProps {
 }
 
 export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignModalProps) {
-  const { state, updateInventoryItem, addPendingRequest, addRecentActivity, addInventoryItem, updateInventory } = useApp()
+  const { state, updateInventoryItem, addPendingRequest, addRecentActivity, addInventoryItem, updateInventory, addHistoryEvent } = useApp()
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
   const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
@@ -106,6 +106,13 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
           asignadoA: details.assignedTo,
           fechaAsignacion: new Date().toISOString().split("T")[0]
         });
+
+        addHistoryEvent(details.productId, {
+          fecha: new Date().toISOString(),
+          usuario: state.user?.nombre || 'Sistema',
+          accion: 'Asignación',
+          detalles: `Asignado a ${details.assignedTo}. Notas: ${details.notes || 'N/A'}`
+        });
       } else {
         // --- LÓGICA PARA ITEMS NO SERIALIZADOS (DIVISIÓN DE REGISTRO) ---
 
@@ -143,6 +150,13 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
             fechaAsignacion: new Date().toISOString().split('T')[0], // Actualizar fecha a la más reciente
             // Podríamos añadir notas aquí si el modelo de datos lo permite
           });
+
+          addHistoryEvent(existingAssignedStack.id, {
+            fecha: new Date().toISOString(),
+            usuario: state.user?.nombre || 'Sistema',
+            accion: 'Asignación',
+            detalles: `Asignado a ${details.assignedTo}. Cantidad: ${details.quantity}. Notas: ${details.notes || 'N/A'}`
+          });
         } else {
           // Si no existe, creamos una nueva entrada en el inventario
           const newAssignedItem: InventoryItem = {
@@ -154,7 +168,14 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
             fechaAsignacion: new Date().toISOString().split('T')[0],
             numeroSerie: null, // Asegurarnos de que sea null
           };
-          addInventoryItem(newAssignedItem);
+          const addedItem = addInventoryItem(newAssignedItem);
+
+          addHistoryEvent(newAssignedItem.id, {
+            fecha: new Date().toISOString(),
+            usuario: state.user?.nombre || 'Sistema',
+            accion: 'Asignación',
+            detalles: `Asignado a ${details.assignedTo}. Cantidad: ${details.quantity}. Notas: ${details.notes || 'N/A'}`
+          });
         }
       }
 

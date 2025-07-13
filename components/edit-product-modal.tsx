@@ -39,7 +39,7 @@ export function EditProductModal({
   product,
   onSuccess
 }: EditProductModalProps) {
-  const { state, addPendingTask, addInventoryItem, updateInventoryItem } = useApp()
+  const { state, addPendingTask, addInventoryItem, updateInventoryItem, addHistoryEvent } = useApp()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
@@ -260,14 +260,20 @@ export function EditProductModal({
     const mode = product ? 'edit' : 'add';
 
     if (state.user?.rol === 'Administrador') {
-      // --- FLUJO PARA ADMINISTRADOR: EJECUCIÓN DIRECTA ---
-      if (mode === 'edit' && product?.id) {
-        // Estamos editando un producto existente
+      if (mode === 'edit' && product) {
         updateInventoryItem(product.id, updates);
+
+        addHistoryEvent(product.id, {
+          fecha: new Date().toISOString(),
+          usuario: state.user?.nombre || 'Sistema',
+          accion: 'Edición',
+          detalles: 'Se han modificado los detalles del producto.'
+        });
+
         showSuccess({
           title: "Producto Actualizado",
-          description: "Los cambios en el producto han sido guardados."
-        });
+          description: `${formData.productName} ha sido actualizado exitosamente.`
+        })
       } else {
         // Estamos creando un nuevo producto
         const newItem: InventoryItem = {
