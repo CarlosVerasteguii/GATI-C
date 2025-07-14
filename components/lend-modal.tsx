@@ -19,8 +19,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
-import { UserCombobox } from '@/components/ui/user-combobox';
 import { User } from "@/types/inventory";
+import { UserCombobox } from '@/components/ui/user-combobox';
 
 interface LendModalProps {
   open: boolean
