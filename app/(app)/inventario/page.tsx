@@ -273,10 +273,6 @@ export default function InventarioPage() {
     return Array.from(proveedores) as string[];
   }, [state.inventoryData]);
 
-  React.useEffect(() => {
-    console.log("Debug: 3. useEffect detectó cambio. Valor de isAddProductModalOpen:", isAddProductModalOpen); // <-- LOG 3
-  }, [isAddProductModalOpen]);
-
   // Lista de motivos de retiro
   const retirementReasons = [
     "Fin de vida útil",
@@ -389,7 +385,6 @@ export default function InventarioPage() {
 
   // Actualizar URL con filtros
   useEffect(() => {
-    console.log("DEBUG: useEffect de URL se disparó. searchParams actuales:", searchParams.toString());
     const params = new URLSearchParams()
     if (searchTerm) params.set("search", searchTerm)
     if (filterCategoria && filterCategoria !== "all") params.set("categoria", filterCategoria)
@@ -495,17 +490,6 @@ export default function InventarioPage() {
   }, [state.inventoryData]);
 
   const filteredData = React.useMemo(() => {
-    console.group('🔍 Inventory Filtering Diagnostics');
-    console.log('Input Inventory Size:', expandedInventory.length);
-    console.log('Current Filters:', {
-      searchTerm,
-      filterCategoria,
-      filterMarca,
-      filterEstado,
-      hasSerialNumber,
-      advancedFilters: JSON.stringify(advancedFilters, null, 2)
-    });
-
     const results = expandedInventory.filter((item: InventoryItem) => {
       // --- INICIO DE BLOQUE DE DIAGNÓSTICO DE PROPIEDADES NULAS ---
       if (item.nombre === null || item.marca === null || item.modelo === null) {
@@ -597,9 +581,6 @@ export default function InventarioPage() {
       return passesAllFilters;
     });
 
-    console.log('Filtered Inventory Size:', results.length);
-    console.groupEnd();
-
     return results;
   }, [
     expandedInventory,
@@ -612,9 +593,6 @@ export default function InventarioPage() {
   ]);
 
   const groupedData = React.useMemo(() => {
-    console.group('📦 Inventory Grouping Diagnostics');
-    console.log('Input Filtered Data Size:', filteredData.length);
-
     const productGroups: { [key: string]: any } = {};
     filteredData.forEach((item: any) => {
       const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
@@ -647,15 +625,6 @@ export default function InventarioPage() {
     });
 
     const groupedResults = Object.values(productGroups);
-
-    console.log('Grouped Inventory Size:', groupedResults.length);
-    console.log('Group Summaries:', groupedResults.map(group => ({
-      key: group.product.id,
-      total: group.summary.total,
-      disponible: group.summary.disponible,
-      estados: group.summary.estados
-    })));
-    console.groupEnd();
 
     return groupedResults;
   }, [filteredData]);
@@ -1434,8 +1403,6 @@ export default function InventarioPage() {
 
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
-    console.log(`Ejecutando acción: ${action}`);
-
     const isGroup = 'isParent' in data && data.isParent;
     let targetItem: InventoryItem | undefined | null = null;
 

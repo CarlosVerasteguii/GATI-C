@@ -22,7 +22,7 @@ export function HelpModal({ open, onOpenChange }: HelpModalProps) {
         <div className="py-4 text-sm text-muted-foreground space-y-2">
           <p>
             GATI-C es una herramienta integral diseñada para optimizar la gestión y el control de los activos
-            tecnológicos dentro de la Comisión Federal de Electricidad (CFE).
+            tecnológicos de la División Golfo Centro dentro de la Comisión Federal de Electricidad (CFE).
           </p>
           <p>
             Permite un seguimiento preciso del inventario, la asignación y préstamo de equipos, el registro de
