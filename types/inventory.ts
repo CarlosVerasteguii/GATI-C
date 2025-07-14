@@ -31,6 +31,8 @@ export interface InventoryItem {
     contratoId?: string | null;
     asignadoA?: string | null;
     fechaAsignacion?: string | null;
+    prestadoA?: string | null;
+    fechaDevolucion?: string | null;
     reactKey?: string;
     isVirtual?: boolean;
     originalId?: number;
