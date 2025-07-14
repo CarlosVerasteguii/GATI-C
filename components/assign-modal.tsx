@@ -21,6 +21,7 @@ import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
 import { UserCombobox } from '@/components/ui/user-combobox';
+import { User } from "@/types/inventory";
 
 interface AssignModalProps {
   open: boolean
@@ -34,7 +35,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
   const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
-  const [assignedToUser, setAssignedToUser] = useState<string>('');
+  const [assignedToUser, setAssignedToUser] = useState<User | null>(null);
 
   if (!product) return null
 
@@ -52,11 +53,12 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const assignedTo = assignedToUser;
+    const assignedTo = assignedToUser?.nombre || '';
+    const assignedToEmail = assignedToUser?.email || '';
     const notes = formData.get("notes") as string
     const quantity = product.numeroSerie === null ? Number.parseInt(formData.get("quantity") as string) : 1
 
-    if (!assignedTo) {
+    if (!assignedToUser) {
       showError({
         title: "Error",
         description: "Por favor, selecciona un usuario para la asignación."
@@ -79,7 +81,8 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
       productId: product.id,
       productName: product.nombre,
       productSerialNumber: product.numeroSerie,
-      assignedTo,
+      assignedTo: assignedToUser.nombre,
+      assignedToEmail: assignedToUser.email,
       notes,
       quantity,
     }
@@ -234,6 +237,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
                   value={assignedToUser}
                   onValueChange={setAssignedToUser}
                   placeholder="Selecciona o crea un usuario"
+                  currentUserRole={state.user?.rol || "Lector"}
                 />
               </div>
               {product.numeroSerie === null && (
@@ -248,7 +252,6 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
                     max={availableQuantity}
                     required
                   />
-                  <p className="text-sm text-muted-foreground">Actualmente disponibles: {availableQuantity}</p>
                 </div>
               )}
               <div className="space-y-2">
@@ -257,7 +260,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary-hover">
+              <Button type="submit" disabled={isLoading || !assignedToUser}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Asignar
               </Button>
@@ -270,6 +273,8 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
         open={isConfirmEditorOpen}
         onOpenChange={setIsConfirmEditorOpen}
         onConfirm={handleConfirmEditorAction}
+        actionType={pendingActionDetails?.type || 'acción'}
+        actionDescription={`el producto ${pendingActionDetails?.productName} a ${pendingActionDetails?.assignedTo}`}
       />
     </>
   )

@@ -19,6 +19,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
+import { UserCombobox } from '@/components/ui/user-combobox';
+import { User } from "@/types/inventory";
 
 interface LendModalProps {
   open: boolean
@@ -29,8 +31,7 @@ interface LendModalProps {
 
 export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalProps) {
   const { state, updateInventoryItemStatus, addRecentActivity, addPendingRequest } = useApp()
-  const [lentToName, setLentToName] = useState("")
-  const [lentToEmail, setLentToEmail] = useState("")
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -38,34 +39,33 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
 
   useEffect(() => {
     if (!open) {
-      setLentToName("")
-      setLentToEmail("")
+      setSelectedUser(null)
       setReturnDate(undefined)
       setIsLoading(false)
     }
   }, [open])
 
   const executeLend = () => {
-    if (!product) return
+    if (!product || !selectedUser) return // Ensure selectedUser is not null
 
     setIsLoading(true)
     setTimeout(() => {
       updateInventoryItemStatus(product.id, "Prestado")
       addRecentActivity({
         type: "Préstamo",
-        description: `${product.nombre} prestado a ${lentToName}`,
+        description: `${product.nombre} prestado a ${selectedUser.nombre}`,
         date: new Date().toLocaleString(),
         details: {
           product: { id: product.id, name: product.nombre, serial: product.numeroSerie },
-          lentTo: lentToName,
-          lentToEmail: lentToEmail,
+          lentTo: selectedUser.nombre,
+          lentToEmail: selectedUser.email,
           loanDate: new Date().toLocaleString(),
           returnDate: returnDate ? format(returnDate, "PPP") : "N/A",
         },
       })
       showSuccess({
         title: "Préstamo registrado",
-        description: `${product.nombre} ha sido prestado a ${lentToName}.`,
+        description: `${product.nombre} ha sido prestado a ${selectedUser.nombre}.`,
       })
       onSuccess()
       onOpenChange(false)
@@ -73,10 +73,10 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
   }
 
   const handleLend = () => {
-    if (!lentToName || !returnDate) {
+    if (!selectedUser || !returnDate) {
       showError({
         title: "Campos incompletos",
-        description: "Por favor, completa el nombre del usuario y la fecha de devolución."
+        description: "Por favor, selecciona un usuario y completa la fecha de devolución."
       })
       return
     }
@@ -88,8 +88,8 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
           productId: product.id,
           productName: product.nombre,
           productSerialNumber: product.numeroSerie,
-          lentTo: lentToName,
-          lentToEmail: lentToEmail,
+          lentTo: selectedUser.nombre,
+          lentToEmail: selectedUser.email,
           returnDate: returnDate ? format(returnDate, "PPP") : "N/A",
         },
         requestedBy: state.user?.nombre || "Editor",
@@ -124,31 +124,12 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="lentToName">Nombre del Usuario *</Label>
-            <Input
-              id="lentToName"
-              value={lentToName}
-              onChange={(e) => setLentToName(e.target.value)}
-              placeholder="Nombre completo"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="lentToEmail">Correo Electrónico</Label>
-            <Input
-              id="lentToEmail"
-              type="email"
-              value={lentToEmail}
-              onChange={(e) => {
-                setLentToEmail(e.target.value)
-                if (e.target.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value)) {
-                  showWarning({
-                    title: "Email inválido",
-                    description: "Por favor, ingresa un email válido"
-                  })
-                }
-              }}
-              placeholder="correo@ejemplo.com"
+            <Label htmlFor="user">Prestar a *</Label>
+            <UserCombobox
+              value={selectedUser}
+              onValueChange={setSelectedUser}
+              placeholder="Selecciona o crea un usuario"
+              currentUserRole={state.user?.rol || "Lector"}
             />
           </div>
           <div className="space-y-2 col-span-2">
@@ -183,7 +164,7 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={handleLend} disabled={isLoading || !lentToName || !returnDate}>
+          <Button onClick={handleLend} disabled={isLoading || !selectedUser || !returnDate}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Registrar Préstamo
           </Button>

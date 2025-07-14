@@ -12,24 +12,25 @@ import { showSuccess, showError } from "@/hooks/use-toast"
 import { User } from "@/types/inventory"
 
 interface UserComboboxProps {
-    value: string
-    onValueChange: (value: string) => void
+    value: User | null
+    onValueChange: (user: User | null) => void
     placeholder?: string
+    currentUserRole: 'Administrador' | 'Editor' | 'Lector';
 }
 
-export function UserCombobox({ value, onValueChange, placeholder = "Selecciona un usuario" }: UserComboboxProps) {
+export function UserCombobox({ value, onValueChange, placeholder = "Selecciona un usuario", currentUserRole }: UserComboboxProps) {
     const { state, addUserToUsersData, addRecentActivity } = useApp()
     const [open, setOpen] = React.useState(false)
-    const [inputValue, setInputValue] = React.useState(value)
+    const [inputValue, setInputValue] = React.useState(value?.nombre || "")
 
     React.useEffect(() => {
-        setInputValue(value)
+        setInputValue(value?.nombre || "")
     }, [value])
 
-    const handleSelect = (currentValue: string) => {
-        const newValue = currentValue === value ? "" : currentValue
+    const handleSelect = (user: User) => {
+        const newValue = user === value ? null : user
         onValueChange(newValue)
-        setInputValue(newValue)
+        setInputValue(newValue?.nombre || "")
         setOpen(false)
     }
 
@@ -46,7 +47,7 @@ export function UserCombobox({ value, onValueChange, placeholder = "Selecciona u
             };
 
             addUserToUsersData(newUser);
-            onValueChange(inputValue);
+            onValueChange(newUser);
             setOpen(false);
 
             showSuccess({
@@ -72,7 +73,7 @@ export function UserCombobox({ value, onValueChange, placeholder = "Selecciona u
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-                    {value ? value : placeholder}
+                    {value?.nombre ? value.nombre : placeholder}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -83,16 +84,18 @@ export function UserCombobox({ value, onValueChange, placeholder = "Selecciona u
                         <CommandEmpty>
                             <div className="p-2">
                                 <p className="text-sm text-muted-foreground mb-2">No se encontró el usuario.</p>
-                                <Button size="sm" onClick={handleCreateNewUser} className="w-full">
-                                    <PlusCircle className="mr-2 h-4 w-4" />
-                                    Crear nuevo usuario: "{inputValue}"
-                                </Button>
+                                {currentUserRole === 'Administrador' && (
+                                    <Button size="sm" onClick={handleCreateNewUser} className="w-full">
+                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                        Crear nuevo usuario: "{inputValue}"
+                                    </Button>
+                                )}
                             </div>
                         </CommandEmpty>
                         <CommandGroup>
                             {state.usersData.map((user) => (
-                                <CommandItem key={user.id} value={user.nombre} onSelect={() => handleSelect(user.nombre)}>
-                                    <Check className={cn("mr-2 h-4 w-4", value === user.nombre ? "opacity-100" : "opacity-0")} />
+                                <CommandItem key={user.id} value={user.nombre} onSelect={() => handleSelect(user)}>
+                                    <Check className={cn("mr-2 h-4 w-4", value?.id === user.id ? "opacity-100" : "opacity-0")} />
                                     {user.nombre}
                                 </CommandItem>
                             ))}
