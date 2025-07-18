@@ -21,6 +21,7 @@ import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast
 import { useApp } from "@/contexts/app-context"
 import { User } from "@/types/inventory";
 import { UserCombobox } from '@/components/ui/user-combobox';
+import { InventoryItem } from "@/types/inventory";
 
 interface LendModalProps {
   open: boolean
@@ -30,7 +31,7 @@ interface LendModalProps {
 }
 
 export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalProps) {
-  const { state, updateInventoryItemStatus, addRecentActivity, addPendingRequest } = useApp()
+  const { state, updateInventoryItemStatus, addRecentActivity, addPendingRequest, updateInventoryItem, addHistoryEvent } = useApp()
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
@@ -46,31 +47,38 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
   }, [open])
 
   const executeLend = () => {
-    if (!product || !selectedUser) return // Ensure selectedUser is not null
+    if (!product || !selectedUser || !returnDate) {
+      showError({ title: "Error Interno", description: "Faltan datos para registrar el préstamo." });
+      return;
+    }
 
-    setIsLoading(true)
-    setTimeout(() => {
-      updateInventoryItemStatus(product.id, "Prestado")
-      addRecentActivity({
-        type: "Préstamo",
-        description: `${product.nombre} prestado a ${selectedUser.nombre}`,
-        date: new Date().toLocaleString(),
-        details: {
-          product: { id: product.id, name: product.nombre, serial: product.numeroSerie },
-          lentTo: selectedUser.nombre,
-          lentToEmail: selectedUser.email,
-          loanDate: new Date().toLocaleString(),
-          returnDate: returnDate ? format(returnDate, "PPP") : "N/A",
-        },
-      })
-      showSuccess({
-        title: "Préstamo registrado",
-        description: `${product.nombre} ha sido prestado a ${selectedUser.nombre}.`,
-      })
-      onSuccess()
-      onOpenChange(false)
-    }, 1000)
-  }
+    setIsLoading(true);
+
+    const updates: Partial<InventoryItem> = {
+      estado: 'Prestado',
+      prestadoA: selectedUser.nombre,
+      fechaPrestamo: new Date().toISOString().split('T')[0],
+      fechaDevolucion: returnDate.toISOString().split('T')[0]
+    };
+
+    updateInventoryItem(product.id, updates);
+
+    addHistoryEvent(product.id, {
+      fecha: new Date().toISOString(),
+      usuario: state.user?.nombre || 'Sistema',
+      accion: 'Préstamo',
+      detalles: `Prestado a ${selectedUser.nombre} hasta el ${returnDate.toLocaleDateString()}.`
+    });
+
+    showSuccess({
+      title: "Préstamo Registrado",
+      description: `${product.nombre} ha sido prestado a ${selectedUser.nombre}.`,
+    });
+
+    setIsLoading(false);
+    onSuccess();
+    onOpenChange(false);
+  };
 
   const handleLend = () => {
     if (!selectedUser || !returnDate) {

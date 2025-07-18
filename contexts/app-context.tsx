@@ -58,6 +58,7 @@ interface PendingActionRequest {
   date: string
   status: "Pendiente" | "Aprobada" | "Rechazada"
   details: any // Flexible for different action types
+  auditLog?: { event: string; user: string; dateTime: string; description: string }[]
 }
 
 interface RecentActivity {

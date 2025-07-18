@@ -32,6 +32,7 @@ export interface InventoryItem {
     asignadoA?: string | null;
     fechaAsignacion?: string | null;
     prestadoA?: string | null;
+    fechaPrestamo?: string | null;
     fechaDevolucion?: string | null;
     reactKey?: string;
     isVirtual?: boolean;
