@@ -3,7 +3,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
@@ -148,9 +148,15 @@ export function ChildRow({
                         )}
 
                         {(asset.estado === 'Prestado') && (
-                            <DropdownMenuItem onSelect={() => onAction('Marcar como Retirado', asset)}>
-                                Devolver / Liberar
-                            </DropdownMenuItem>
+                            <>
+                                <DropdownMenuItem onSelect={() => onAction('devolver', asset)}>
+                                    <Undo2 className="mr-2 h-4 w-4" />
+                                    <span>Devolver Préstamo</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                    Re-asignar
+                                </DropdownMenuItem>
+                            </>
                         )}
 
                         {asset.estado === 'Retirado' && (

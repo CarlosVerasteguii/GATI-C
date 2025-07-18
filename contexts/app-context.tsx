@@ -499,6 +499,7 @@ interface AppContextType {
   updateProveedores: (proveedores: string[]) => void;
   updateUbicaciones: (ubicaciones: string[]) => void;
   addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
+  devolverPrestamo: (itemId: number) => void;
 }
 
 // Creación del contexto
@@ -873,6 +874,30 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     });
   }, [dispatch, state.user, addHistoryEvent])
 
+  const devolverPrestamo = useCallback((itemId: number) => {
+    // 1. Actualizar el estado en la lista principal de inventario
+    updateInventoryItem(itemId, {
+      estado: "Disponible",
+      prestadoA: null,
+      fechaPrestamo: null,
+      fechaDevolucion: null
+    });
+
+    // 2. Actualizar el estado en la lista separada de préstamos
+    const activeLoan = state.prestamosData.find(loan => loan.articuloId === itemId && loan.estado === "Activo");
+    if (activeLoan) {
+      updateLoanStatus(activeLoan.id, "Devuelto");
+    }
+
+    // 3. Registrar el evento en el historial
+    addHistoryEvent(itemId, {
+      fecha: new Date().toISOString(),
+      usuario: state.user?.nombre || 'Sistema',
+      accion: 'Devolución de Préstamo',
+      detalles: 'El activo ha sido devuelto al stock.'
+    });
+  }, [state.user, state.prestamosData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
+
   // Efecto para inicializar marcas y proveedores desde los datos de inventario
   useEffect(() => {
     const allMarcas = [...new Set(state.inventoryData.map(item => item.marca))];
@@ -922,6 +947,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updateProveedores,
     updateUbicaciones,
     addHistoryEvent,
+    devolverPrestamo,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

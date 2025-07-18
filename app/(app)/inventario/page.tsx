@@ -156,7 +156,7 @@ const allColumns: ColumnDefinition[] = [
 ]
 
 export default function InventarioPage() {
-  const { state, dispatch: appDispatch, liberarAsignacion } = useApp()
+  const { state, dispatch: appDispatch, liberarAsignacion, devolverPrestamo } = useApp()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -1466,6 +1466,22 @@ export default function InventarioPage() {
           showSuccess({
             title: "Activo Liberado",
             description: `El activo "${targetItem.nombre}" ha sido marcado como Disponible.`,
+          });
+        }
+        break;
+      case 'devolver':
+        if ('id' in targetItem) {
+          if (state.user?.rol === 'Lector') {
+            showError({
+              title: "Permiso denegado",
+              description: "No tienes permiso para realizar esta acción."
+            });
+            return;
+          }
+          devolverPrestamo(targetItem.id);
+          showSuccess({
+            title: "Préstamo Devuelto",
+            description: "El activo ha sido devuelto al inventario."
           });
         }
         break;
