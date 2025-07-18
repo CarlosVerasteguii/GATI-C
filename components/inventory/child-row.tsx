@@ -53,7 +53,8 @@ export function ChildRow({
         <TableRow className={cn(
             isHighlighted && "bg-green-100 dark:bg-green-900/30",
             isSelected && "bg-blue-100 dark:bg-blue-900/40",
-            "hover:border-l-4 hover:border-l-green-500 transition-all duration-150"
+            "hover:border-l-4 hover:border-l-green-500 transition-all duration-150",
+            "animate-fadeIn"
         )}>
             <TableCell className="pl-12">
                 {!isLector && (
