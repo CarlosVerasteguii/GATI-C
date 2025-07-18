@@ -58,12 +58,15 @@ export function ParentRow({
     );
 
     return (
-        <TableRow className={cn(
-            "bg-muted/50",
-            areAllChildrenSelected && "bg-blue-100 dark:bg-blue-900/40",
-            "hover:border-l-4 hover:border-l-green-500 transition-all duration-150"
-        )}>
-            <TableCell>
+        <TableRow
+            onClick={onToggle}
+            className={cn(
+                "bg-muted/50 cursor-pointer",
+                areAllChildrenSelected && "bg-blue-100 dark:bg-blue-900/40",
+                "hover:border-l-4 hover:border-l-green-500 transition-all duration-150"
+            )}
+        >
+            <TableCell onClick={(e) => e.stopPropagation()}>
                 {!isLector && (
                     <Checkbox
                         checked={areAllChildrenSelected}
@@ -74,7 +77,10 @@ export function ParentRow({
             <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                     <Button
-                        onClick={onToggle}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggle();
+                        }}
                         variant="ghost"
                         size="sm"
                     >
@@ -95,7 +101,7 @@ export function ParentRow({
                         content = product.modelo;
                         break;
                     case 'numeroSerie':
-                        content = 'N/A';
+                        content = null;
                         break;
                     case 'categoria':
                         content = product.categoria;
@@ -124,7 +130,7 @@ export function ParentRow({
                 }
                 return <TableCell key={col.id}>{content}</TableCell>;
             })}
-            <TableCell className="text-right">
+            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">

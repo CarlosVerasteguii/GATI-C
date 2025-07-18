@@ -130,9 +130,9 @@ export function ChildRow({
                                 <DropdownMenuItem onSelect={() => onAction('Prestar', asset)}>
                                     Prestar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>
+                                {/* <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>
                                     Mantenimiento
-                                </DropdownMenuItem>
+                                </DropdownMenuItem> */}
                             </>
                         )}
 

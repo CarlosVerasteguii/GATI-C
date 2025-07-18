@@ -1452,7 +1452,12 @@ export default function InventarioPage() {
         handleDuplicate(targetItem);
         break;
       case 'Mover a Mantenimiento':
-        handleMaintenanceState(targetItem);
+        // TODO: Implementar la lógica para abrir el modal de mantenimiento.
+        // Esta feature está pospuesta hasta que haya un caso de uso claro.
+        showInfo({
+          title: "Funcionalidad Pendiente",
+          description: "La gestión de mantenimiento se implementará en una futura versión."
+        });
         break;
       case 'Marcar como Retirado': // Para la acción de "Retiro Definitivo"
         handleMarkAsRetired(targetItem);
