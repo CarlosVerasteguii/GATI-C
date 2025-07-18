@@ -565,18 +565,7 @@ export default function InventarioPage() {
         matchesSerialNumber &&
         matchesAdvancedFilters();
 
-      // Detailed logging for each filter
-      if (!passesAllFilters) {
-        console.log('Filtered Out Item:', {
-          item,
-          matchesSearch,
-          matchesCategoria,
-          matchesMarca,
-          matchesEstado,
-          matchesSerialNumber,
-          matchesAdvancedFilters: matchesAdvancedFilters()
-        });
-      }
+
 
       return passesAllFilters;
     });
@@ -1008,7 +997,7 @@ export default function InventarioPage() {
       costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
       garantia: (formData.get("garantia") as string | null) ?? undefined,
       vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined,
-      ubicacion: formData.get("ubicacion") as string || null,
+      ubicacion: formData.get("ubicacion") as string || undefined,
     }
 
     if (state.user?.rol === "Editor") {
@@ -1349,7 +1338,12 @@ export default function InventarioPage() {
     return [...Array.from(statuses).sort()]
   }, [state.inventoryData])
 
-  if (groupedAndFilteredData.length === 0 && !searchTerm && !filterCategoria && !filterMarca && !filterEstado) {
+  // Verificar si hay filtros avanzados activos
+  const hasAdvancedFilters = advancedFilters.fechaInicio || advancedFilters.fechaFin ||
+    advancedFilters.proveedor || advancedFilters.contratoId ||
+    advancedFilters.costoMin !== null || advancedFilters.costoMax !== null;
+
+  if (groupedAndFilteredData.length === 0 && !searchTerm && !filterCategoria && !filterMarca && !filterEstado && !hasAdvancedFilters) {
     return (
       <EmptyState
         title="No hay productos en el inventario"
@@ -1866,7 +1860,14 @@ export default function InventarioPage() {
               setIsAdvancedFilterOpen(false);
             }}
             onClearFilters={() => {
-              setAdvancedFilters({ fechaInicio: null, fechaFin: null, proveedor: '' });
+              setAdvancedFilters({
+                fechaInicio: null,
+                fechaFin: null,
+                proveedor: '',
+                contratoId: '',
+                costoMin: null,
+                costoMax: null
+              });
             }}
             hasSerialNumber={hasSerialNumber}
             onSerialNumberFilterChange={handleSerialNumberFilterChange}
