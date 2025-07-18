@@ -256,8 +256,6 @@ export default function InventarioPage() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [attachedDocuments, setAttachedDocuments] = useState<{ id: string, name: string, url: string, uploadDate: string }[]>([]);
-  // Añadir estado para el modo de visualización
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
     fechaInicio: null,
     fechaFin: null,
@@ -1391,10 +1389,6 @@ export default function InventarioPage() {
     )
   }
 
-  const handleViewModeChange = (mode: "table" | "cards") => {
-    setViewMode(mode);
-  }
-
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
     const isGroup = 'isParent' in data && data.isParent;
@@ -1622,10 +1616,6 @@ export default function InventarioPage() {
               <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
                 Filtros Avanzados
               </Button>
-              <ToggleGroup type="single" variant="outline" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "cards")}>
-                <ToggleGroupItem value="table" aria-label="Vista de tabla">Tabla</ToggleGroupItem>
-                <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">Tarjetas</ToggleGroupItem>
-              </ToggleGroup>
               <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
                 Importar
               </Button>
