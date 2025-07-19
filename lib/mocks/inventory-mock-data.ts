@@ -33,7 +33,7 @@ export const mockInventoryData = [
             {
                 id: 'asset_102',
                 numeroSerie: 'SN-XPS15-002',
-                estado: 'En Mantenimiento',
+                estado: 'Disponible',
                 asignadoA: null,
                 fechaMantenimiento: '2024-03-05',
                 proveedor: 'TechService Pro',

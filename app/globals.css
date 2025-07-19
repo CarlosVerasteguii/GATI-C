@@ -41,9 +41,7 @@
     --status-lent-foreground: 20 14.3% 4.1%;
     --status-assigned: 231 81% 69%;
     --status-assigned-foreground: 0 0% 100%;
-    --status-maintenance: 213 94% 68%;
-    --status-maintenance-foreground: 0 0% 100%;
-    --status-pending-retire: 24 95% 53%;
+    --status-pending-retire: 34 100% 50%;
     --status-pending-retire-foreground: 0 0% 100%;
     --status-retired: 0 84% 60%;
     --status-retired-foreground: 0 0% 100%;
@@ -134,10 +132,6 @@
 
 .text-status-asignado {
   color: hsl(var(--status-assigned));
-}
-
-.text-status-mantenimiento {
-  color: hsl(var(--status-maintenance));
 }
 
 .text-status-pendiente-de-retiro {

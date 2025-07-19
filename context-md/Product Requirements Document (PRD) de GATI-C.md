@@ -38,8 +38,7 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 
 3. Functional Requirements
 Gestión del Ciclo de Vida del Activo:
-Estados: Los activos deben tener los siguientes estados, cada uno con un color semántico definido: Disponible (Verde), Asignado (Púrpura), Prestado (Amarillo), En Mantenimiento (Azul), Pendiente de Retiro (Naranja), Retirado (Rojo).
-Estado "En Mantenimiento": Se implementará como un estado simple. Al seleccionarlo, se abrirá un modal que obligará a registrar en un campo de texto libre a quién o a qué proveedor se envía y notas adicionales. Mientras un activo esté en este estado, no podrá ser asignado ni prestado. Es un estado de baja prioridad, pero debe existir.
+Estados: Los activos deben tener los siguientes estados, cada uno con un color semántico definido: Disponible (Verde), Asignado (Púrpura), Prestado (Amarillo), Pendiente de Retiro (Naranja), Retirado (Rojo).
 Gestión de Documentos Adjuntos (SISE / Contrato de Compra):
 •	Tipos de Archivo: Se permitirá adjuntar documentos en formato PDF y Word (.docx).
 •	Cantidad de Archivos: Un producto podrá tener múltiples documentos adjuntos de este tipo.

@@ -323,7 +323,7 @@ Se mejoró el formulario de edición/creación de productos dividiéndolo en pes
 
 ### 3.2. Campos Adicionales
 
-Se añadieron campos para costo, garantía y vida útil, permitiendo un registro más completo de la información financiera y de mantenimiento de los productos.
+Se añadieron campos para costo, garantía y vida útil, permitiendo un registro más completo de la información financiera de los productos.
 
 ### 3.3. Gestión de Documentos
 

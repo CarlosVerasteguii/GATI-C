@@ -72,10 +72,6 @@ const config = {
           DEFAULT: "#6366F1", // Púrpura/Índigo
           foreground: "#FFFFFF",
         },
-        "status-maintenance": {
-          DEFAULT: "#3B82F6", // Azul
-          foreground: "#FFFFFF",
-        },
         "status-pending-retire": {
           DEFAULT: "#F97316", // Naranja
           foreground: "#FFFFFF",

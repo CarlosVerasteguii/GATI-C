@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { InventoryItem } from "@/types/inventory"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Edit, UserCheck, Undo2, Wrench, Info } from 'lucide-react';
+import { PlusCircle, Edit, UserCheck, Undo2, Wrench, Info, ArrowRightLeft, Pencil, Archive, History } from 'lucide-react';
 
 interface DetailSheetProps {
   open: boolean
@@ -13,26 +13,26 @@ interface DetailSheetProps {
 export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
   if (!product) return null
 
-  const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'destructive' | 'outline' | 'secondary' => {
+  const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Disponible': return 'default';
-      case 'Asignado':
+      case 'Asignado': return 'secondary';
       case 'Prestado': return 'secondary';
-      case 'En Mantenimiento': return 'outline';
-      case 'PENDIENTE_DE_RETIRO':
+      case 'PENDIENTE_DE_RETIRO': return 'outline';
       case 'Retirado': return 'destructive';
-      default: return 'secondary';
+      default: return 'outline';
     }
   };
 
-  const getHistoryIcon = (accion: string) => {
-    switch (accion.toLowerCase()) {
+  const getHistoryIcon = (action: string) => {
+    switch (action.toLowerCase()) {
       case 'creación': return <PlusCircle className="h-5 w-5 text-green-500" />;
-      case 'edición': return <Edit className="h-5 w-5 text-blue-500" />;
       case 'asignación': return <UserCheck className="h-5 w-5 text-purple-500" />;
-      case 'liberación': return <Undo2 className="h-5 w-5 text-gray-500" />;
-      case 'mantenimiento': return <Wrench className="h-5 w-5 text-orange-500" />;
-      default: return <Info className="h-5 w-5 text-gray-400" />;
+      case 'préstamo': return <ArrowRightLeft className="h-5 w-5 text-yellow-500" />;
+      case 'devolución': return <Undo2 className="h-5 w-5 text-blue-500" />;
+      case 'edición': return <Pencil className="h-5 w-5 text-gray-500" />;
+      case 'retiro': return <Archive className="h-5 w-5 text-red-500" />;
+      default: return <History className="h-5 w-5 text-gray-400" />;
     }
   };
 
@@ -149,11 +149,13 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                 </div>
               )}
 
-              {product.estado === 'En Mantenimiento' && (
+              {product.estado === 'Retirado' && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Detalles del Mantenimiento</h4>
+                  <h4 className="font-medium mb-2">Detalles del Retiro</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Notas:</span> {product.mantenimiento || 'Sin notas.'}</p>
+                    {/* Aquí irían los detalles específicos del retiro */}
+                    <p><span className="text-muted-foreground">Motivo:</span> Fin de vida útil</p>
+                    <p><span className="text-muted-foreground">Fecha de retiro:</span> 2024-01-15</p>
                   </div>
                 </div>
               )}

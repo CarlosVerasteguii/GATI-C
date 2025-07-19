@@ -133,7 +133,7 @@ const defaultInventoryData: InventoryItem[] = [
     modelo: "XPS 15",
     numeroSerie: "DXPS15-001",
     categoria: "Laptops",
-    estado: "Asignado",
+    estado: "Disponible",
     cantidad: 1,
     fechaIngreso: "2023-01-15",
     ubicacion: "Oficina Principal - Piso 2",
@@ -193,7 +193,7 @@ const defaultInventoryData: InventoryItem[] = [
     modelo: "ZBook Fury G8",
     numeroSerie: "HPZF-003",
     categoria: "Laptops",
-    estado: "En Mantenimiento",
+    estado: "Disponible",
     cantidad: 1,
     fechaIngreso: "2022-11-05",
     ubicacion: "Soporte Técnico",
@@ -207,12 +207,6 @@ const defaultInventoryData: InventoryItem[] = [
         usuario: "Carlos Vera",
         accion: "Ingreso de Producto",
         detalles: "Nuevo ZBook Fury G8 ingresado al inventario"
-      },
-      {
-        fecha: "2023-06-15",
-        usuario: "Pedro García",
-        accion: "Mantenimiento",
-        detalles: "Enviado a mantenimiento por problemas en batería"
       }
     ]
   },
@@ -246,7 +240,7 @@ const defaultInventoryData: InventoryItem[] = [
 
   // Servidores y Redes
   { id: 11, nombre: "Servidor de Rack 2U", marca: "Dell", modelo: "PowerEdge R740", numeroSerie: "DPER740-011", categoria: "Servidores", estado: "Retirado", cantidad: 1, fechaIngreso: "2020-05-15", ubicacion: "Data Center A", proveedor: "HP Directo", costo: 5000, fechaAdquisicion: "2020-05-01", isSerialized: true },
-  { id: 12, nombre: "Switch Gestionable 48 Puertos", marca: "Cisco", modelo: "Catalyst 2960", numeroSerie: "CISCO2960-012", categoria: "Redes", estado: "En Mantenimiento", cantidad: 1, fechaIngreso: "2021-08-10", ubicacion: "Data Center A", proveedor: "TecnoMundo", costo: 1200, fechaAdquisicion: "2021-08-01", isSerialized: true },
+  { id: 12, nombre: "Switch Gestionable 48 Puertos", marca: "Cisco", modelo: "Catalyst 2960", numeroSerie: "CISCO2960-012", categoria: "Redes", estado: "Disponible", cantidad: 1, fechaIngreso: "2021-08-10", ubicacion: "Data Center A", proveedor: "TecnoMundo", costo: 1200, fechaAdquisicion: "2021-08-01", isSerialized: true },
   { id: 13, nombre: "Firewall de Próxima Generación", marca: "Palo Alto", modelo: "PA-220", numeroSerie: "PALO-220-013", categoria: "Seguridad", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-07-01", ubicacion: "Data Center B", proveedor: "HP Directo", costo: 900, fechaAdquisicion: "2023-06-20", isSerialized: true },
 
   // Otros
@@ -473,7 +467,7 @@ interface AppContextType {
   addInventoryItem: (item: InventoryItem) => void
   updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void
   liberarAsignacion: (itemId: number) => void
-  updateInventoryItemStatus: (id: number, status: string) => void
+  updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => void
   removeInventoryItem: (id: number) => void
   updateAsignados: (asignados: AsignadoItem[]) => void
   addAssignment: (assignment: AsignadoItem) => void
@@ -919,8 +913,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     addInventoryItem,
     updateInventoryItem,
     liberarAsignacion,
-    updateInventoryItemStatus: (id: number, status: string) => {
-      updateInventoryItem(id, { estado: status as "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO" })
+    updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => {
+      const item = state.inventoryData.find(i => i.id === id)
+      if (item) {
+        updateInventoryItem(id, { estado: status })
+      }
     },
     removeInventoryItem,
     updateAsignados,

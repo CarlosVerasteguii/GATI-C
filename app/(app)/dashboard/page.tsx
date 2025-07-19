@@ -87,7 +87,6 @@ export default function DashboardPage() {
     const totalValue = state.inventoryData.reduce((sum, item) => sum + (item.costo || 0), 0);
 
     // Productos que requieren atención
-    const maintenanceItems = state.inventoryData.filter(item => item.estado === "En Mantenimiento");
     const pendingRetirementItems = state.inventoryData.filter(item => item.estado === "PENDIENTE_DE_RETIRO");
 
     // Productos por categoría (top 5)
@@ -126,7 +125,9 @@ export default function DashboardPage() {
 
     return {
       totalValue,
-      maintenanceItems,
+      totalItems: state.inventoryData.length,
+      assignedItems: state.inventoryData.filter(item => item.estado === "Asignado").length,
+      lentItems: state.inventoryData.filter(item => item.estado === "Prestado").length,
       pendingRetirementItems,
       topCategories,
       topBrands,
@@ -225,9 +226,7 @@ export default function DashboardPage() {
 
   // Función para navegar a inventario con filtros específicos
   const handleViewInventoryDetails = (filter: string) => {
-    if (filter === 'maintenance') {
-      router.push('/inventario?estado=En Mantenimiento');
-    } else if (filter === 'pending-retirement') {
+    if (filter === 'pending-retirement') {
       router.push('/inventario?estado=PENDIENTE_DE_RETIRO');
     }
   };
@@ -378,19 +377,6 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">En mantenimiento</p>
-                  <p className="text-sm text-muted-foreground">
-                    {inventoryMetrics.maintenanceItems.length} productos
-                  </p>
-                </div>
-                <div className="text-2xl font-bold text-status-maintenance">
-                  {inventoryMetrics.maintenanceItems.length > 0
-                    ? ((inventoryMetrics.maintenanceItems.length / totalProducts) * 100).toFixed(1) + '%'
-                    : '0%'}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">Pendientes de retiro</p>
                   <p className="text-sm text-muted-foreground">
                     {inventoryMetrics.pendingRetirementItems.length} productos
@@ -402,26 +388,15 @@ export default function DashboardPage() {
                     : '0%'}
                 </div>
               </div>
-              {inventoryMetrics.maintenanceItems.length > 0 || inventoryMetrics.pendingRetirementItems.length > 0 ? (
+              {inventoryMetrics.pendingRetirementItems.length > 0 ? (
                 <div className="space-y-2">
-                  {inventoryMetrics.maintenanceItems.length > 0 && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleViewInventoryDetails('maintenance')}
-                    >
-                      Ver artículos en mantenimiento
-                    </Button>
-                  )}
-                  {inventoryMetrics.pendingRetirementItems.length > 0 && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleViewInventoryDetails('pending-retirement')}
-                    >
-                      Ver artículos pendientes de retiro
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleViewInventoryDetails('pending-retirement')}
+                  >
+                    Ver artículos pendientes de retiro
+                  </Button>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center italic">No hay productos que requieran atención</p>

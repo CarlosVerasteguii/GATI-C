@@ -53,7 +53,6 @@ export function ParentRow({
             <h4 className="font-bold text-sm mb-1">Desglose de Stock</h4>
             {summary.estados.asignado > 0 && <div>Asignado: <strong>{summary.estados.asignado}</strong></div>}
             {summary.estados.prestado > 0 && <div>Prestado: <strong>{summary.estados.prestado}</strong></div>}
-            {summary.estados.enMantenimiento > 0 && <div>En Mantenimiento: <strong>{summary.estados.enMantenimiento}</strong></div>}
         </div>
     );
 
@@ -130,7 +129,17 @@ export function ParentRow({
                 }
                 return <TableCell key={col.id}>{content}</TableCell>;
             })}
-            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+            <TableCell colSpan={2} className="py-2">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                    <div>Total: <strong>{summary.total}</strong></div>
+                    {summary.estados.disponible > 0 && <div>Disponible: <strong>{summary.estados.disponible}</strong></div>}
+                    {summary.estados.asignado > 0 && <div>Asignado: <strong>{summary.estados.asignado}</strong></div>}
+                    {summary.estados.prestado > 0 && <div>Prestado: <strong>{summary.estados.prestado}</strong></div>}
+                    {summary.estados.pendienteRetiro > 0 && <div>Pendiente Retiro: <strong>{summary.estados.pendienteRetiro}</strong></div>}
+                    {summary.estados.retirado > 0 && <div>Retirado: <strong>{summary.estados.retirado}</strong></div>}
+                </div>
+            </TableCell>
+            <TableCell colSpan={2} className="text-right py-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">

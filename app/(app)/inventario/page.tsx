@@ -86,7 +86,6 @@ import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { EditProductModal } from "@/components/edit-product-modal"
-import { MaintenanceModal } from "@/components/maintenance-modal"
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
 import { DateRange } from "react-day-picker"
 import { AdvancedFilterState } from "@/types/inventory"
@@ -116,7 +115,6 @@ interface QtyBreakdown {
   unavailable: number
   assigned: number
   lent: number
-  maintenance: number
   pendingRetire: number
 }
 
@@ -238,14 +236,8 @@ export default function InventarioPage() {
   const [processingTaskId, setProcessingTaskId] = useState<number | null>(null)
   const [tempMarca, setTempMarca] = useState("")
   const [isProcessingUrlParam, setIsProcessingUrlParam] = useState(false)
-  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false)
   const [isReactivateConfirmOpen, setIsReactivateConfirmOpen] = useState(false)
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
-  const [maintenanceDetails, setMaintenanceDetails] = useState({
-    provider: "",
-    notes: "",
-    productId: 0
-  })
   const [retirementDetails, setRetirementDetails] = useState({
     reason: "",
     date: new Date().toISOString().split("T")[0],
@@ -621,10 +613,12 @@ export default function InventarioPage() {
 
     if (sortColumn) {
       const getGroupStatus = (group: any) => {
-        if (!group.isParent) return group.estado;
-        if (group.summary.disponible > 0) return 'Disponible';
-        const firstChildStatus = group.children[0]?.estado;
-        return firstChildStatus || 'Retirado';
+        const statuses = new Set(group.children.map((item: any) => item.estado));
+        if (statuses.has('Disponible')) return 'Disponible';
+        if (statuses.has('PENDIENTE_DE_RETIRO')) return 'Pendiente';
+        if (statuses.has('Asignado')) return 'Asignado';
+        if (statuses.has('Prestado')) return 'Prestado';
+        return 'Retirado';
       };
 
       const getGroupValue = (group: any, column: string) => {
@@ -643,7 +637,7 @@ export default function InventarioPage() {
         const sortType = columnConfig ? columnConfig.type : 'string';
 
         const statusOrder: { [key: string]: number } = {
-          'Disponible': 1, 'Asignado': 2, 'Prestado': 3, 'En Mantenimiento': 4, 'PENDIENTE_DE_RETIRO': 5, 'Retirado': 6
+          'Disponible': 1, 'Asignado': 2, 'Prestado': 3, 'PENDIENTE_DE_RETIRO': 4, 'Retirado': 5
         };
 
         if (aValue === null || aValue === undefined) return 1;
@@ -1173,7 +1167,6 @@ export default function InventarioPage() {
     let totalUnavailable = 0
     let assignedCount = 0
     let lentCount = 0
-    let maintenanceCount = 0
     let pendingRetireCount = 0
     let totalInInventory = 0
 
@@ -1194,9 +1187,6 @@ export default function InventarioPage() {
       } else if (instance.estado === "Prestado") {
         lentCount += instance.cantidad
         totalUnavailable += instance.cantidad
-      } else if (instance.estado === "En Mantenimiento") {
-        maintenanceCount += instance.cantidad
-        totalUnavailable += instance.cantidad
       } else if (instance.estado === "PENDIENTE_DE_RETIRO") {
         pendingRetireCount += instance.cantidad
         totalUnavailable += instance.cantidad
@@ -1209,7 +1199,6 @@ export default function InventarioPage() {
       unavailable: totalUnavailable,
       assigned: assignedCount,
       lent: lentCount,
-      maintenance: maintenanceCount,
       pendingRetire: pendingRetireCount,
     }
   }
@@ -1223,8 +1212,6 @@ export default function InventarioPage() {
         return "text-status-prestado"
       case "Asignado":
         return "text-status-asignado"
-      case "En Mantenimiento": // Updated status name
-        return "text-status-mantenimiento"
       case "PENDIENTE_DE_RETIRO":
         return "text-status-pendiente-de-retiro"
       case "Retirado":
@@ -1235,53 +1222,6 @@ export default function InventarioPage() {
   }
 
   const canShowBulkActions = selectedRowIds.length > 0 && state.user?.rol !== "Lector" // Corregido según PRD
-
-  // Función para manejar el cambio a estado de mantenimiento
-  const handleMaintenanceState = (product: InventoryItem) => {
-    setMaintenanceDetails({
-      provider: "",
-      notes: "",
-      productId: product.id
-    })
-    setIsMaintenanceModalOpen(true)
-  }
-
-  // Función para ejecutar el cambio de estado a mantenimiento
-  const executeMaintenanceChange = () => {
-    if (!maintenanceDetails.provider.trim()) {
-      showError({
-        title: "Error",
-        description: "Debe especificar un proveedor de mantenimiento.",
-      })
-      return
-    }
-
-    appDispatch({
-      type: 'UPDATE_INVENTORY_ITEM_STATUS',
-      payload: { id: maintenanceDetails.productId, status: "En Mantenimiento" }
-    })
-
-    appDispatch({
-      type: 'ADD_RECENT_ACTIVITY',
-      payload: {
-        type: "Cambio a Mantenimiento",
-        description: `Producto enviado a mantenimiento con ${maintenanceDetails.provider}`,
-        date: new Date().toLocaleString(),
-        details: {
-          productId: maintenanceDetails.productId,
-          provider: maintenanceDetails.provider,
-          notes: maintenanceDetails.notes
-        },
-      }
-    })
-
-    showSuccess({
-      title: "Producto en mantenimiento",
-      description: "El producto ha sido marcado como en mantenimiento.",
-    })
-
-    setIsMaintenanceModalOpen(false)
-  }
 
   // Función simulada para subir documentos
   const handleFileUpload = () => {
@@ -1438,14 +1378,6 @@ export default function InventarioPage() {
         break;
       case 'Duplicar':
         handleDuplicate(targetItem);
-        break;
-      case 'Mover a Mantenimiento':
-        // TODO: Implementar la lógica para abrir el modal de mantenimiento.
-        // Esta feature está pospuesta hasta que haya un caso de uso claro.
-        showInfo({
-          title: "Funcionalidad Pendiente",
-          description: "La gestión de mantenimiento se implementará en una futura versión."
-        });
         break;
       case 'Marcar como Retirado': // Para la acción de "Retiro Definitivo"
         handleMarkAsRetired(targetItem);
@@ -1790,14 +1722,6 @@ export default function InventarioPage() {
       <EditProductModal
         open={isAddProductModalOpen}
         onOpenChange={setIsAddProductModalOpen}
-        product={selectedProduct}
-        onSuccess={handleBulkSuccess}
-      />
-
-      {/* Modal de Mantenimiento */}
-      <MaintenanceModal
-        open={isMaintenanceModalOpen}
-        onOpenChange={setIsMaintenanceModalOpen}
         product={selectedProduct}
         onSuccess={handleBulkSuccess}
       />

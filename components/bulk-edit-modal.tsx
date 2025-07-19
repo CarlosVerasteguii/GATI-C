@@ -89,6 +89,7 @@ export function BulkEditModal({ open, onOpenChange, selectedProductIds, onSucces
 
   const handleConfirmEditorAction = () => {
     addPendingRequest({
+      id: Date.now(), // Añadir un ID temporal basado en el timestamp
       type: "Edición Masiva",
       details: {
         selectedProductIds: selectedProductIds, // Directive 3.1: Pass actual IDs
@@ -176,7 +177,6 @@ export function BulkEditModal({ open, onOpenChange, selectedProductIds, onSucces
                   <SelectItem value="Disponible">Disponible</SelectItem>
                   <SelectItem value="Prestado">Prestado</SelectItem>
                   <SelectItem value="Asignado">Asignado</SelectItem>
-                  <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
                   <SelectItem value="Retirado">Retirado</SelectItem>
                   <SelectItem value="PENDIENTE_DE_RETIRO">Pendiente de Retiro</SelectItem>
                 </SelectContent>

@@ -15,7 +15,7 @@ export interface InventoryItem {
     numeroSerie: string | null;
     categoria: string;
     descripcion?: string;
-    estado: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "En Mantenimiento" | "PENDIENTE_DE_RETIRO";
+    estado: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
     cantidad: number;
     fechaIngreso: string;
     ubicacion?: string;
@@ -24,7 +24,6 @@ export interface InventoryItem {
     fechaAdquisicion?: string;
     garantia?: string;
     vidaUtil?: string;
-    mantenimiento?: string;
     historial?: HistoryEvent[];
     documentosAdjuntos?: { name: string; url: string }[];
     isSerialized?: boolean;

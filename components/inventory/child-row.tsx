@@ -21,8 +21,6 @@ const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'destruc
         case 'Disponible': return 'default';
         case 'Asignado':
         case 'Prestado': return 'secondary';
-        case 'En Mantenimiento': return 'outline';
-        case 'PENDIENTE_DE_RETIRO':
         case 'Retirado': return 'destructive';
         default: return 'secondary';
     }
@@ -131,9 +129,6 @@ export function ChildRow({
                                 <DropdownMenuItem onSelect={() => onAction('Prestar', asset)}>
                                     Prestar
                                 </DropdownMenuItem>
-                                {/* <DropdownMenuItem onSelect={() => onAction('Mover a Mantenimiento', asset)}>
-                                    Mantenimiento
-                                </DropdownMenuItem> */}
                             </>
                         )}
 
