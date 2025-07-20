@@ -219,7 +219,6 @@ export default function InventarioPage() {
 
   // Modify handleSerialNumberFilterChange to use local state
   const handleSerialNumberFilterChange = (isChecked: boolean) => {
-    console.log(`Changing serial number filter to: ${isChecked}`);
     setHasSerialNumber(isChecked);
   };
 
@@ -573,6 +572,7 @@ export default function InventarioPage() {
 
   const groupedData = React.useMemo(() => {
     const productGroups: { [key: string]: any } = {};
+
     filteredData.forEach((item: any) => {
       const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
 

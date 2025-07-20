@@ -218,6 +218,9 @@ const defaultInventoryData: InventoryItem[] = [
     numeroSerie: "LTPX1-004",
     categoria: "Laptops",
     estado: "Prestado",
+    prestadoA: "Ana Gómez",
+    fechaPrestamo: "2024-06-15",
+    fechaDevolucion: "2024-06-30", // <-- Fecha en el pasado
     cantidad: 1,
     fechaIngreso: "2023-05-10",
     ubicacion: "Oficina Principal - Piso 2",
@@ -231,7 +234,7 @@ const defaultInventoryData: InventoryItem[] = [
   // Monitores
   { id: 5, nombre: "Monitor Curvo UltraWide", marca: "LG", modelo: "34WN780-B", numeroSerie: "LG34-005", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-02-01", ubicacion: "Oficina Principal - Piso 1", proveedor: "TecnoMundo", costo: 750, fechaAdquisicion: "2023-01-25", isSerialized: true },
   { id: 6, nombre: "Monitor para Diseño Gráfico 4K", marca: "Dell", modelo: "UltraSharp U2721Q", numeroSerie: "DU27-006", categoria: "Monitores", estado: "Asignado", cantidad: 1, fechaIngreso: "2022-09-15", ubicacion: "Área de Diseño", proveedor: "Compudel", costo: 850, fechaAdquisicion: "2022-09-10", isSerialized: true },
-  { id: 7, nombre: "Monitor de Alta Tasa de Refresco", marca: "ASUS", modelo: "ROG Swift PG279Q", numeroSerie: "ASUSROG-007", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-06-01", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 650, fechaAdquisicion: "2023-05-28", isSerialized: true },
+  { id: 7, nombre: "Monitor de Alta Tasa de Refresco", marca: "ASUS", modelo: "ROG Swift PG279Q", numeroSerie: "ASUSROG-007", categoria: "Monitores", estado: "Prestado", prestadoA: "Sofía Castillo", fechaPrestamo: new Date().toISOString().split('T')[0], fechaDevolucion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], cantidad: 1, fechaIngreso: "2023-06-01", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 650, fechaAdquisicion: "2023-05-28", isSerialized: true },
 
   // Periféricos
   { id: 8, nombre: "Teclado Mecánico Inalámbrico", marca: "Logitech", modelo: "MX Mechanical", numeroSerie: null, categoria: "Periféricos", estado: "Disponible", cantidad: 10, fechaIngreso: "2023-04-10", ubicacion: "Almacén Central", proveedor: "OfficeDepot", costo: 170, fechaAdquisicion: "2023-04-05", isSerialized: false },
@@ -246,7 +249,7 @@ const defaultInventoryData: InventoryItem[] = [
   // Otros
   { id: 14, nombre: "Proyector Full HD para Sala de Juntas", marca: "Epson", modelo: "PowerLite 1080", numeroSerie: "EPSONPL-014", categoria: "Audiovisual", estado: "Disponible", cantidad: 1, fechaIngreso: "2022-06-10", ubicacion: "Sala de Juntas 1", proveedor: "OfficeDepot", costo: 800, fechaAdquisicion: "2022-06-01", isSerialized: true },
   { id: 15, nombre: "Impresora Multifuncional Láser", marca: "HP", modelo: "LaserJet Pro M428fdw", numeroSerie: "HPLJM-015", categoria: "Impresoras", estado: "PENDIENTE_DE_RETIRO", cantidad: 1, fechaIngreso: "2021-01-20", ubicacion: "Área de Copiado", proveedor: "HP Directo", costo: 450, fechaAdquisicion: "2021-01-15", isSerialized: true },
-  { id: 16, nombre: "Tableta Gráfica Profesional", marca: "Wacom", modelo: "Intuos Pro M", numeroSerie: "WIPM-016", categoria: "Periféricos", estado: "Prestado", cantidad: 1, fechaIngreso: "2023-08-01", ubicacion: "Área de Diseño", proveedor: "TecnoMundo", costo: 380, fechaAdquisicion: "2023-07-25", isSerialized: true },
+  { id: 16, nombre: "Tableta Gráfica Profesional", marca: "Wacom", modelo: "Intuos Pro M", numeroSerie: "WIPM-016", categoria: "Periféricos", estado: "Prestado", prestadoA: "Luis Fernández", fechaPrestamo: "2024-07-01", fechaDevolucion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], cantidad: 1, fechaIngreso: "2023-08-01", ubicacion: "Área de Diseño", proveedor: "TecnoMundo", costo: 380, fechaAdquisicion: "2023-07-25", isSerialized: true },
   { id: 17, nombre: "Docking Station USB-C", marca: "Dell", modelo: "WD19S", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 20, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 250, fechaAdquisicion: "2023-01-10", isSerialized: false },
   { id: 18, nombre: "Router Wi-Fi Mesh (Pack de 3)", marca: "Google", modelo: "Nest Wifi", numeroSerie: null, categoria: "Redes", estado: "Disponible", cantidad: 2, fechaIngreso: "2023-09-01", ubicacion: "Almacén Central", proveedor: "iShop", costo: 300, fechaAdquisicion: "2023-08-20", isSerialized: false },
   { id: 19, nombre: "Lector de Código de Barras", marca: "Zebra", modelo: "DS2208", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 8, fechaIngreso: "2022-12-10", ubicacion: "Almacén de Activos", proveedor: "Compudel", costo: 150, fechaAdquisicion: "2022-12-01", isSerialized: false }
@@ -502,19 +505,21 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(() => {
     if (typeof window !== "undefined") {
-      const savedState = localStorage.getItem("gati-c-app-state")
+      const savedState = localStorage.getItem("gati-c-app-state");
+      // Si existe un estado guardado, úsalo. Punto.
       if (savedState) {
         try {
-          const parsedState = JSON.parse(savedState)
-          // Merge saved state with default state to ensure all properties exist
-          return { ...defaultInitialState, ...parsedState }
+          return JSON.parse(savedState);
         } catch (e) {
-          console.error("Error parsing saved state from localStorage", e)
-          return defaultInitialState
+          console.error("Error parsing saved state, falling back to default.", e);
+          // Si el estado guardado está corrupto, volvemos al por defecto.
+          localStorage.removeItem("gati-c-app-state");
+          return defaultInitialState;
         }
       }
     }
-    return defaultInitialState
+    // Si no hay estado guardado, usa el estado por defecto.
+    return defaultInitialState;
   })
 
   useEffect(() => {
