@@ -17,7 +17,7 @@ import {
   Eye,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
-import { StatusBadge } from "@/components/status-badge"
+import { LoanStatusBadge } from "@/components/status-badges/loan-status-badge"
 import { ActivityDetailSheet } from "@/components/activity-detail-sheet"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
@@ -42,6 +42,14 @@ interface PrestamoItem {
 
 interface PrestamoItemExtended extends PrestamoItem {
   diasVencido?: number
+}
+
+// NUEVO: Tipo extendido para préstamos con días calculados
+import type { InventoryItem } from '@/types/inventory';
+
+interface PrestamoExtendido extends InventoryItem {
+  diasVencido?: number;
+  diasRestantes?: number;
 }
 
 export default function DashboardPage() {
@@ -70,27 +78,42 @@ export default function DashboardPage() {
    * Calcula los préstamos vencidos y por vencer para las métricas del Dashboard.
    * - prestamosVencidos: préstamos cuya fecha de devolución ya pasó.
    * - prestamosPorVencer: préstamos cuya fecha de devolución es en los próximos 7 días.
+   * Añade la propiedad diasVencido o diasRestantes según corresponda.
    */
   const { prestamosVencidos, prestamosPorVencer } = React.useMemo(() => {
     const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparaciones justas
+    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+
+    const unDiaEnMs = 24 * 60 * 60 * 1000;
 
     const prestamosActivos = state.inventoryData.filter(
       (item) => item.estado === 'Prestado' && item.fechaDevolucion
     );
 
-    const vencidos = prestamosActivos.filter((p) => {
-      const fechaDevolucion = new Date(p.fechaDevolucion!);
-      return fechaDevolucion < hoy;
-    });
+    const vencidos = prestamosActivos
+      .filter(p => new Date(p.fechaDevolucion!) < hoy)
+      .map(p => {
+        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        let diasVencido = Math.floor((hoy.getTime() - fechaDevolucion.getTime()) / unDiaEnMs);
+        if (diasVencido < 0) diasVencido = 0;
+        return { ...p, diasVencido };
+      });
 
-    const porVencer = prestamosActivos.filter((p) => {
-      const fechaDevolucion = new Date(p.fechaDevolucion!);
-      const unaSemanaDesdeHoy = new Date(hoy.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return fechaDevolucion >= hoy && fechaDevolucion <= unaSemanaDesdeHoy;
-    });
+    const porVencer = prestamosActivos
+      .filter(p => {
+        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        const unaSemanaDesdeHoy = new Date(hoy.getTime() + 7 * unDiaEnMs);
+        return fechaDevolucion >= hoy && fechaDevolucion <= unaSemanaDesdeHoy;
+      })
+      .map(p => {
+        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        let diasRestantes = Math.ceil((fechaDevolucion.getTime() - hoy.getTime()) / unDiaEnMs);
+        if (diasRestantes < 0) diasRestantes = 0;
+        return { ...p, diasRestantes };
+      });
 
-    return { prestamosVencidos: vencidos, prestamosPorVencer: porVencer };
+    // Tipar explícitamente los arrays como PrestamoExtendido[]
+    return { prestamosVencidos: vencidos as PrestamoExtendido[], prestamosPorVencer: porVencer as PrestamoExtendido[] };
   }, [state.inventoryData]);
 
   const handleLoanClick = (loan: any, type: "overdue" | "expiring") => {
@@ -322,14 +345,14 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay préstamos vencidos.</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {prestamosVencidos.map((prestamo) => (
+                {(prestamosVencidos as PrestamoExtendido[]).map((prestamo: PrestamoExtendido) => (
                   <div
                     key={prestamo.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
                     onClick={() => handleLoanClick(prestamo, "overdue")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{prestamo.articulo}</p>
+                      <p className="font-medium text-sm">{prestamo.nombre}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
@@ -360,14 +383,14 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay préstamos por vencer.</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {prestamosPorVencer.map((prestamo) => (
+                {(prestamosPorVencer as PrestamoExtendido[]).map((prestamo: PrestamoExtendido) => (
                   <div
                     key={prestamo.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
                     onClick={() => handleLoanClick(prestamo, "expiring")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{prestamo.articulo}</p>
+                      <p className="font-medium text-sm">{prestamo.nombre}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
@@ -604,7 +627,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Estado</h4>
-                  <StatusBadge status={selectedLoan.estado} />
+                  <LoanStatusBadge status={selectedLoan.estado} />
                 </div>
                 {selectedLoan.notas && (
                   <div>
