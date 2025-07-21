@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Search, Filter, ArrowUpDown, ArrowUpRight } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
-import { StatusBadge } from "@/components/status-badge"
+import { AssignmentStatusBadge } from "@/components/status-badges/assignment-status-badge"
 import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
 import { showSuccess, showWarning, showInfo } from "@/hooks/use-toast"
 import { ActionMenu } from "@/components/action-menu"
@@ -378,7 +378,7 @@ export default function AsignadosPage() {
                   <TableCell>{assignment.asignadoA}</TableCell>
                   <TableCell>{assignment.fechaAsignacion}</TableCell>
                   <TableCell>
-                    <StatusBadge status={assignment.estado} />
+                    <AssignmentStatusBadge status={assignment.estado} />
                   </TableCell>
                   <TableCell>
                     <ActionMenu

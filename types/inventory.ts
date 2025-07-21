@@ -15,7 +15,7 @@ export interface InventoryItem {
     numeroSerie: string | null;
     categoria: string;
     descripcion?: string;
-    estado: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
+    estado: InventoryStatus;
     cantidad: number;
     fechaIngreso: string;
     ubicacion?: string;
@@ -91,4 +91,25 @@ export interface ColumnDefinition {
     type?: 'string' | 'number' | 'date' | 'status';
     fixed?: "start" | "end";
     visible?: boolean;
-} 
+}
+
+// Tipo para estados de inventario
+export type InventoryStatus = "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
+
+// Tipo para estados de préstamos
+export type LoanStatus = "Activo" | "Devuelto" | "Vencido";
+
+// Tipo para estados de asignaciones
+export type AssignmentStatus = "Activo" | "Devuelto";
+
+// Tipo para estados de tareas
+export type TaskStatus =
+    | "Pendiente"
+    | "Aprobado"
+    | "Rechazado"
+    | "Carga Rápida"
+    | "Retiro Rápido"
+    | "Edición Masiva"
+    | "Asignación Masiva"
+    | "Préstamo Masivo"
+    | "Retiro Masivo"; 
