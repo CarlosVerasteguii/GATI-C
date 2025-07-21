@@ -479,7 +479,7 @@ export default function DashboardPage() {
                 ${inventoryMetrics.totalValue.toLocaleString('es-MX')}
               </div>
               <p className="text-xs text-muted-foreground">
-                Basado en {state.inventoryData.filter(item => item.costo).length} productos con costo registrado
+                Basado en {state.inventoryData.filter(item => typeof item.costo === 'number').length} productos con costo registrado
               </p>
             </div>
 

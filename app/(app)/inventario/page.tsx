@@ -151,6 +151,7 @@ const allColumns: ColumnDefinition[] = [
   { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
   { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' }, // New (derived)
   { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' }, // New (derived)
+  { id: "costo", label: "Costo", defaultVisible: false, sortable: true, type: "number" },
 ]
 
 export default function InventarioPage() {
@@ -455,6 +456,8 @@ export default function InventarioPage() {
         return getAssignmentDetails(item).asignadoA;
       case "fechaAsignacion":
         return getAssignmentDetails(item).fechaAsignacion;
+      case "costo":
+        return item.costo ?? null;
       default:
         return null;
     }

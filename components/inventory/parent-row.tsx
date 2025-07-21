@@ -92,40 +92,48 @@ export function ParentRow({
             </TableCell>
             {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
                 let content: React.ReactNode = null;
-                switch (col.id) {
-                    case 'marca':
-                        content = product.marca;
-                        break;
-                    case 'modelo':
-                        content = product.modelo;
-                        break;
-                    case 'numeroSerie':
-                        content = null;
-                        break;
-                    case 'categoria':
-                        content = product.categoria;
-                        break;
-                    case 'estado':
-                        content = (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="flex flex-col cursor-pointer">
-                                            <span>{`${summary.total} en Total`}</span>
-                                            <span className="text-xs text-green-600">{`${summary.disponible} Disp.`}</span>
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        {renderEstadoTooltip()}
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        );
-                        break;
-                    default:
-                        // Para otras columnas, podrías querer mostrar algo por defecto
-                        // o simplemente no renderizar la celda si no hay un caso para ella.
-                        content = parentProduct.product[col.id as keyof typeof parentProduct.product] || '';
+                if (col.id === 'costo') {
+                    const totalCosto = parentProduct.children.reduce(
+                        (sum, child) => sum + (typeof child.costo === 'number' ? child.costo : 0),
+                        0
+                    );
+                    content = totalCosto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+                } else {
+                    switch (col.id) {
+                        case 'marca':
+                            content = product.marca;
+                            break;
+                        case 'modelo':
+                            content = product.modelo;
+                            break;
+                        case 'numeroSerie':
+                            content = null;
+                            break;
+                        case 'categoria':
+                            content = product.categoria;
+                            break;
+                        case 'estado':
+                            content = (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex flex-col cursor-pointer">
+                                                <span>{`${summary.total} en Total`}</span>
+                                                <span className="text-xs text-green-600">{`${summary.disponible} Disp.`}</span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            {renderEstadoTooltip()}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            );
+                            break;
+                        default:
+                            // Para otras columnas, podrías querer mostrar algo por defecto
+                            // o simplemente no renderizar la celda si no hay un caso para ella.
+                            content = parentProduct.product[col.id as keyof typeof parentProduct.product] || '';
+                    }
                 }
                 return <TableCell key={col.id}>{content}</TableCell>;
             })}

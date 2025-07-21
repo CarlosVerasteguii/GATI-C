@@ -64,6 +64,8 @@ export function ChildRow({
             </TableCell>
             <TableCell />
             {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+                const value = asset[col.id as keyof InventoryItem];
+
                 // Si la columna es 'marca' o 'modelo', renderiza una celda vacía para mantener la alineación.
                 if (col.id === 'marca' || col.id === 'modelo') {
                     return <TableCell key={col.id} />;
@@ -77,7 +79,16 @@ export function ChildRow({
                     );
                 }
 
-                const value = asset[col.id as keyof InventoryItem];
+                if (col.id === 'costo') {
+                    return (
+                        <TableCell key={col.id}>
+                            {typeof value === 'number'
+                                ? value.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                : '$0.00'}
+                        </TableCell>
+                    );
+                }
+
                 let content: React.ReactNode;
 
                 switch (col.type) {

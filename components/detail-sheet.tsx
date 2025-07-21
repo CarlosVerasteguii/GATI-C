@@ -105,6 +105,10 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                       </div>
                     </>
                   )}
+                  <div>
+                    <span className="text-sm text-muted-foreground">Costo de Adquisición:</span>
+                    <p>{typeof product.costo === 'number' ? product.costo.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</p>
+                  </div>
                 </div>
               </div>
 
