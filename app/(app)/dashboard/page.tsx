@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { ToastDemo } from "@/components/toast-demo"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import React from "react"
 
 // Definición de tipos para los préstamos
 interface PrestamoItem {
@@ -64,11 +65,33 @@ export default function DashboardPage() {
   // Lógica de Tareas Pendientes (ya estaba correcta)
   const pendingTasks = state.tasks ? state.tasks.filter(task => task.status === 'Pendiente').length : 0;
 
-  // --- Lógica para Préstamos Vencidos y Por Vencer (Placeholder) ---
-  // NOTA: La estructura de `InventoryItem` no tiene `diasRestantes` o estado de préstamo "Vencido".
-  // Dejaremos esto como un placeholder para una futura implementación.
-  const prestamosVencidos: PrestamoItemExtended[] = [];
-  const prestamosPorVencer: PrestamoItemExtended[] = [];
+  // --- Lógica para Préstamos Vencidos y Por Vencer (Optimizada) ---
+  /**
+   * Calcula los préstamos vencidos y por vencer para las métricas del Dashboard.
+   * - prestamosVencidos: préstamos cuya fecha de devolución ya pasó.
+   * - prestamosPorVencer: préstamos cuya fecha de devolución es en los próximos 7 días.
+   */
+  const { prestamosVencidos, prestamosPorVencer } = React.useMemo(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparaciones justas
+
+    const prestamosActivos = state.inventoryData.filter(
+      (item) => item.estado === 'Prestado' && item.fechaDevolucion
+    );
+
+    const vencidos = prestamosActivos.filter((p) => {
+      const fechaDevolucion = new Date(p.fechaDevolucion!);
+      return fechaDevolucion < hoy;
+    });
+
+    const porVencer = prestamosActivos.filter((p) => {
+      const fechaDevolucion = new Date(p.fechaDevolucion!);
+      const unaSemanaDesdeHoy = new Date(hoy.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return fechaDevolucion >= hoy && fechaDevolucion <= unaSemanaDesdeHoy;
+    });
+
+    return { prestamosVencidos: vencidos, prestamosPorVencer: porVencer };
+  }, [state.inventoryData]);
 
   const handleLoanClick = (loan: any, type: "overdue" | "expiring") => {
     setSelectedLoan(loan)
