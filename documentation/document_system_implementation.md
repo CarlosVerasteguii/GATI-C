@@ -14,7 +14,7 @@ lib/
 components/
 ├── document-upload.tsx          # Interfaz de subida drag & drop
 ├── document-viewer.tsx          # Visualización y gestión de documentos
-├── document-manager.tsx         # Componente integrador principal
+├── document-manager.tsx         # Componente integrador pricncipal
 └── document-demo.tsx           # Página de demostración completa
 ```
 

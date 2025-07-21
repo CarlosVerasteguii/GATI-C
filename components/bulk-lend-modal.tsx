@@ -95,7 +95,7 @@ export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess 
           })
           lentItems.push({
             id: Math.max(...state.prestamosData.map((item) => item.id)) + 1 + lentItems.length,
-            articulo: product.nombre,
+            nombre: product.nombre,
             numeroSerie: product.numeroSerie,
             prestadoA: userName,
             fechaDevolucion: returnDate,

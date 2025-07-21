@@ -17,6 +17,7 @@ import {
   Eye,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useToast } from '@/hooks/use-toast';
 import { LoanStatusBadge } from "@/components/status-badges/loan-status-badge"
 import { ActivityDetailSheet } from "@/components/activity-detail-sheet"
 import { cn } from "@/lib/utils"
@@ -29,7 +30,7 @@ import React from "react"
 interface PrestamoItem {
   id: number
   articuloId: number
-  articulo: string
+  nombre: string
   numeroSerie: string | null
   prestadoA: string
   fechaPrestamo: string
@@ -53,7 +54,8 @@ interface PrestamoExtendido extends InventoryItem {
 }
 
 export default function DashboardPage() {
-  const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity } = useApp()
+  const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity, devolverPrestamo } = useApp()
+  const { toast } = useToast();
   const [selectedLoan, setSelectedLoan] = useState<PrestamoItemExtended | null>(null)
   const [isLoanDetailSheetOpen, setIsLoanDetailSheetOpen] = useState(false)
   const [isActivityDetailSheetOpen, setIsActivityDetailSheetOpen] = useState(false)
@@ -228,46 +230,26 @@ export default function DashboardPage() {
     }
   };
 
-  // Función para manejar la devolución de un préstamo
+  /**
+   * Refactorización: Ahora la devolución de préstamo usa la función centralizada del contexto.
+   * Esto asegura que la lógica de negocio esté unificada, se limpien los campos de préstamo en inventario,
+   * se registre el evento en el historial y se mantenga la trazabilidad.
+   * Además, se muestra una notificación de éxito y se cierra el modal.
+   */
   const handleReturnLoan = () => {
     if (!selectedLoan) return;
 
-    // Actualizar el estado del préstamo a "Devuelto"
-    updateLoanStatus(selectedLoan.id, "Devuelto");
+    // Llama a la función centralizada del contexto
+    devolverPrestamo(selectedLoan.id);
 
-    // Actualizar el estado del artículo a "Disponible"
-    updateInventoryItemStatus(selectedLoan.articuloId, "Disponible");
+    // Muestra una notificación de éxito (usando toast del sistema)
+    toast({
+      title: 'Devolución Registrada',
+      description: `El préstamo para "${selectedLoan.nombre}" ha sido registrado como devuelto.`,
+    });
 
-    // Registrar la actividad de devolución
-    const newActivity = {
-      type: "Devolución",
-      description: `${selectedLoan.articulo} devuelto por ${selectedLoan.prestadoA}`,
-      date: new Date().toISOString(),
-      requestedBy: state.user?.nombre || "Usuario del sistema",
-      details: {
-        returnedBy: selectedLoan.prestadoA,
-        returnDate: new Date().toISOString(),
-        receivedBy: state.user?.nombre,
-        condition: "Bueno",
-        items: [
-          {
-            name: selectedLoan.articulo,
-            serial: selectedLoan.numeroSerie,
-            quantity: 1,
-            estado: "Devuelto"
-          }
-        ]
-      }
-    };
-
-    // Añadir la actividad reciente
-    addRecentActivity(newActivity);
-
-    // Cerrar el modal
+    // Cierra el modal
     setIsLoanDetailSheetOpen(false);
-
-    // Mostrar mensaje de éxito (si tienes un sistema de toast)
-    // toast.success("Préstamo registrado como devuelto correctamente");
   };
 
   // Función para navegar a inventario con filtros específicos
@@ -591,7 +573,7 @@ export default function DashboardPage() {
               {loanSheetType === "overdue" ? "Préstamo Vencido" : "Préstamo por Vencer"}
             </SheetTitle>
             <SheetDescription>
-              {selectedLoan ? `Detalles del préstamo para: ${selectedLoan.articulo}` : ''}
+              {selectedLoan ? `Detalles del préstamo para: ${selectedLoan.nombre}` : ''}
             </SheetDescription>
           </SheetHeader>
           {selectedLoan && (
@@ -600,7 +582,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Producto</h4>
-                    <p>{selectedLoan.articulo}</p>
+                    <p>{selectedLoan.nombre}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">N/S</h4>

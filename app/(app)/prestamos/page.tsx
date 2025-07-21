@@ -33,26 +33,21 @@ import {
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 
-// Definición de tipos
-interface SortConfig {
-  key: string
-  direction: "ascending" | "descending"
-}
-
-interface PrestamoItemWithDetails {
-  id: number
-  articuloId: number
-  articulo: string
-  numeroSerie: string | null
-  prestadoA: string
-  fechaPrestamo: string
-  fechaDevolucion: string
-  estado: "Activo" | "Devuelto" | "Vencido"
-  diasRestantes: number
-  notas?: string
-  registradoPor?: string
-  categoria?: string
-  marca?: string
+// Definición de tipos para los préstamos
+interface PrestamoItem {
+  id: number;
+  articuloId: number;
+  nombre: string;
+  numeroSerie: string | null;
+  prestadoA: string;
+  fechaPrestamo: string;
+  fechaDevolucion: string;
+  estado: "Activo" | "Devuelto" | "Vencido";
+  diasRestantes: number;
+  notas?: string;
+  registradoPor?: string;
+  categoria?: string;
+  marca?: string;
 }
 
 export default function PrestamosPage() {
@@ -67,7 +62,7 @@ export default function PrestamosPage() {
   })
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
   const [isReturnConfirmOpen, setIsReturnConfirmOpen] = useState(false)
-  const [loanToReturn, setLoanToReturn] = useState<PrestamoItemWithDetails | null>(null)
+  const [loanToReturn, setLoanToReturn] = useState<PrestamoItem | null>(null)
   const [isBulkLoanModalOpen, setIsBulkLoanModalOpen] = useState(false)
 
   // Función segura para acceder a propiedades que podrían ser undefined
@@ -75,7 +70,7 @@ export default function PrestamosPage() {
     return obj ? obj[key] : undefined
   }
 
-  const handleReturnLoan = (loan: PrestamoItemWithDetails) => {
+  const handleReturnLoan = (loan: PrestamoItem) => {
     setLoanToReturn(loan)
     setIsReturnConfirmOpen(true)
   }
@@ -85,18 +80,18 @@ export default function PrestamosPage() {
       updateLoanStatus(loanToReturn.id, "Devuelto")
       addRecentActivity({
         type: "Devolución de Préstamo",
-        description: `Producto ${loanToReturn.articulo} (N/S: ${loanToReturn.numeroSerie || "N/A"
+        description: `Producto ${loanToReturn.nombre} (N/S: ${loanToReturn.numeroSerie || "N/A"
           }) devuelto por ${loanToReturn.prestadoA}.`,
         date: new Date().toLocaleString(),
         details: {
           loanId: loanToReturn.id,
-          productName: loanToReturn.articulo,
+          productName: loanToReturn.nombre,
           lentTo: loanToReturn.prestadoA,
         },
       })
       showSuccess({
         title: "Préstamo Devuelto",
-        description: `El producto ${loanToReturn.articulo} ha sido devuelto al inventario.`,
+        description: `El producto ${loanToReturn.nombre} ha sido devuelto al inventario.`,
       })
       setIsReturnConfirmOpen(false)
       setLoanToReturn(null)
@@ -106,7 +101,7 @@ export default function PrestamosPage() {
   const filteredLoans = useMemo(() => {
     return (state.prestamosData || []).filter((loan) => {
       const matchesSearch =
-        safeAccess(loan, "articulo")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        safeAccess(loan, "nombre")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         safeAccess(loan, "numeroSerie")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         safeAccess(loan, "prestadoA")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         safeAccess(loan, "estado")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -346,8 +341,8 @@ export default function PrestamosPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead onClick={() => requestSort("articulo")} className="cursor-pointer">
-                Artículo {getSortIcon("articulo")}
+              <TableHead onClick={() => requestSort("nombre")} className="cursor-pointer">
+                Artículo {getSortIcon("nombre")}
               </TableHead>
               <TableHead onClick={() => requestSort("numeroSerie")} className="cursor-pointer">
                 Número de Serie {getSortIcon("numeroSerie")}
@@ -380,7 +375,7 @@ export default function PrestamosPage() {
             ) : (
               sortedLoans.map((loan) => (
                 <TableRow key={loan.id}>
-                  <TableCell className="font-medium">{loan.articulo}</TableCell>
+                  <TableCell className="font-medium">{loan.nombre}</TableCell>
                   <TableCell>{loan.numeroSerie || "N/A"}</TableCell>
                   <TableCell>{loan.prestadoA}</TableCell>
                   <TableCell>{loan.fechaPrestamo}</TableCell>
@@ -418,7 +413,7 @@ export default function PrestamosPage() {
         onOpenChange={setIsReturnConfirmOpen}
         onConfirm={confirmReturn}
         title="Confirmar Devolución"
-        description={`¿Está seguro que desea registrar la devolución del artículo ${loanToReturn?.articulo || ""
+        description={`¿Está seguro que desea registrar la devolución del artículo ${loanToReturn?.nombre || ""
           }?`}
         confirmText="Confirmar Devolución"
         cancelText="Cancelar"

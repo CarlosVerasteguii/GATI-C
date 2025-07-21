@@ -7,7 +7,7 @@ import type { InventoryItem, User, HistoryEvent } from "@/types/inventory"
 interface AsignadoItem {
   id: number
   articuloId: number // ID del item de inventario original
-  articuloNombre: string
+  nombre: string
   numeroSerie: string | null
   asignadoA: string
   fechaAsignacion: string // YYYY-MM-DD
@@ -19,7 +19,7 @@ interface AsignadoItem {
 interface PrestamoItem {
   id: number
   articuloId: number // ID del item de inventario original
-  articulo: string
+  nombre: string
   numeroSerie: string | null
   prestadoA: string
   fechaPrestamo: string // YYYY-MM-DD
@@ -259,7 +259,7 @@ const defaultAsignadosData: AsignadoItem[] = [
   {
     id: 1,
     articuloId: 3,
-    articuloNombre: "Teclado Mecánico HyperX",
+    nombre: "Teclado Mecánico HyperX",
     numeroSerie: "HX-KB7RD2-US/RD",
     asignadoA: "Juan Pérez",
     fechaAsignacion: "2023-03-10",
@@ -270,7 +270,7 @@ const defaultAsignadosData: AsignadoItem[] = [
   {
     id: 2,
     articuloId: 11,
-    articuloNombre: "Laptop Dell XPS 15",
+    nombre: "Laptop Dell XPS 15",
     numeroSerie: "SN-XPS15-002",
     asignadoA: "María García",
     fechaAsignacion: "2023-01-20",
@@ -284,7 +284,7 @@ const defaultPrestamosData: PrestamoItem[] = [
   {
     id: 1,
     articuloId: 4,
-    articulo: "Mouse Logitech MX Master 3",
+    nombre: "Mouse Logitech MX Master 3",
     numeroSerie: "910-005647",
     prestadoA: "Laura Torres",
     fechaPrestamo: "2023-04-05",
@@ -297,7 +297,7 @@ const defaultPrestamosData: PrestamoItem[] = [
   {
     id: 2,
     articuloId: 12,
-    articulo: "Laptop Dell XPS 15",
+    nombre: "Laptop Dell XPS 15",
     numeroSerie: "SN-XPS15-003",
     prestadoA: "Roberto Fernández",
     fechaPrestamo: "2024-06-01",

@@ -28,14 +28,7 @@ import { ActionMenu } from "@/components/action-menu"
 // Definir una función segura para acceder a propiedades
 const safeAccess = (obj: any, key: string) => {
   if (!obj) return ""
-
-  // Mapeamos las propiedades incorrectas a las correctas
-  const propertyMap: Record<string, string> = {
-    articulo: "articuloNombre",
-  }
-
-  const mappedKey = propertyMap[key] || key
-  return obj[mappedKey] || ""
+  return obj[key] || ""
 }
 
 /**
@@ -85,18 +78,18 @@ export default function AsignadosPage() {
 
       addRecentActivity({
         type: "Devolución de Asignación",
-        description: `Producto ${assignmentToReturn.articuloNombre} (N/S: ${assignmentToReturn.numeroSerie || "N/A"
+        description: `Producto ${assignmentToReturn.nombre} (N/S: ${assignmentToReturn.numeroSerie || "N/A"
           }) devuelto por ${assignmentToReturn.asignadoA}.`,
         date: new Date().toLocaleString(),
         details: {
           assignmentId: assignmentToReturn.id,
-          productName: assignmentToReturn.articuloNombre,
+          productName: assignmentToReturn.nombre,
           assignedTo: assignmentToReturn.asignadoA,
         },
       })
       showSuccess({
         title: "Asignación Devuelta",
-        description: `El producto ${assignmentToReturn.articuloNombre} ha sido devuelto al inventario.`,
+        description: `El producto ${assignmentToReturn.nombre} ha sido devuelto al inventario.`,
       })
       setIsReturnConfirmOpen(false)
       setAssignmentToReturn(null)
@@ -116,7 +109,7 @@ export default function AsignadosPage() {
       const inventoryItem = inventoryMap.get(assignment.articuloId)
 
       const matchesSearch =
-        (assignment.articuloNombre || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (assignment.nombre || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (assignment.numeroSerie || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (assignment.asignadoA || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (assignment.estado || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,11 +177,11 @@ export default function AsignadosPage() {
           // Buscar sugerencias similares en todo el inventario
           const suggestions = state.asignadosData
             .filter(item =>
-              item.articuloNombre.toLowerCase().includes(value.toLowerCase().substring(0, 3)) ||
+              item.nombre.toLowerCase().includes(value.toLowerCase().substring(0, 3)) ||
               item.asignadoA.toLowerCase().includes(value.toLowerCase().substring(0, 3))
             )
             .slice(0, 3)
-            .map(item => item.articuloNombre)
+            .map(item => item.nombre)
 
           if (suggestions.length > 0) {
             showWarning({
@@ -341,9 +334,9 @@ export default function AsignadosPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead onClick={() => requestSort("articuloNombre")} className="cursor-pointer">
+              <TableHead onClick={() => requestSort("nombre")} className="cursor-pointer">
                 Artículo
-                {getSortIcon("articuloNombre")}
+                {getSortIcon("nombre")}
               </TableHead>
               <TableHead onClick={() => requestSort("numeroSerie")} className="cursor-pointer">
                 Número de Serie
@@ -373,7 +366,7 @@ export default function AsignadosPage() {
             ) : (
               sortedAssignments.map((assignment) => (
                 <TableRow key={assignment.id}>
-                  <TableCell className="font-medium">{assignment.articuloNombre}</TableCell>
+                  <TableCell className="font-medium">{assignment.nombre}</TableCell>
                   <TableCell>{assignment.numeroSerie || "N/A"}</TableCell>
                   <TableCell>{assignment.asignadoA}</TableCell>
                   <TableCell>{assignment.fechaAsignacion}</TableCell>

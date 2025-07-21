@@ -46,7 +46,7 @@ interface PendingTask {
 interface Assignment {
   id: number
   articuloId: number
-  articuloNombre: string
+  nombre: string
   numeroSerie: string | null
   asignadoA: string
   fechaAsignacion: string
@@ -58,7 +58,7 @@ interface Assignment {
 interface Loan {
   id: number
   articuloId: number
-  articulo: string
+  nombre: string
   numeroSerie: string | null
   prestadoA: string
   fechaPrestamo: string
@@ -283,7 +283,7 @@ export default function TareasPendientesPage() {
           const newAssignment: Assignment = {
             id: Math.max(...(asignadosData || []).map((a) => a.id), 0) + 1,
             articuloId: assignedItem.id,
-            articuloNombre: assignedItem.nombre,
+            nombre: assignedItem.nombre,
             numeroSerie: assignedItem.numeroSerie,
             asignadoA: taskToApprove.details.assignedTo,
             fechaAsignacion: new Date().toISOString().split("T")[0],
@@ -311,7 +311,7 @@ export default function TareasPendientesPage() {
           const newLoan: Loan = {
             id: Math.max(...prestamosData.map((p) => p.id), 0) + 1,
             articuloId: lentItem.id,
-            articulo: lentItem.nombre,
+            nombre: lentItem.nombre,
             numeroSerie: lentItem.numeroSerie,
             prestadoA: taskToApprove.details.lentToName,
             fechaPrestamo: new Date().toISOString().split("T")[0],
