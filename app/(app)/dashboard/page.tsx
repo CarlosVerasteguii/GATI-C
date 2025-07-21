@@ -55,7 +55,7 @@ interface PrestamoExtendido extends InventoryItem {
 
 export default function DashboardPage() {
   const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity, devolverPrestamo } = useApp()
-  const { toast } = useToast();
+  const { toast, showSuccess } = useToast();
   const [selectedLoan, setSelectedLoan] = useState<PrestamoItemExtended | null>(null)
   const [isLoanDetailSheetOpen, setIsLoanDetailSheetOpen] = useState(false)
   const [isActivityDetailSheetOpen, setIsActivityDetailSheetOpen] = useState(false)
@@ -242,8 +242,8 @@ export default function DashboardPage() {
     // Llama a la función centralizada del contexto
     devolverPrestamo(selectedLoan.id);
 
-    // Muestra una notificación de éxito (usando toast del sistema)
-    toast({
+    // Muestra una notificación de éxito (usando showSuccess del sistema)
+    showSuccess({
       title: 'Devolución Registrada',
       description: `El préstamo para "${selectedLoan.nombre}" ha sido registrado como devuelto.`,
     });
