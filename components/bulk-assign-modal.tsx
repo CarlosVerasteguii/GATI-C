@@ -44,10 +44,6 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
   }, [open, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Datos de Asignación Masiva:", {
-      productIds: selectedProducts.map(p => p.id),
-      ...values,
-    });
     onSuccess();
     onOpenChange(false);
   }

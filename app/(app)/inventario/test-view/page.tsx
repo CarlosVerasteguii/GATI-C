@@ -143,7 +143,6 @@ export default function TestViewPage() {
     };
 
     const handleAction = (action: string, product: GroupedProduct | InventoryItem) => {
-        console.log(`Acción: ${action} ejecutada en:`, product);
         // Aquí conectaríamos con los manejadores reales de la página principal
     };
 

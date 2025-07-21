@@ -259,7 +259,7 @@ export default function AsignadosPage() {
             onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
-        <Button onClick={() => console.log("Asignar Masivo clicked")}>Asignar Masivo</Button>
+        <Button onClick={() => { }}>Asignar Masivo</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -385,7 +385,7 @@ export default function AsignadosPage() {
                       actions={[
                         {
                           label: "Ver detalles",
-                          onClick: () => console.log("Ver detalles", assignment.id),
+                          onClick: () => { },
                           icon: ArrowUpRight
                         },
                         {

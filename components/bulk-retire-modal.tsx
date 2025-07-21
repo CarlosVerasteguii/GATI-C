@@ -42,11 +42,6 @@ export function BulkRetireModal({ open, onOpenChange, selectedProducts, onSucces
   }, [open, form])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Creando Tarea de Retiro Masivo:", {
-      productIds: selectedProducts.map(p => p.id),
-      details: values,
-    })
-
     // Aquí iría la lógica para llamar a addPendingTask en el futuro
 
     onSuccess()

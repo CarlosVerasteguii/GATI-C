@@ -396,7 +396,7 @@ export default function PrestamosPage() {
                       actions={[
                         {
                           label: "Ver Detalles",
-                          onClick: () => console.log("Ver detalles de préstamo", loan.id),
+                          onClick: () => { },
                         },
                         {
                           label: "Registrar Devolución",
