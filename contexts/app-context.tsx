@@ -141,6 +141,7 @@ const defaultInventoryData: InventoryItem[] = [
     costo: 2200,
     fechaAdquisicion: "2023-01-10",
     isSerialized: true,
+    fechaVencimientoGarantia: "2024-01-15", // Garantía vencida
     historial: [
       {
         fecha: "2023-01-15",
@@ -171,6 +172,7 @@ const defaultInventoryData: InventoryItem[] = [
     costo: 2500,
     fechaAdquisicion: "2023-03-15",
     isSerialized: true,
+    fechaVencimientoGarantia: "2024-09-15", // Próxima a vencer (3 meses desde hoy)
     historial: [
       {
         fecha: "2023-03-20",
@@ -201,6 +203,7 @@ const defaultInventoryData: InventoryItem[] = [
     costo: 3100,
     fechaAdquisicion: "2022-10-25",
     isSerialized: true,
+    fechaVencimientoGarantia: "2026-12-31", // Garantía lejana
     historial: [
       {
         fecha: "2022-11-05",
@@ -220,16 +223,17 @@ const defaultInventoryData: InventoryItem[] = [
     estado: "Prestado",
     prestadoA: "Ana Gómez",
     fechaPrestamo: "2024-06-15",
-    fechaDevolucion: "2024-06-30", // <-- Fecha en el pasado
+    fechaDevolucion: "2024-06-30",
     cantidad: 1,
     fechaIngreso: "2023-05-10",
     ubicacion: "Oficina Principal - Piso 2",
     proveedor: "Compudel",
     costo: 1800,
     fechaAdquisicion: "2023-05-01",
-    isSerialized: true
+    isSerialized: true,
+    fechaVencimientoGarantia: null, // Sin garantía
   },
-  { id: 20, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true },
+  { id: 20, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true, fechaVencimientoGarantia: new Date().toISOString().split('T')[0] },
 
   // Monitores
   { id: 5, nombre: "Monitor Curvo UltraWide", marca: "LG", modelo: "34WN780-B", numeroSerie: "LG34-005", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-02-01", ubicacion: "Oficina Principal - Piso 1", proveedor: "TecnoMundo", costo: 750, fechaAdquisicion: "2023-01-25", isSerialized: true },

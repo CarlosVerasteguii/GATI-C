@@ -109,6 +109,10 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                     <span className="text-sm text-muted-foreground">Costo de Adquisición:</span>
                     <p>{typeof product.costo === 'number' ? product.costo.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</p>
                   </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Garantía:</span>
+                    <p>{product.fechaVencimientoGarantia ? new Date(product.fechaVencimientoGarantia).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Sin garantía registrada'}</p>
+                  </div>
                 </div>
               </div>
 

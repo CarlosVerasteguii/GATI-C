@@ -22,7 +22,7 @@ export interface InventoryItem {
     proveedor?: string;
     costo?: number;
     fechaAdquisicion?: string;
-    garantia?: string;
+    fechaVencimientoGarantia?: string | null; // Formato YYYY-MM-DD
     vidaUtil?: string;
     historial?: HistoryEvent[];
     documentosAdjuntos?: { name: string; url: string }[];

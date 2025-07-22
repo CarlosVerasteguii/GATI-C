@@ -60,7 +60,7 @@ export function EditProductModal({
     quantity: product?.cantidad?.toString() || "1",
     serialNumber: product?.numeroSerie || "",
     costo: product?.costo?.toString() || "",
-    garantia: product?.garantia || "",
+    fechaVencimientoGarantia: product?.fechaVencimientoGarantia || "",
     vidaUtil: product?.vidaUtil || "",
   })
 
@@ -95,7 +95,7 @@ export function EditProductModal({
         quantity: product.cantidad?.toString() || "1",
         serialNumber: product.numeroSerie || "",
         costo: product.costo?.toString() || "",
-        garantia: product.garantia || "",
+        fechaVencimientoGarantia: product.fechaVencimientoGarantia || "",
         vidaUtil: product.vidaUtil || "",
       })
       // Set local state based on product's serial number
@@ -127,7 +127,7 @@ export function EditProductModal({
         quantity: "1",
         serialNumber: "",
         costo: "",
-        garantia: "",
+        fechaVencimientoGarantia: "",
         vidaUtil: "",
       });
       // For new products, default to non-serialized
@@ -162,6 +162,17 @@ export function EditProductModal({
           title: "Costo inválido",
           description: "El costo debe ser un número positivo"
         })
+      }
+    }
+
+    // Validación para fecha de garantía
+    if (field === "fechaVencimientoGarantia" && value) {
+      const today = new Date().toISOString().split('T')[0];
+      if (value < today) {
+        showWarning({
+          title: "Fecha de garantía inválida",
+          description: "La fecha de vencimiento debe ser hoy o en el futuro."
+        });
       }
     }
   }
@@ -248,7 +259,7 @@ export function EditProductModal({
       cantidad: tempCantidad,
       numeroSerie: tempNumeroSerie,
       costo: formData.costo ? parseFloat(formData.costo) : undefined,
-      garantia: formData.garantia || undefined,
+      fechaVencimientoGarantia: formData.fechaVencimientoGarantia || null,
       vidaUtil: formData.vidaUtil || undefined,
       documentosAdjuntos: attachedDocuments.map(doc => ({
         name: doc.name,
@@ -293,7 +304,7 @@ export function EditProductModal({
           proveedor: updates.proveedor,
           ubicacion: updates.ubicacion,
           contratoId: updates.contratoId,
-          garantia: updates.garantia,
+          fechaVencimientoGarantia: updates.fechaVencimientoGarantia,
           vidaUtil: updates.vidaUtil,
           documentosAdjuntos: updates.documentosAdjuntos
         };
@@ -531,13 +542,15 @@ export function EditProductModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="garantia">Garantía (hasta)</Label>
+                  <Label htmlFor="fechaVencimientoGarantia">Fecha de Vencimiento de Garantía</Label>
                   <Input
-                    id="garantia"
+                    id="fechaVencimientoGarantia"
                     type="date"
-                    value={formData.garantia}
-                    onChange={(e) => handleInputChange("garantia", e.target.value)}
+                    value={formData.fechaVencimientoGarantia}
+                    onChange={(e) => handleInputChange("fechaVencimientoGarantia", e.target.value)}
+                    placeholder="YYYY-MM-DD"
                   />
+                  <span className="text-xs text-muted-foreground">Deja vacío si el producto no tiene garantía.</span>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="vidaUtil">Vida Útil (hasta)</Label>
