@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation"
 import { ToastDemo } from "@/components/toast-demo"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import React from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Definición de tipos para los préstamos
 interface PrestamoItem {
@@ -302,48 +303,60 @@ export default function DashboardPage() {
         Resumen general del sistema de inventario
       </div>
 
-      {/* Tarjetas de Estadísticas */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Productos</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+      {/* Tarjetas principales (Total, Asignados, etc.) */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-6 w-6 text-muted-foreground" />
+              <CardTitle className="text-lg font-semibold">Total Productos</CardTitle>
+            </div>
+            <Badge className="bg-cfe-green text-white text-base px-3 py-1" title="Total productos">{totalProducts}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProducts}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold mb-2">{totalProducts}</div>
+            <p className="text-base text-muted-foreground">
               {availableProducts} disponibles, {retiredProducts} retirados
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Artículos Asignados</CardTitle>
-            <UserCheck className="h-4 w-4 text-status-assigned" />
+        <Card className="transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-6 w-6 text-status-assigned" />
+              <CardTitle className="text-lg font-semibold">Artículos Asignados</CardTitle>
+            </div>
+            <Badge className="bg-status-assigned text-white text-base px-3 py-1" title="Artículos asignados">{assignedProducts}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{assignedProducts}</div>
-            <p className="text-xs text-muted-foreground">Actualmente en uso</p>
+            <div className="text-3xl font-bold mb-2">{assignedProducts}</div>
+            <p className="text-base text-muted-foreground">Actualmente en uso</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Artículos Prestados</CardTitle>
-            <FileText className="h-4 w-4 text-status-lent" />
+        <Card className="transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <FileText className="h-6 w-6 text-status-lent" />
+              <CardTitle className="text-lg font-semibold">Artículos Prestados</CardTitle>
+            </div>
+            <Badge className="bg-status-lent text-white text-base px-3 py-1" title="Artículos prestados">{lentProducts}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{lentProducts}</div>
-            <p className="text-xs text-muted-foreground">En préstamo temporal</p>
+            <div className="text-3xl font-bold mb-2">{lentProducts}</div>
+            <p className="text-base text-muted-foreground">En préstamo temporal</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tareas Pendientes</CardTitle>
-            <Clock className="h-4 w-4 text-status-maintenance" />
+        <Card className="transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-6 w-6 text-status-maintenance" />
+              <CardTitle className="text-lg font-semibold">Tareas Pendientes</CardTitle>
+            </div>
+            <Badge className="bg-status-maintenance text-white text-base px-3 py-1" title="Tareas pendientes">{pendingTasks}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks}</div>
-            <p className="text-xs text-muted-foreground">Cargas y Retiros por procesar</p>
+            <div className="text-3xl font-bold mb-2">{pendingTasks}</div>
+            <p className="text-base text-muted-foreground">Cargas y Retiros por procesar</p>
           </CardContent>
         </Card>
       </div>
@@ -373,12 +386,12 @@ export default function DashboardPage() {
                     onClick={() => handleLoanClick(prestamo, "overdue")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{prestamo.nombre}</p>
+                      <p className="font-medium text-base">{prestamo.nombre}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-retired text-white text-sm px-2 py-1" title="Días vencido">{prestamo.diasVencido} días</Badge>
+                      <Badge className="bg-status-retired text-white text-base px-2 py-1" title="Días vencido">{prestamo.diasVencido} días</Badge>
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
@@ -410,12 +423,12 @@ export default function DashboardPage() {
                     onClick={() => handleLoanClick(prestamo, "expiring")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{prestamo.nombre}</p>
+                      <p className="font-medium text-base">{prestamo.nombre}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-lent text-white text-sm px-2 py-1" title="Días restantes">{prestamo.diasRestantes} días</Badge>
+                      <Badge className="bg-status-lent text-white text-base px-2 py-1" title="Días restantes">{prestamo.diasRestantes} días</Badge>
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
@@ -443,7 +456,7 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay garantías vencidas.</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {garantiasVencidas.slice(0, 3).map((item) => (
+                {garantiasVencidas.slice(0, 5).map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
@@ -455,11 +468,11 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">Venció: {formatDate(item.fechaVencimientoGarantia || "")}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-retired text-white text-sm px-2 py-1" title="Días vencido">{item.diasVencido} días</Badge>
+                      <Badge className="bg-status-retired text-white text-base px-2 py-1" title="Días vencido">{item.diasVencido} días</Badge>
                     </div>
                   </div>
                 ))}
-                {garantiasVencidas.length > 3 && (
+                {garantiasVencidas.length > 5 && (
                   <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
                 )}
               </div>
@@ -481,7 +494,7 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay garantías próximas a vencer.</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {garantiasPorVencer.slice(0, 3).map((item) => (
+                {garantiasPorVencer.slice(0, 5).map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
@@ -493,11 +506,11 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">Vence: {formatDate(item.fechaVencimientoGarantia || "")}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-lent text-white text-sm px-2 py-1" title="Días restantes">{item.diasRestantes} días</Badge>
+                      <Badge className="bg-status-lent text-white text-base px-2 py-1" title="Días restantes">{item.diasRestantes} días</Badge>
                     </div>
                   </div>
                 ))}
-                {garantiasPorVencer.length > 3 && (
+                {garantiasPorVencer.length > 5 && (
                   <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
                 )}
               </div>
@@ -522,7 +535,7 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay productos con inventario bajo.</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {inventarioBajo.slice(0, 3).map((item) => (
+                {inventarioBajo.slice(0, 5).map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
@@ -534,11 +547,11 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">Cantidad: {item.cantidad}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-warning text-white text-sm px-2 py-1" title="Inventario bajo">Bajo</Badge>
+                      <Badge className="bg-status-warning text-white text-base px-2 py-1" title="Inventario bajo">Bajo</Badge>
                     </div>
                   </div>
                 ))}
-                {inventarioBajo.length > 3 && (
+                {inventarioBajo.length > 5 && (
                   <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
                 )}
               </div>
