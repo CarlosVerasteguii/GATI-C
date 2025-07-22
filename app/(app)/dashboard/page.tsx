@@ -118,6 +118,43 @@ export default function DashboardPage() {
     return { prestamosVencidos: vencidos as PrestamoExtendido[], prestamosPorVencer: porVencer as PrestamoExtendido[] };
   }, [state.inventoryData]);
 
+  // --- Garantías próximas a vencer y vencidas ---
+  const { garantiasPorVencer, garantiasVencidas } = React.useMemo(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const diasAlerta = 30; // Rango configurable
+    const unDiaEnMs = 24 * 60 * 60 * 1000;
+    const productosConGarantia = state.inventoryData.filter(
+      (item) => item.fechaVencimientoGarantia
+    );
+    const vencidas = productosConGarantia.filter(p => new Date(p.fechaVencimientoGarantia!) < hoy)
+      .map(p => {
+        const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+        let diasVencido = Math.floor((hoy.getTime() - fechaVenc.getTime()) / unDiaEnMs);
+        if (diasVencido < 0) diasVencido = 0;
+        return { ...p, diasVencido };
+      });
+    const porVencer = productosConGarantia.filter(p => {
+      const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+      const limite = new Date(hoy.getTime() + diasAlerta * unDiaEnMs);
+      return fechaVenc >= hoy && fechaVenc <= limite;
+    }).map(p => {
+      const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+      let diasRestantes = Math.ceil((fechaVenc.getTime() - hoy.getTime()) / unDiaEnMs);
+      if (diasRestantes < 0) diasRestantes = 0;
+      return { ...p, diasRestantes };
+    });
+    return { garantiasPorVencer: porVencer, garantiasVencidas: vencidas };
+  }, [state.inventoryData]);
+
+  // --- Inventario Bajo (mock, TODO para umbrales configurables) ---
+  // TODO: [Fase 3 - Inventario Bajo]
+  // Pendiente: Integrar lógica de umbrales configurables por producto/categoría para alertas de inventario bajo.
+  // Actualmente, solo se alerta si cantidad < 3 (mock). Cuando se implemente la UI de configuración, conectar aquí.
+  const inventarioBajo = React.useMemo(() => {
+    return state.inventoryData.filter(item => typeof item.cantidad === 'number' && item.cantidad < 3 && item.estado === 'Disponible');
+  }, [state.inventoryData]);
+
   const handleLoanClick = (loan: any, type: "overdue" | "expiring") => {
     setSelectedLoan(loan)
     setLoanSheetType(type)
@@ -312,17 +349,19 @@ export default function DashboardPage() {
       </div>
 
       {/* Tarjetas de Alertas con Layout v5.0 */}
+      {/* Fila de Préstamos */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Préstamos Vencidos */}
-        <Card className="cfe-border-left cfe-border-left-red">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-status-retired">
-              <AlertTriangle className="h-5 w-5 text-status-retired" />
-              Préstamos Vencidos ({prestamosVencidos.length})
-            </CardTitle>
-            <CardDescription>Productos que han superado su fecha de devolución</CardDescription>
+        <Card className="cfe-border-left cfe-border-left-red transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-6 w-6 text-status-retired" />
+              <CardTitle className="text-lg font-semibold">Préstamos Vencidos</CardTitle>
+            </div>
+            <Badge className="bg-status-retired text-white text-base px-3 py-1" title="Préstamos vencidos">{prestamosVencidos.length}</Badge>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Productos que han superado su fecha de devolución</p>
             {prestamosVencidos.length === 0 ? (
               <p className="text-sm text-muted-foreground">No hay préstamos vencidos.</p>
             ) : (
@@ -339,9 +378,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-retired text-white">
-                        {prestamo.diasVencido} días
-                      </Badge>
+                      <Badge className="bg-status-retired text-white text-sm px-2 py-1" title="Días vencido">{prestamo.diasVencido} días</Badge>
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
@@ -352,15 +389,16 @@ export default function DashboardPage() {
         </Card>
 
         {/* Préstamos por Vencer */}
-        <Card className="cfe-border-left cfe-border-left-yellow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-status-lent">
-              <Calendar className="h-5 w-5 text-status-lent" />
-              Préstamos por Vencer ({prestamosPorVencer.length})
-            </CardTitle>
-            <CardDescription>Productos que vencen en los próximos 7 días</CardDescription>
+        <Card className="cfe-border-left cfe-border-left-yellow transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-6 w-6 text-status-lent" />
+              <CardTitle className="text-lg font-semibold">Préstamos por Vencer</CardTitle>
+            </div>
+            <Badge className="bg-status-lent text-white text-base px-3 py-1" title="Préstamos por vencer">{prestamosPorVencer.length}</Badge>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Productos que vencen en los próximos 7 días</p>
             {prestamosPorVencer.length === 0 ? (
               <p className="text-sm text-muted-foreground">No hay préstamos por vencer.</p>
             ) : (
@@ -377,9 +415,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-status-lent text-white">
-                        {prestamo.diasRestantes} días
-                      </Badge>
+                      <Badge className="bg-status-lent text-white text-sm px-2 py-1" title="Días restantes">{prestamo.diasRestantes} días</Badge>
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
@@ -390,18 +426,140 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Fila de Garantías */}
+      <div className="grid gap-6 md:grid-cols-2 mt-6">
+        {/* Garantías Vencidas */}
+        <Card className="cfe-border-left cfe-border-left-red transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-6 w-6 text-status-retired" />
+              <CardTitle className="text-lg font-semibold">Garantías Vencidas</CardTitle>
+            </div>
+            <Badge className="bg-status-retired text-white text-base px-3 py-1" title="Garantías vencidas">{garantiasVencidas.length}</Badge>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Productos cuya garantía ya expiró</p>
+            {garantiasVencidas.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay garantías vencidas.</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {garantiasVencidas.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
+                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-base">{item.nombre}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Venció: {formatDate(item.fechaVencimientoGarantia || "")}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-status-retired text-white text-sm px-2 py-1" title="Días vencido">{item.diasVencido} días</Badge>
+                    </div>
+                  </div>
+                ))}
+                {garantiasVencidas.length > 3 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        {/* Garantías por Vencer */}
+        <Card className="cfe-border-left cfe-border-left-yellow transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-6 w-6 text-status-lent" />
+              <CardTitle className="text-lg font-semibold">Garantías por Vencer</CardTitle>
+            </div>
+            <Badge className="bg-status-lent text-white text-base px-3 py-1" title="Garantías por vencer">{garantiasPorVencer.length}</Badge>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Productos cuya garantía vence en los próximos 30 días</p>
+            {garantiasPorVencer.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay garantías próximas a vencer.</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {garantiasPorVencer.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
+                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-base">{item.nombre}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Vence: {formatDate(item.fechaVencimientoGarantia || "")}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-status-lent text-white text-sm px-2 py-1" title="Días restantes">{item.diasRestantes} días</Badge>
+                    </div>
+                  </div>
+                ))}
+                {garantiasPorVencer.length > 3 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Inventario Bajo (tarjeta alargada) */}
+      <div className="mt-6">
+        <Card className="cfe-border-left cfe-border-left-orange w-full transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-6 w-6 text-status-warning" />
+              <CardTitle className="text-lg font-semibold">Inventario Bajo</CardTitle>
+            </div>
+            <Badge className="bg-status-warning text-white text-base px-3 py-1" title="Inventario bajo">{inventarioBajo.length}</Badge>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Productos con stock menor a 3 unidades (mock, ver TODO)</p>
+            {inventarioBajo.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay productos con inventario bajo.</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {inventarioBajo.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
+                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-base">{item.nombre}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Cantidad: {item.cantidad}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-status-warning text-white text-sm px-2 py-1" title="Inventario bajo">Bajo</Badge>
+                    </div>
+                  </div>
+                ))}
+                {inventarioBajo.length > 3 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-2">Ver más</Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Reemplazamos la tarjeta de distribución por tarjetas de métricas más útiles */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Tarjeta: Productos que requieren atención */}
-        <Card className="cfe-border-left cfe-border-left-blue">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-status-maintenance">
-              <FileText className="h-5 w-5" />
-              Productos que requieren atención
-            </CardTitle>
-            <CardDescription>Artículos en mantenimiento o pendientes de retiro</CardDescription>
+        <Card className="cfe-border-left cfe-border-left-blue transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <FileText className="h-6 w-6" />
+              <CardTitle className="text-lg font-semibold">Productos que requieren atención</CardTitle>
+            </div>
+            <Badge className="bg-status-maintenance text-white text-base px-3 py-1" title="Productos que requieren atención">{inventoryMetrics.pendingRetirementItems.length}</Badge>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Artículos en mantenimiento o pendientes de retiro</p>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -434,15 +592,16 @@ export default function DashboardPage() {
         </Card>
 
         {/* Tarjeta: Distribución por categoría */}
-        <Card className="cfe-border-left cfe-border-left-green">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-cfe-green">
-              <Package className="h-5 w-5" />
-              Top Categorías
-            </CardTitle>
-            <CardDescription>Las categorías con mayor número de productos</CardDescription>
+        <Card className="cfe-border-left cfe-border-left-green transition-shadow hover:shadow-lg p-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-6 w-6" />
+              <CardTitle className="text-lg font-semibold">Top Categorías</CardTitle>
+            </div>
+            <Badge className="bg-cfe-green text-white text-base px-3 py-1" title="Top categorías">{inventoryMetrics.topCategories.length}</Badge>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
+            <p className="text-sm text-muted-foreground mb-4">Las categorías con mayor número de productos</p>
             <div className="space-y-4">
               {inventoryMetrics.topCategories.length > 0 ? (
                 inventoryMetrics.topCategories.map(([category, count], index) => (
@@ -465,7 +624,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Tarjeta: Métricas adicionales */}
-      <Card>
+      <Card className="transition-shadow hover:shadow-lg p-6">
         <CardHeader>
           <CardTitle className="text-lg">Métricas de Inventario</CardTitle>
           <CardDescription>Información clave para la toma de decisiones</CardDescription>
@@ -511,7 +670,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Actividad Reciente */}
-      <Card>
+      <Card className="transition-shadow hover:shadow-lg p-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
