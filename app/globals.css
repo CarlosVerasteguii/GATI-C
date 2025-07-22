@@ -4,7 +4,8 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
+    /* #fafafa, off-white */
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
@@ -31,6 +32,8 @@
     --ring: 158 100% 28%;
     /* CFE Green for focus rings */
     --radius: 0.5rem;
+    --shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.10);
+    /* Sombra negra suave para light mode */
 
     /* CFE Semantic Colors (already defined in tailwind.config.ts, but keeping here for consistency if needed) */
     --cfe-green: 158 100% 28%;
@@ -48,11 +51,14 @@
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
+    --background: 0 0% 10%;
+    /* #18181b, dark gray */
     --foreground: 60 9.1% 97.8%;
-    --card: 20 14.3% 4.1%;
+    --card: 0 0% 14%;
+    /* #232323, slightly lighter for cards */
     --card-foreground: 60 9.1% 97.8%;
-    --popover: 20 14.3% 4.1%;
+    --popover: 0 0% 14%;
+    /* #232323 */
     --popover-foreground: 60 9.1% 97.8%;
     --primary: 158 100% 28%;
     /* CFE Green */
@@ -72,6 +78,8 @@
     --input: 12 6.5% 15.1%;
     --ring: 158 100% 28%;
     /* CFE Green for focus rings */
+    --shadow: 0 4px 24px 0 rgba(255, 255, 255, 0.08);
+    /* Sombra blanca sutil para dark mode */
   }
 }
 
