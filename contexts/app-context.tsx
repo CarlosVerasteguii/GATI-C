@@ -92,6 +92,36 @@ interface UserColumnPreference {
   itemsPerPage?: number
 }
 
+// --- Inventory Low Stock Thresholds (Enterprise Ready) ---
+/**
+ * InventoryLowStockThresholds: Enterprise-ready structure for configurable low stock alerts.
+ * - productThresholds: { [productId: number]: number } // Per-product threshold
+ * - categoryThresholds: { [category: string]: number } // Per-category threshold
+ * - globalThreshold: number // Fallback if no product/category threshold
+ *
+ * TODO: Add UI for admin configuration and persist thresholds to backend.
+ */
+export interface InventoryLowStockThresholds {
+  productThresholds: { [productId: number]: number };
+  categoryThresholds: { [category: string]: number };
+  globalThreshold: number;
+}
+
+// --- Default thresholds (mock, for demo/testing) ---
+const defaultLowStockThresholds: InventoryLowStockThresholds = {
+  productThresholds: {
+    1: 2, // Laptop de Desarrollo Avanzado
+    3: 1, // Monitor UltraSharp
+    // ...otros productos
+  },
+  categoryThresholds: {
+    'Laptops': 3,
+    'Monitores': 2,
+    // ...otras categorías
+  },
+  globalThreshold: 3,
+};
+
 interface AppState {
   user: User | null
   usersData: User[]
@@ -115,6 +145,7 @@ interface AppState {
   isUploading: boolean
   successMessage: string | null
   uploadProgress: number
+  lowStockThresholds: InventoryLowStockThresholds;
 }
 
 // Datos de ejemplo
@@ -448,6 +479,7 @@ const defaultInitialState: AppState = {
   isUploading: false,
   successMessage: null,
   uploadProgress: 0,
+  lowStockThresholds: defaultLowStockThresholds,
 }
 
 // Definición de tipos para las acciones
@@ -501,6 +533,30 @@ interface AppContextType {
   updateUbicaciones: (ubicaciones: string[]) => void;
   addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
   devolverPrestamo: (itemId: number) => void;
+  getEffectiveLowStockThreshold: (product: InventoryItem) => number;
+  // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+  /**
+   * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
+   * Si value es null, elimina el umbral del producto.
+   * Valida que el valor sea positivo.
+   */
+  setProductLowStockThreshold: (productId: number, value: number | null) => void;
+  /**
+   * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
+   * Si value es null, elimina el umbral de la categoría.
+   * Valida que el valor sea positivo.
+   */
+  setCategoryLowStockThreshold: (category: string, value: number | null) => void;
+  /**
+   * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
+   * Valida que el valor sea positivo.
+   */
+  setGlobalLowStockThreshold: (value: number) => void;
+  /**
+   * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
+   * Se recomienda llamar tras eliminar productos/categorías.
+   */
+  cleanOrphanThresholds: () => void;
 }
 
 // Creación del contexto
@@ -901,6 +957,110 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     });
   }, [state.user, state.prestamosData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
 
+  /**
+   * getEffectiveLowStockThreshold: Returns the low stock threshold for a product.
+   * Priority: productThresholds > categoryThresholds > globalThreshold
+   * @param product InventoryItem
+   */
+  const getEffectiveLowStockThreshold = useCallback((product: InventoryItem): number => {
+    if (state.lowStockThresholds.productThresholds[product.id] !== undefined) {
+      return state.lowStockThresholds.productThresholds[product.id];
+    }
+    if (product.categoria && state.lowStockThresholds.categoryThresholds[product.categoria] !== undefined) {
+      return state.lowStockThresholds.categoryThresholds[product.categoria];
+    }
+    return state.lowStockThresholds.globalThreshold;
+  }, [state.lowStockThresholds]);
+
+  // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+  /**
+   * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
+   * Si value es null, elimina el umbral del producto.
+   * Valida que el valor sea positivo.
+   */
+  const setProductLowStockThreshold = useCallback((productId: number, value: number | null) => {
+    setState(prev => {
+      const newThresholds = { ...prev.lowStockThresholds.productThresholds };
+      if (value === null) {
+        delete newThresholds[productId];
+      } else if (value > 0) {
+        newThresholds[productId] = value;
+      }
+      return {
+        ...prev,
+        lowStockThresholds: {
+          ...prev.lowStockThresholds,
+          productThresholds: newThresholds,
+        },
+      };
+    });
+  }, []);
+
+  /**
+   * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
+   * Si value es null, elimina el umbral de la categoría.
+   * Valida que el valor sea positivo.
+   */
+  const setCategoryLowStockThreshold = useCallback((category: string, value: number | null) => {
+    setState(prev => {
+      const newThresholds = { ...prev.lowStockThresholds.categoryThresholds };
+      if (value === null) {
+        delete newThresholds[category];
+      } else if (value > 0) {
+        newThresholds[category] = value;
+      }
+      return {
+        ...prev,
+        lowStockThresholds: {
+          ...prev.lowStockThresholds,
+          categoryThresholds: newThresholds,
+        },
+      };
+    });
+  }, []);
+
+  /**
+   * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
+   * Valida que el valor sea positivo.
+   */
+  const setGlobalLowStockThreshold = useCallback((value: number) => {
+    if (value > 0) {
+      setState(prev => ({
+        ...prev,
+        lowStockThresholds: {
+          ...prev.lowStockThresholds,
+          globalThreshold: value,
+        },
+      }));
+    }
+  }, []);
+
+  /**
+   * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
+   * Se recomienda llamar tras eliminar productos/categorías.
+   */
+  const cleanOrphanThresholds = useCallback(() => {
+    setState(prev => {
+      const validProductIds = new Set(prev.inventoryData.map(item => item.id));
+      const validCategories = new Set(prev.categorias);
+      const cleanedProductThresholds = Object.fromEntries(
+        Object.entries(prev.lowStockThresholds.productThresholds).filter(([id]) => validProductIds.has(Number(id)))
+      );
+      const cleanedCategoryThresholds = Object.fromEntries(
+        Object.entries(prev.lowStockThresholds.categoryThresholds).filter(([cat]) => validCategories.has(cat))
+      );
+      return {
+        ...prev,
+        lowStockThresholds: {
+          ...prev.lowStockThresholds,
+          productThresholds: cleanedProductThresholds,
+          categoryThresholds: cleanedCategoryThresholds,
+        },
+      };
+    });
+  }, []);
+  // TODO: Agregar persistencia, historial de cambios y validación de roles en el futuro.
+
   // Efecto para inicializar marcas y proveedores desde los datos de inventario
   useEffect(() => {
     const allMarcas = [...new Set(state.inventoryData.map(item => item.marca))];
@@ -954,6 +1114,30 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updateUbicaciones,
     addHistoryEvent,
     devolverPrestamo,
+    getEffectiveLowStockThreshold,
+    // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+    /**
+     * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
+     * Si value es null, elimina el umbral del producto.
+     * Valida que el valor sea positivo.
+     */
+    setProductLowStockThreshold,
+    /**
+     * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
+     * Si value es null, elimina el umbral de la categoría.
+     * Valida que el valor sea positivo.
+     */
+    setCategoryLowStockThreshold,
+    /**
+     * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
+     * Valida que el valor sea positivo.
+     */
+    setGlobalLowStockThreshold,
+    /**
+     * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
+     * Se recomienda llamar tras eliminar productos/categorías.
+     */
+    cleanOrphanThresholds,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

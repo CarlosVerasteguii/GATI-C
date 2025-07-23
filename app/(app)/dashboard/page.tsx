@@ -148,13 +148,15 @@ export default function DashboardPage() {
     return { garantiasPorVencer: porVencer, garantiasVencidas: vencidas };
   }, [state.inventoryData]);
 
-  // --- Inventario Bajo (mock, TODO para umbrales configurables) ---
-  // TODO: [Fase 3 - Inventario Bajo]
-  // Pendiente: Integrar lógica de umbrales configurables por producto/categoría para alertas de inventario bajo.
-  // Actualmente, solo se alerta si cantidad < 3 (mock). Cuando se implemente la UI de configuración, conectar aquí.
+  // --- Inventario Bajo (usando umbrales configurables) ---
+  const { getEffectiveLowStockThreshold } = useApp();
   const inventarioBajo = React.useMemo(() => {
-    return state.inventoryData.filter(item => typeof item.cantidad === 'number' && item.cantidad < 3 && item.estado === 'Disponible');
-  }, [state.inventoryData]);
+    return state.inventoryData.filter(item => {
+      if (typeof item.cantidad !== 'number' || item.estado !== 'Disponible') return false;
+      const threshold = getEffectiveLowStockThreshold(item);
+      return item.cantidad < threshold;
+    });
+  }, [state.inventoryData, getEffectiveLowStockThreshold]);
 
   const handleLoanClick = (loan: any, type: "overdue" | "expiring") => {
     setSelectedLoan(loan)
@@ -527,7 +529,7 @@ export default function DashboardPage() {
               <AlertTriangle className="h-6 w-6 text-status-warning" />
               <CardTitle className="text-lg font-semibold">Inventario Bajo</CardTitle>
             </div>
-            <Badge className="bg-status-warning text-white text-base px-3 py-1" title="Inventario bajo">{inventarioBajo.length}</Badge>
+            <Badge className="bg-status-warning text-white text-base px-3 py-1" title={`Umbral: ${getEffectiveLowStockThreshold(inventarioBajo[0])}`}>Bajo</Badge>
           </CardHeader>
           <CardContent className="pt-2">
             <p className="text-sm text-muted-foreground mb-4">Productos con stock menor a 3 unidades (mock, ver TODO)</p>
