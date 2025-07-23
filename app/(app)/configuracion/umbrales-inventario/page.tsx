@@ -133,6 +133,19 @@ export default function InventoryThresholdsConfigPage() {
         );
     }, [state.categorias, categorySearch]);
 
+    const user = state.user;
+    const isAdmin = user?.rol === 'Administrador';
+    if (!isAdmin) {
+        return (
+            <div className="container mx-auto py-16 flex flex-col items-center justify-center">
+                <div className="flex items-center gap-3 text-red-800 bg-red-50 border-l-4 border-red-500 shadow-md rounded px-6 py-4 text-lg animate-fadeInSlide" aria-live="polite">
+                    <AlertTriangle className="h-6 w-6" />
+                    Acceso denegado. Solo los administradores pueden configurar umbrales de inventario bajo.
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto py-8">
             <h1 className="text-2xl font-bold mb-2">Configuración de Umbrales de Inventario Bajo</h1>
@@ -176,10 +189,12 @@ export default function InventoryThresholdsConfigPage() {
                                                 <input
                                                     type="number"
                                                     min={1}
-                                                    className="border rounded px-2 py-1 w-20 text-center"
+                                                    className="border rounded px-2 py-1 w-20 text-center focus-visible:ring focus-visible:ring-cfe-green transition-shadow duration-150"
                                                     value={productInputs[product.id] ?? (current ?? '')}
                                                     onChange={e => handleProductInput(product.id, e.target.value)}
-                                                    aria-label={`Editar umbral para ${product.nombre}`}
+                                                    aria-label={`Editar umbral para ${product.nombre}. Si se elimina, se usará el umbral de la categoría o el global.`}
+                                                    tabIndex={0}
+                                                    title="El umbral mínimo de stock para este producto. Si se elimina, se usará el de la categoría o el global."
                                                 />
                                             </td>
                                             <td className="p-2 text-center">
@@ -188,6 +203,8 @@ export default function InventoryThresholdsConfigPage() {
                                                         className="h-8 px-3 py-1.5 bg-cfe-green text-white rounded hover:bg-cfe-green/90 transition-colors focus-visible:ring focus-visible:ring-cfe-green"
                                                         onClick={() => handleProductSave(product.id)}
                                                         disabled={productSaving[product.id] || Number(productInputs[product.id]) === current}
+                                                        aria-label={`Guardar umbral para ${product.nombre}`}
+                                                        tabIndex={0}
                                                     >
                                                         Guardar
                                                     </button>
@@ -195,6 +212,8 @@ export default function InventoryThresholdsConfigPage() {
                                                         className="h-8 px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus-visible:ring focus-visible:ring-red-500"
                                                         onClick={() => handleProductDelete(product.id)}
                                                         disabled={productSaving[product.id] || current === undefined}
+                                                        aria-label={`Eliminar umbral para ${product.nombre}`}
+                                                        tabIndex={0}
                                                     >
                                                         Eliminar
                                                     </button>
@@ -267,10 +286,12 @@ export default function InventoryThresholdsConfigPage() {
                                                     <input
                                                         type="number"
                                                         min={1}
-                                                        className="border rounded px-2 py-1 w-20 text-center"
+                                                        className="border rounded px-2 py-1 w-20 text-center focus-visible:ring focus-visible:ring-cfe-green transition-shadow duration-150"
                                                         value={categoryInputs[category] ?? (current ?? '')}
                                                         onChange={e => handleCategoryInput(category, e.target.value)}
-                                                        aria-label={`Editar umbral para categoría ${category}`}
+                                                        aria-label={`Editar umbral para categoría ${category}. Si se elimina, se usará el umbral global.`}
+                                                        tabIndex={0}
+                                                        title="El umbral mínimo de stock para esta categoría. Si se elimina, se usará el global."
                                                     />
                                                 </td>
                                                 <td className="p-2 text-center">
@@ -279,6 +300,8 @@ export default function InventoryThresholdsConfigPage() {
                                                             className="h-8 px-3 py-1.5 bg-cfe-green text-white rounded hover:bg-cfe-green/90 transition-colors focus-visible:ring focus-visible:ring-cfe-green"
                                                             onClick={() => handleCategorySave(category)}
                                                             disabled={categorySaving[category] || Number(categoryInputs[category]) === current}
+                                                            aria-label={`Guardar umbral para categoría ${category}`}
+                                                            tabIndex={0}
                                                         >
                                                             Guardar
                                                         </button>
@@ -286,6 +309,8 @@ export default function InventoryThresholdsConfigPage() {
                                                             className="h-8 px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition-colors focus-visible:ring focus-visible:ring-red-500"
                                                             onClick={() => handleCategoryDelete(category)}
                                                             disabled={categorySaving[category] || current === undefined}
+                                                            aria-label={`Eliminar umbral para categoría ${category}`}
+                                                            tabIndex={0}
                                                         >
                                                             Eliminar
                                                         </button>
@@ -334,6 +359,8 @@ export default function InventoryThresholdsConfigPage() {
                                 className="px-4 py-1 bg-cfe-green text-white rounded hover:bg-cfe-green/90 transition-colors disabled:opacity-60"
                                 onClick={handleGlobalSave}
                                 disabled={saving || Number(globalInput) === state.lowStockThresholds.globalThreshold}
+                                aria-label="Guardar umbral global"
+                                tabIndex={0}
                             >
                                 Guardar
                             </button>
@@ -356,6 +383,8 @@ export default function InventoryThresholdsConfigPage() {
                         <button
                             className="mt-2 px-4 py-2 bg-cfe-green text-white rounded hover:bg-cfe-green/90 transition-colors"
                             onClick={cleanOrphanThresholds}
+                            aria-label="Limpiar umbrales huérfanos"
+                            tabIndex={0}
                         >
                             Limpiar umbrales huérfanos
                         </button>
