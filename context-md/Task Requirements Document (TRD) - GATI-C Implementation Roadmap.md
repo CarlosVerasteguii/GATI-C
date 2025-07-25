@@ -3,6 +3,150 @@ Version: 1.0
 Date: [Current Date]
 Abbreviation: TRD (Reference with @TRD)
 
+# TRD DOCUMENTATION AND TRACKING RULES
+
+## CRITICAL RULE: AI Task Analysis and Documentation Standards
+
+**WHENEVER THIS DOCUMENT IS REFERENCED WITH @TRD, THE AI MUST:**
+
+1. **AUTOMATICALLY APPLY TASK TRACKING PROTOCOL:**
+   - Identify which TRD task(s) are being worked on or referenced
+   - Check the current status and implementation notes for that task
+   - Update the task status if work is being performed
+   - Add implementation notes with timestamp and detailed description
+   - Maintain traceability between code changes and TRD tasks
+
+2. **MANDATORY TASK DOCUMENTATION FORMAT:**
+   ```markdown
+   #### Implementation Notes / Change Log
+   - **[YYYY-MM-DD HH:MM] [Author]:** [Change Type] - [Detailed Description]
+     - Location: [File paths and line numbers]
+     - Technical Details: [Implementation specifics]
+     - Dependencies: [What this affects or depends on]
+     - Next Steps: [What should be done next]
+     - Status: [Not Started → In Progress → Completed → Blocked]
+   ```
+
+3. **DATE AND TIME ACCURACY:**
+   - All timestamps in implementation notes and changelogs MUST use the current real date and time (YYYY-MM-DD HH:MM) in the user's timezone.
+   - The AI MUST always verify and use the correct date by querying @Web or the system clock before logging any change.
+   - If the date is incorrect, the AI must correct it and note the correction in the changelog.
+
+4. **CHANGE TYPE CLASSIFICATIONS:**
+   - **INIT**: Initial task setup or planning
+   - **IMPL**: Implementation or code changes
+   - **FIX**: Bug fixes or corrections
+   - **REF**: Refactoring or optimization
+   - **DOC**: Documentation updates
+   - **TEST**: Testing implementation
+   - **DEP**: Dependency or requirement changes
+   - **BLOCK**: Task blocked or waiting for dependency
+
+5. **TASK STATUS TRACKING:**
+   - Always update task status when making changes
+   - Reference specific line numbers and file paths
+   - Cross-reference related tasks that are impacted
+   - Flag dependencies that need attention
+
+## MODULAR TASK DOCUMENTATION STRATEGY
+
+### Primary Structure:
+- **TRD (this file)**: Master overview, task summaries, priorities, dependencies
+- **Detailed Task Files**: Individual documentation in `context-md/tasks/` directory
+
+### Task File Naming Convention:
+```
+context-md/tasks/
+├── TRD-001-backend-foundation.md
+├── TRD-002-database-implementation.md
+├── TRD-003-jwt-authentication.md
+├── TRD-005-core-api-endpoints.md
+├── TRD-007-zod-validation.md
+└── ...
+```
+
+### Master TRD Task Format (Updated):
+```markdown
+### TASK: TRD-XXX - [Task Name]
+**Priority**: PX | **Status**: [Status] | **Complexity**: [Level]
+**Description**: [Brief description]
+**Dependencies**: [References]
+**Detailed Documentation**: → See `context-md/tasks/TRD-XXX-[name].md`
+
+#### Quick Status / Recent Changes:
+- **[Latest Date]:** [Latest significant change or status update]
+```
+
+### Detailed Task File Format:
+```markdown
+# TRD-XXX: [Task Name] - Detailed Implementation Guide
+
+## Task Overview
+- **Priority**: 
+- **Status**: 
+- **Complexity**: 
+- **Estimated Hours**: 
+- **Dependencies**: 
+
+## Implementation Notes / Change Log
+[Ultra-detailed chronological log of all changes]
+
+## Technical Specifications
+[Detailed technical requirements, code examples, architecture decisions]
+
+## Code Locations
+[Specific file paths, line numbers, function names]
+
+## Testing Requirements
+[Test cases, validation criteria]
+
+## Dependencies and Impact Analysis
+[What this affects, what affects this]
+
+## Next Steps / TODO
+[Specific actionable items]
+
+## Risk Assessment
+[Potential issues, mitigation strategies]
+```
+
+## AI WORKFLOW WHEN @TRD IS CALLED:
+
+1. **ANALYZE CONTEXT:** Determine which task(s) are being worked on
+2. **CHECK STATUS:** Review current task status and recent changes
+3. **PERFORM WORK:** Execute the requested changes/analysis
+4. **UPDATE DOCUMENTATION:** 
+   - Add implementation notes to TRD master file
+   - Create/update detailed task file if needed
+   - Update status and cross-references
+5. **VALIDATE DEPENDENCIES:** Check if other tasks are impacted
+6. **PROVIDE SUMMARY:** Report what was done and what's next
+
+## TASK WORKFLOW PHASES:
+
+### Phase 1: Task Initiation
+- Create detailed task file in `context-md/tasks/`
+- Define technical specifications and requirements
+- Identify dependencies and risks
+- Estimate effort and timeline
+
+### Phase 2: Implementation
+- Log all changes with timestamps and details
+- Track file locations and code changes
+- Update status regularly
+- Cross-reference related tasks
+
+### Phase 3: Completion
+- Final status update
+- Implementation summary
+- Testing validation
+- Impact assessment on other tasks
+
+### Phase 4: Maintenance
+- Monitor for issues or required updates
+- Track technical debt
+- Plan future enhancements
+
 # OVERVIEW AND PURPOSE
 
 This document serves as the comprehensive implementation roadmap for GATI-C, identifying critical gaps, inconsistencies, and missing components between current frontend implementation and the specifications defined in @PRD and @SRS. It acts as the central reference for all pending tasks, technical debt, and alignment requirements.
@@ -23,6 +167,10 @@ This document serves as the comprehensive implementation roadmap for GATI-C, ide
 **Priority**: P0 | **Status**: Not Started | **Complexity**: Very High
 **Description**: Implement the complete backend infrastructure as specified in @SRS Section 1.2
 **Dependencies**: @SRS 1.2, @SRS 2.3, @SRS 5
+**Detailed Documentation**: → See `context-md/tasks/TRD-001-backend-foundation.md`
+
+#### Implementation Notes / Change Log
+- **[2024-12-21 15:45] System:** INIT - Task created, awaiting implementation initiation
 
 #### Sub-tasks:
 - **TRD-001a**: Node.js/Express.js application setup with TypeScript 5+
