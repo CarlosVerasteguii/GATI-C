@@ -95,15 +95,15 @@ interface UserColumnPreference {
 // --- Inventory Low Stock Thresholds (Enterprise Ready) ---
 /**
  * InventoryLowStockThresholds: Enterprise-ready structure for configurable low stock alerts.
- * - productThresholds: { [productId: number]: number } // Per-product threshold
- * - categoryThresholds: { [category: string]: number } // Per-category threshold
+ * - productThresholds: Record<number, number> // Per-product threshold
+ * - categoryThresholds: Record<string, number> // Per-category threshold
  * - globalThreshold: number // Fallback if no product/category threshold
  *
  * TODO: Add UI for admin configuration and persist thresholds to backend.
  */
 export interface InventoryLowStockThresholds {
-  productThresholds: { [productId: number]: number };
-  categoryThresholds: { [category: string]: number };
+  productThresholds: Record<number, number>;
+  categoryThresholds: Record<string, number>;
   globalThreshold: number;
 }
 

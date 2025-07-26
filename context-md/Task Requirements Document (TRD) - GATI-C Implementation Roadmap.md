@@ -724,9 +724,9 @@ interface AuditLogEntry {
   target_type: 'Product' | 'User' | 'Document' | 'PendingTask';
   target_id: number;
   changes_json: {
-    before?: Record<string, any>;
-    after?: Record<string, any>;
-    metadata?: Record<string, any>;
+    before?: Record<string, unknown>;
+    after?: Record<string, unknown>;
+    metadata?: Record<string, string | number | boolean>;
   };
   ip_address: string;
   user_agent?: string;
