@@ -732,6 +732,9 @@ interface AuditLogEntry {
   user_agent?: string;
 }
 
+//Esto es un comentario hardcodeado, el tema de Record ( Record<string, any>;) se debe de tener mucho cuidado.
+// Unas cuantas lineas arriba se muestra un "ejemplo", no es que a fuerzas debe de tener eso de Record ya que lo intente implementar y encontre que todo estaba con any, algunos con unkown, asi que meter Record sin revision extrema me causo alrededor de 6 horas de tiempo perdido intentando manejarlo, tener cuidado. Fin de semana 27 julio 2025)
+
 class AuditService {
   static async logAction(entry: AuditLogEntry): Promise<void> {
     try {
