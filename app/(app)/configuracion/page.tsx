@@ -325,7 +325,7 @@ export default function ConfiguracionPage() {
                     <Button variant="outline" size="sm">
                       <Users className="h-4 w-4 mr-2" />
                       Gestionar Usuarios
-                    </Button>
+            </Button>
                   </div>
                 </div>
               </CardContent>
@@ -351,35 +351,35 @@ export default function ConfiguracionPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
                 <Search className="h-4 w-4 text-muted-foreground" />
-                <Input
+              <Input
                   placeholder="Buscar usuarios..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="max-w-sm"
-                />
-              </div>
+              />
+            </div>
               
-              <Table>
-                <TableHeader>
-                  <TableRow>
+            <Table>
+              <TableHeader>
+                <TableRow>
                     <TableHead>Usuario</TableHead>
-                    <TableHead>Rol</TableHead>
+                  <TableHead>Rol</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Último Acceso</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                   <TableRow>
                     <TableCell className="font-medium">María González</TableCell>
-                    <TableCell>
+                      <TableCell>
                       <Badge variant="default" className="bg-cfe-green text-white">
                         Administrador
                       </Badge>
-                    </TableCell>
-                    <TableCell>
+                      </TableCell>
+                      <TableCell>
                       <StatusBadge status="active" />
                     </TableCell>
                     <TableCell>Hace 2 minutos</TableCell>
@@ -397,7 +397,7 @@ export default function ConfiguracionPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Edit className="h-4 w-4 mr-2" />
-                            Editar
+                          Editar
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-red-600">
                             <UserX className="h-4 w-4 mr-2" />
@@ -405,8 +405,8 @@ export default function ConfiguracionPage() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                    </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Carlos Ruiz</TableCell>
                     <TableCell>
@@ -442,8 +442,8 @@ export default function ConfiguracionPage() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                </TableBody>
-              </Table>
+              </TableBody>
+            </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -459,17 +459,17 @@ export default function ConfiguracionPage() {
             </CardHeader>
             <CardContent>
               {systemStats.pendingRequests > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
+            <Table>
+              <TableHeader>
+                <TableRow>
                       <TableHead>Solicitante</TableHead>
                       <TableHead>Rol Actual</TableHead>
                       <TableHead>Rol Solicitado</TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                     <TableRow>
                       <TableCell className="font-medium">Carlos Ruiz</TableCell>
                       <TableCell>
@@ -486,16 +486,16 @@ export default function ConfiguracionPage() {
                           <Button size="sm" className="bg-cfe-green hover:bg-cfe-green/90">
                             <UserCheck className="h-4 w-4 mr-1" />
                             Aprobar
-                          </Button>
+                            </Button>
                           <Button size="sm" variant="destructive">
                             <XCircle className="h-4 w-4 mr-1" />
                             Rechazar
-                          </Button>
-                        </div>
+                            </Button>
+                          </div>
                       </TableCell>
                     </TableRow>
-                  </TableBody>
-                </Table>
+              </TableBody>
+            </Table>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -572,8 +572,8 @@ export default function ConfiguracionPage() {
                   <CardDescription>
                     Configura los umbrales mínimos de stock para alertas automáticas
                   </CardDescription>
-                </div>
-                <Button 
+          </div>
+                    <Button
                   onClick={handleNavigateToThresholds}
                   className="bg-cfe-green hover:bg-cfe-green/90"
                 >
@@ -598,8 +598,8 @@ export default function ConfiguracionPage() {
                         <li>• <strong>Alertas:</strong> Se muestran en el dashboard cuando el stock está bajo</li>
                       </ul>
                     </div>
-                  </div>
-                </div>
+              </div>
+            </div>
 
                 {/* Estado Actual */}
                 <div className="space-y-4">
@@ -640,9 +640,9 @@ export default function ConfiguracionPage() {
                       El sistema usa una jerarquía: primero busca un umbral específico del producto, luego de la categoría, 
                       y finalmente el global.
                     </p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             </CardContent>
           </Card>
         </TabsContent>
