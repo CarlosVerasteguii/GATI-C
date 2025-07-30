@@ -307,6 +307,19 @@ export default function DashboardPage() {
 
       {/* Tarjetas principales (Total, Asignados, etc.) */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/*
+          NOTE on Dashboard Badges & Color Migration:
+          This dashboard intentionally uses the generic `ui/badge` for its metric
+          counters to allow for specific styling (e.g., larger text).
+
+          MIGRATION STATUS (as of Refactor July 30 2025):
+          This file contains a mix of new and legacy color classes.
+          - ✅ COMPLETED: "Tareas Pendientes" card now uses the new semantic color system.
+          - ⚠️ PENDING: Other cards (e.g., "Préstamos Vencidos") still use @deprecated
+            legacy classes like `bg-status-retired`.
+          - TODO: Migrate all remaining legacy color classes in this file to the new
+            semantic system (e.g., `bg-status-retired-bg text-status-retired-text`).
+        */}
         <Card className="transition-shadow hover:shadow-lg p-6">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="flex items-center gap-2">

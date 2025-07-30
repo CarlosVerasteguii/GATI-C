@@ -15,6 +15,19 @@ interface StatusBadgeProps {
   className?: string
 }
 
+/**
+ * A specialized component for displaying consistent business logic statuses.
+ * It uses a centralized semantic color system for visual consistency.
+ *
+ * ARCHITECTURAL NOTE (Refactor 2025 30 julio ):
+ * This component is intentionally separate from the generic `ui/badge.tsx`.
+ * The generic badge is used for flexible UI elements (like counters in the
+ * dashboard) that require custom sizing, while this component guarantees
+ * a standard appearance for all business statuses.
+ *
+ * @param type - The business context (e.g., 'inventory', 'loan').
+ * @param status - The specific status to display.
+ */
 export function StatusBadge({ type = "generic", status, className }: StatusBadgeProps) {
   const getStatusClass = (status: Status, type: BadgeType) => {
     // Lógica específica por tipo de badge
