@@ -351,10 +351,10 @@ export default function DashboardPage() {
         <Card className="transition-shadow hover:shadow-lg p-6">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="flex items-center gap-2">
-              <Clock className="h-6 w-6 text-status-maintenance" />
+              <Clock className="h-6 w-6 text-orange-500" />
               <CardTitle className="text-lg font-semibold">Tareas Pendientes</CardTitle>
             </div>
-            <Badge className="bg-status-maintenance text-white text-base px-3 py-1" title="Tareas pendientes">{pendingTasks}</Badge>
+            <Badge className="bg-status-pending-bg text-status-pending-text text-base px-3 py-1" title="Tareas pendientes">{pendingTasks}</Badge>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-2">{pendingTasks}</div>
@@ -571,7 +571,7 @@ export default function DashboardPage() {
               <FileText className="h-6 w-6" />
               <CardTitle className="text-lg font-semibold">Productos que requieren atención</CardTitle>
             </div>
-            <Badge className="bg-status-maintenance text-white text-base px-3 py-1" title="Productos que requieren atención">{inventoryMetrics.pendingRetirementItems.length}</Badge>
+            <Badge className="bg-status-warning-bg text-status-warning-text text-base px-3 py-1" title="Productos que requieren atención">{inventoryMetrics.pendingRetirementItems.length}</Badge>
           </CardHeader>
           <CardContent className="pt-2">
             <p className="text-sm text-muted-foreground mb-4">Artículos en mantenimiento o pendientes de retiro</p>
