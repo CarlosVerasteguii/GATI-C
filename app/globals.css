@@ -35,7 +35,35 @@
     --shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.10);
     /* Sombra negra suave para light mode */
 
-    /* CFE Semantic Colors (already defined in tailwind.config.ts, but keeping here for consistency if needed) */
+    /* Status colors - Light mode */
+    --status-available-bg: 142 76% 36%; /* green-600 */
+    --status-available-text: 0 0% 100%; /* white */
+    --status-assigned-bg: 262 83% 58%; /* purple-500 */
+    --status-assigned-text: 0 0% 100%; /* white */
+    --status-lent-bg: 48 96% 53%; /* yellow-400 */
+    --status-lent-text: 20 14.3% 4.1%; /* dark text */
+    --status-pending-retire-bg: 25 95% 53%; /* orange-500 */
+    --status-pending-retire-text: 0 0% 100%; /* white */
+    --status-retired-bg: 0 84% 60%; /* red-500 */
+    --status-retired-text: 0 0% 100%; /* white */
+    --status-approved-bg: 142 76% 36%; /* green-600 */
+    --status-approved-text: 0 0% 100%; /* white */
+    --status-rejected-bg: 0 84% 60%; /* red-500 */
+    --status-rejected-text: 0 0% 100%; /* white */
+    --status-pending-bg: 25 95% 53%; /* orange-500 */
+    --status-pending-text: 0 0% 100%; /* white */
+    --status-info-bg: 217 91% 60%; /* blue-500 */
+    --status-info-text: 0 0% 100%; /* white */
+    --status-success-bg: 142 76% 36%; /* green-600 */
+    --status-success-text: 0 0% 100%; /* white */
+    --status-error-bg: 0 84% 60%; /* red-500 */
+    --status-error-text: 0 0% 100%; /* white */
+    --status-warning-bg: 25 95% 53%; /* orange-500 */
+    --status-warning-text: 0 0% 100%; /* white */
+    --status-default-bg: 220 13% 91%; /* gray-100 */
+    --status-default-text: 215 25% 27%; /* gray-700 */
+
+    /* CFE Semantic Colors (legacy - keeping for backward compatibility) */
     --cfe-green: 158 100% 28%;
     --cfe-green-foreground: 0 0% 100%;
     --status-available: 158 100% 28%;
@@ -80,6 +108,34 @@
     /* CFE Green for focus rings */
     --shadow: 0 4px 24px 0 rgba(255, 255, 255, 0.08);
     /* Sombra blanca sutil para dark mode */
+
+    /* Status colors - Dark mode */
+    --status-available-bg: 142 76% 22%; /* green-800 */
+    --status-available-text: 142 76% 89%; /* green-200 */
+    --status-assigned-bg: 262 83% 35%; /* purple-800 */
+    --status-assigned-text: 262 83% 89%; /* purple-200 */
+    --status-lent-bg: 48 96% 35%; /* yellow-800 */
+    --status-lent-text: 48 96% 89%; /* yellow-200 */
+    --status-pending-retire-bg: 25 95% 35%; /* orange-800 */
+    --status-pending-retire-text: 25 95% 89%; /* orange-200 */
+    --status-retired-bg: 0 84% 35%; /* red-800 */
+    --status-retired-text: 0 84% 89%; /* red-200 */
+    --status-approved-bg: 142 76% 22%; /* green-800 */
+    --status-approved-text: 142 76% 89%; /* green-200 */
+    --status-rejected-bg: 0 84% 35%; /* red-800 */
+    --status-rejected-text: 0 84% 89%; /* red-200 */
+    --status-pending-bg: 25 95% 35%; /* orange-800 */
+    --status-pending-text: 25 95% 89%; /* orange-200 */
+    --status-info-bg: 217 91% 35%; /* blue-800 */
+    --status-info-text: 217 91% 89%; /* blue-200 */
+    --status-success-bg: 142 76% 22%; /* green-800 */
+    --status-success-text: 142 76% 89%; /* green-200 */
+    --status-error-bg: 0 84% 35%; /* red-800 */
+    --status-error-text: 0 84% 89%; /* red-200 */
+    --status-warning-bg: 25 95% 35%; /* orange-800 */
+    --status-warning-text: 25 95% 89%; /* orange-200 */
+    --status-default-bg: 215 25% 27%; /* gray-700 */
+    --status-default-text: 215 20% 65%; /* gray-300 */
   }
 }
 
