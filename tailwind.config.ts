@@ -60,6 +60,22 @@ const config = {
           foreground: "#FFFFFF", // White text for CFE Green
           "very-light": "#E6F4EF", // Very light CFE Green
         },
+        /**
+         * =================================================================
+         * SEMANTIC STATUS COLOR SYSTEM - REFACTOR 2024
+         * =================================================================
+         * This is the single source of truth for all status-related colors.
+         * It maps semantic names (e.g., 'available') to CSS variables.
+         *
+         * DO NOT use utility classes like `bg-green-500` for statuses directly.
+         * Instead, use semantic classes like `bg-status-available-bg`.
+         *
+         * MIGRATION STATUS:
+         * - ✅ NEW: The nested `status: { ... }` object is the recommended system.
+         * - ⚠️ LEGACY: The flat "status-available" keys are @deprecated and kept
+         *   only for backward compatibility with parts of the dashboard.
+         * - TODO: Migrate all legacy usages and remove the flat keys.
+         */
         // Status colors with semantic structure
         status: {
           available: {
