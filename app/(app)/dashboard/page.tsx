@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
 import { useToast } from '@/hooks/use-toast';
-import { LoanStatusBadge } from "@/components/status-badges/loan-status-badge"
+import { StatusBadge } from "@/components/status-badge"
 import { ActivityDetailSheet } from "@/components/activity-detail-sheet"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
@@ -783,7 +783,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Estado</h4>
-                  <LoanStatusBadge status={selectedLoan.estado} />
+                  <StatusBadge type="loan" status={selectedLoan.estado} />
                 </div>
                 {selectedLoan.notas && (
                   <div>

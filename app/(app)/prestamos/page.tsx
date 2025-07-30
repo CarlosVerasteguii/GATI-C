@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Search, Filter, ArrowUpDown, AlertTriangle } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
-import { LoanStatusBadge } from "@/components/status-badges/loan-status-badge"
+import { StatusBadge } from "@/components/status-badge"
 import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
 import { showSuccess, showInfo } from "@/hooks/use-toast"
 import { ActionMenu } from "@/components/action-menu"
@@ -384,7 +384,7 @@ export default function PrestamosPage() {
                     {renderDiasRestantes(loan.diasRestantes, loan.estado)}
                   </TableCell>
                   <TableCell>
-                    <LoanStatusBadge status={loan.estado} />
+                    <StatusBadge type="loan" status={loan.estado} />
                   </TableCell>
                   <TableCell className="text-right">
                     <ActionMenu

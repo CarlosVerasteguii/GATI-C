@@ -60,6 +60,62 @@ const config = {
           foreground: "#FFFFFF", // White text for CFE Green
           "very-light": "#E6F4EF", // Very light CFE Green
         },
+        // Status colors with semantic structure
+        status: {
+          available: {
+            bg: "hsl(var(--status-available-bg))",
+            text: "hsl(var(--status-available-text))"
+          },
+          assigned: {
+            bg: "hsl(var(--status-assigned-bg))",
+            text: "hsl(var(--status-assigned-text))"
+          },
+          lent: {
+            bg: "hsl(var(--status-lent-bg))",
+            text: "hsl(var(--status-lent-text))"
+          },
+          pendingRetire: {
+            bg: "hsl(var(--status-pending-retire-bg))",
+            text: "hsl(var(--status-pending-retire-text))"
+          },
+          retired: {
+            bg: "hsl(var(--status-retired-bg))",
+            text: "hsl(var(--status-retired-text))"
+          },
+          approved: {
+            bg: "hsl(var(--status-approved-bg))",
+            text: "hsl(var(--status-approved-text))"
+          },
+          rejected: {
+            bg: "hsl(var(--status-rejected-bg))",
+            text: "hsl(var(--status-rejected-text))"
+          },
+          pending: {
+            bg: "hsl(var(--status-pending-bg))",
+            text: "hsl(var(--status-pending-text))"
+          },
+          info: {
+            bg: "hsl(var(--status-info-bg))",
+            text: "hsl(var(--status-info-text))"
+          },
+          success: {
+            bg: "hsl(var(--status-success-bg))",
+            text: "hsl(var(--status-success-text))"
+          },
+          error: {
+            bg: "hsl(var(--status-error-bg))",
+            text: "hsl(var(--status-error-text))"
+          },
+          warning: {
+            bg: "hsl(var(--status-warning-bg))",
+            text: "hsl(var(--status-warning-text))"
+          },
+          default: {
+            bg: "hsl(var(--status-default-bg))",
+            text: "hsl(var(--status-default-text))"
+          }
+        },
+        // Legacy status colors (keeping for backward compatibility)
         "status-available": {
           DEFAULT: "#008E5A", // Verde CFE
           foreground: "#FFFFFF",
