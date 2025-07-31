@@ -576,7 +576,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Reemplazamos la tarjeta de distribución por tarjetas de métricas más útiles */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6">
         {/* Tarjeta: Distribución por categoría */}
         <Card className="cfe-border-left cfe-border-left-green transition-shadow hover:shadow-lg p-6">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
