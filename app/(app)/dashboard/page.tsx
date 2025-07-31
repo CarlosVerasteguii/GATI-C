@@ -174,8 +174,10 @@ export default function DashboardPage() {
     // Calcular métricas de valor y actividad en lugar de solo distribución
     const totalValue = state.inventoryData.reduce((sum, item) => sum + (item.costo || 0), 0);
 
-    // Productos que requieren atención
-    const pendingRetirementItems = state.inventoryData.filter(item => item.estado === "PENDIENTE_DE_RETIRO");
+    // ⚠️ ELIMINADO: Productos que requieren atención - Tarjeta removida del dashboard
+    // Código eliminado: const pendingRetirementItems = state.inventoryData.filter(item => item.estado === "PENDIENTE_DE_RETIRO");
+    // NO REUTILIZAR: Esta funcionalidad fue eliminada intencionalmente. Si necesitas mostrar productos pendientes de retiro,
+    // implementa una nueva solución desde cero, no copies código de versiones anteriores.
 
     // Productos por categoría (top 5)
     const categoryCounts = state.inventoryData.reduce((acc, item) => {
@@ -216,7 +218,7 @@ export default function DashboardPage() {
       totalItems: state.inventoryData.length,
       assignedItems: state.inventoryData.filter(item => item.estado === "Asignado").length,
       lentItems: state.inventoryData.filter(item => item.estado === "Prestado").length,
-      pendingRetirementItems,
+      // ⚠️ ELIMINADO: pendingRetirementItems - NO REUTILIZAR
       topCategories,
       topBrands,
       needsRenewal,
@@ -292,12 +294,10 @@ export default function DashboardPage() {
     setIsLoanDetailSheetOpen(false);
   };
 
-  // Función para navegar a inventario con filtros específicos
-  const handleViewInventoryDetails = (filter: string) => {
-    if (filter === 'pending-retirement') {
-      router.push('/inventario?estado=PENDIENTE_DE_RETIRO');
-    }
-  };
+  // ⚠️ ELIMINADO: Función handleViewInventoryDetails - Tarjeta "Productos que requieren atención" removida
+  // Código eliminado: const handleViewInventoryDetails = (filter: string) => { ... }
+  // NO REUTILIZAR: Esta función era específica para la tarjeta eliminada. Si necesitas navegación a inventario,
+  // implementa una nueva función desde cero, no copies código de versiones anteriores.
 
   return (
     <div className="space-y-6">
@@ -317,7 +317,7 @@ export default function DashboardPage() {
           - ✅ COMPLETED: "Tareas Pendientes" card now uses the new semantic color system.
           - ⚠️ PENDING: Other cards (e.g., "Préstamos Vencidos") still use @deprecated
             legacy classes like `bg-status-retired`.
-          - TODO: Migrate all remaining legacy color classes in this file to the new
+          - TODO: Migrate all remaining legacy coep eidlor classes in this file to the new
             semantic system (e.g., `bg-status-retired-bg text-status-retired-text`).
         */}
         <Card className="transition-shadow hover:shadow-lg p-6">
@@ -577,48 +577,6 @@ export default function DashboardPage() {
 
       {/* Reemplazamos la tarjeta de distribución por tarjetas de métricas más útiles */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Tarjeta: Productos que requieren atención */}
-        <Card className="cfe-border-left cfe-border-left-blue transition-shadow hover:shadow-lg p-6">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="h-6 w-6" />
-              <CardTitle className="text-lg font-semibold">Productos que requieren atención</CardTitle>
-            </div>
-            <Badge className="bg-status-warning-bg text-status-warning-text text-base px-3 py-1" title="Productos que requieren atención">{inventoryMetrics.pendingRetirementItems.length}</Badge>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <p className="text-sm text-muted-foreground mb-4">Artículos en mantenimiento o pendientes de retiro</p>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Pendientes de retiro</p>
-                  <p className="text-sm text-muted-foreground">
-                    {inventoryMetrics.pendingRetirementItems.length} productos
-                  </p>
-                </div>
-                <div className="text-2xl font-bold text-status-pending">
-                  {inventoryMetrics.pendingRetirementItems.length > 0
-                    ? ((inventoryMetrics.pendingRetirementItems.length / totalProducts) * 100).toFixed(1) + '%'
-                    : '0%'}
-                </div>
-              </div>
-              {inventoryMetrics.pendingRetirementItems.length > 0 ? (
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleViewInventoryDetails('pending-retirement')}
-                  >
-                    Ver artículos pendientes de retiro
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center italic">No hay productos que requieran atención</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Tarjeta: Distribución por categoría */}
         <Card className="cfe-border-left cfe-border-left-green transition-shadow hover:shadow-lg p-6">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
