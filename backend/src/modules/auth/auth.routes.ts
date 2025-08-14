@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller.js';
+import { AuthService } from './auth.service.js';
 
 const router = Router();
-const authController = new AuthController();
+
+// --- Dependency Injection Setup ---
+const authService = new AuthService();
+const authController = new AuthController(authService);
+// ------------------------------------
 
 /**
  * @route   POST /api/v1/auth/register

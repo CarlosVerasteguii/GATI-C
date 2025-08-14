@@ -3,11 +3,11 @@ import { AuthService, RegisterUserData, LoginUserData } from './auth.service.js'
 import { ZodError } from 'zod';
 
 export class AuthController {
-    private authService: AuthService;
-
-    constructor() {
-        this.authService = new AuthService();
-    }
+    /**
+     * Constructor con inyección de dependencias
+     * @param authService Servicio de autenticación inyectado
+     */
+    constructor(private readonly authService: AuthService) { }
 
     /**
      * Maneja el registro de nuevos usuarios

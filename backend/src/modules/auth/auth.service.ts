@@ -1,6 +1,7 @@
-import { PrismaClient, User, UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import prisma from '../../config/prisma.js';
 
 export interface RegisterUserData {
     email: string;
@@ -20,13 +21,20 @@ export interface AuthResult {
 }
 
 export class AuthService {
-    private prisma: PrismaClient;
+    private prisma;
     private jwtSecret: string;
     private jwtExpiresIn: string;
 
     constructor() {
-        this.prisma = new PrismaClient();
-        this.jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+        this.prisma = prisma;
+        this.jwtSecret = process.env.JWT_SECRET || '';
+
+        // Implementación de seguridad "Fail-Fast"
+        if (!this.jwtSecret) {
+            console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+            process.exit(1); // Detiene la aplicación si el secreto no está configurado
+        }
+
         this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
     }
 
@@ -95,9 +103,11 @@ export class AuthService {
     }
 
     /**
-     * Cierra la conexión de Prisma
+     * Método para pruebas - No es necesario llamar a disconnect() en producción
+     * ya que el singleton maneja la desconexión automáticamente
      */
     async disconnect(): Promise<void> {
-        await this.prisma.$disconnect();
+        // No hacemos nada aquí ya que el singleton maneja la desconexión
+        // La implementación original se ha movido al archivo config/prisma.ts
     }
 }
