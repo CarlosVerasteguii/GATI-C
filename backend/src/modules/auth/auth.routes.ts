@@ -1,13 +1,11 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller.js';
-import { AuthService } from './auth.service.js';
+import { container } from 'tsyringe';
 
 const router = Router();
 
-// --- Dependency Injection Setup ---
-const authService = new AuthService();
-const authController = new AuthController(authService);
-// ------------------------------------
+// El contenedor IoC resuelve automáticamente toda la cadena de dependencias
+const authController = container.resolve(AuthController);
 
 /**
  * @route   POST /api/v1/auth/register

@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -49,56 +50,61 @@ const authLimiter = rateLimit({
 // Apply rate limiting ONLY to authentication routes
 app.use('/api/v1/auth', authLimiter);
 
-// Auth routes
-app.use('/api/v1/auth', authRoutes);
+try {
+    // --- Application Routes ---
+    app.use('/api/v1/auth', authRoutes);
 
-// Health check endpoint
-app.get('/api/v1/health', (req, res) => {
-    res.status(200).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        service: 'GATI-C Backend',
-        version: '0.1.0'
+    // Health check endpoint
+    app.get('/api/v1/health', (req, res) => {
+        res.status(200).json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            service: 'GATI-C Backend',
+            version: '0.1.0'
+        });
     });
-});
 
-// Root endpoint
-app.get('/', (req, res) => {
-    res.json({
-        message: 'GATI-C Backend API',
-        version: '0.1.0',
-        status: 'running'
+    // Root endpoint
+    app.get('/', (req, res) => {
+        res.json({
+            message: 'GATI-C Backend API',
+            version: '0.1.0',
+            status: 'running'
+        });
     });
-});
 
-// Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Error:', err);
-    res.status(500).json({
-        success: false,
-        error: {
-            code: 'INTERNAL_ERROR',
-            message: 'Internal server error'
-        }
+    // Error handling middleware
+    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        console.error('Error:', err);
+        res.status(500).json({
+            success: false,
+            error: {
+                code: 'INTERNAL_ERROR',
+                message: 'Internal server error'
+            }
+        });
     });
-});
 
-// 404 handler
-app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        error: {
-            code: 'NOT_FOUND',
-            message: 'Endpoint not found'
-        }
+    // 404 handler
+    app.use('*', (req, res) => {
+        res.status(404).json({
+            success: false,
+            error: {
+                code: 'NOT_FOUND',
+                message: 'Endpoint not found'
+            }
+        });
     });
-});
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 GATI-C Backend server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/v1/health`);
-    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+    // --- Start Server ---
+    app.listen(PORT, () => {
+        console.log(`🚀 GATI-C Backend server running on port ${PORT}`);
+        console.log(`📊 Health check: http://localhost:${PORT}/api/v1/health`);
+        console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+} catch (error) {
+    console.error('❌ Failed to start server due to a critical error:', error);
+    process.exit(1);
+}
 
 export default app;

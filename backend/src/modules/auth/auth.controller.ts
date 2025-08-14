@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
 import { AuthService, RegisterUserData, LoginUserData } from './auth.service.js';
 import { ZodError } from 'zod';
+import { singleton, inject } from 'tsyringe';
 
+@singleton()
 export class AuthController {
     /**
      * Constructor con inyección de dependencias
      * @param authService Servicio de autenticación inyectado
      */
-    constructor(private readonly authService: AuthService) { }
+    constructor(@inject(AuthService) private readonly authService: AuthService) { }
 
     /**
      * Maneja el registro de nuevos usuarios

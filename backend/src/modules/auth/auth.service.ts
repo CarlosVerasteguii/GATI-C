@@ -2,6 +2,7 @@ import { User, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma.js';
+import { singleton } from 'tsyringe';
 
 export interface RegisterUserData {
     email: string;
@@ -20,6 +21,7 @@ export interface AuthResult {
     token: string;
 }
 
+@singleton()
 export class AuthService {
     private prisma;
     private jwtSecret: string;
@@ -31,8 +33,7 @@ export class AuthService {
 
         // Implementación de seguridad "Fail-Fast"
         if (!this.jwtSecret) {
-            console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
-            process.exit(1); // Detiene la aplicación si el secreto no está configurado
+            throw new Error('FATAL ERROR: JWT_SECRET is not defined in environment variables. Application cannot start.');
         }
 
         this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
