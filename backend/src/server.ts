@@ -1,16 +1,10 @@
+import './config/env.js';
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-
-// Import auth routes
-import authRoutes from './modules/auth/auth.routes.js';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -52,6 +46,9 @@ app.use('/api/v1/auth', authLimiter);
 
 try {
     // --- Application Routes ---
+    // IMPORTANTE: Importar las rutas aquí para que la resolución del contenedor
+    // ocurra dentro del bloque try-catch y después de cargar el entorno.
+    const authRoutes = (await import('./modules/auth/auth.routes.js')).default;
     app.use('/api/v1/auth', authRoutes);
 
     // Health check endpoint
@@ -73,26 +70,20 @@ try {
         });
     });
 
-    // Error handling middleware
-    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        console.error('Error:', err);
-        res.status(500).json({
-            success: false,
-            error: {
-                code: 'INTERNAL_ERROR',
-                message: 'Internal server error'
-            }
-        });
-    });
-
-    // 404 handler
+    // --- 404 Handler ---
     app.use('*', (req, res) => {
         res.status(404).json({
             success: false,
-            error: {
-                code: 'NOT_FOUND',
-                message: 'Endpoint not found'
-            }
+            error: { code: 'NOT_FOUND', message: 'Endpoint no encontrado' }
+        });
+    });
+
+    // --- Global Error Handler ---
+    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        console.error('Unhandled Error:', err);
+        res.status(500).json({
+            success: false,
+            error: { code: 'INTERNAL_SERVER_ERROR', message: 'Ha ocurrido un error inesperado' }
         });
     });
 
