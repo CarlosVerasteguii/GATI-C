@@ -5,6 +5,9 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
+// Import auth routes
+import authRoutes from './modules/auth/auth.routes.js';
+
 // Load environment variables
 dotenv.config();
 
@@ -45,6 +48,9 @@ const authLimiter = rateLimit({
 
 // Apply rate limiting ONLY to authentication routes
 app.use('/api/v1/auth', authLimiter);
+
+// Auth routes
+app.use('/api/v1/auth', authRoutes);
 
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
