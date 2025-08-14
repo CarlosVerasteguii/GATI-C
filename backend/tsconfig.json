@@ -5,7 +5,7 @@
         "moduleResolution": "nodenext",
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
-        "allowJs": true,
+        "allowJs": false,
         "outDir": "./dist",
         "rootDir": "./src",
         "strict": true,

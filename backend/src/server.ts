@@ -12,32 +12,39 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+// Set security headers
 app.use(helmet());
+
+// Enable CORS with specific origin and credentials
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true
 }));
-app.use(cookieParser());
+
+// Parse JSON and URL-encoded bodies before rate limiting, but after CORS
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Parse cookies
+app.use(cookieParser());
+
 // Rate limiting configuration
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // máximo 100 requests por ventana
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 auth requests per windowMs
     message: {
         success: false,
         error: {
             code: 'RATE_LIMIT_EXCEEDED',
-            message: 'Demasiadas solicitudes. Intente nuevamente en 15 minutos.'
+            message: 'Demasiados intentos de autenticación. Intente nuevamente en 15 minutos.'
         }
     },
     standardHeaders: true,
     legacyHeaders: false
 });
 
-// Apply rate limiting to all API routes
-app.use('/api/', limiter);
+// Apply rate limiting ONLY to authentication routes
+app.use('/api/v1/auth', authLimiter);
 
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {

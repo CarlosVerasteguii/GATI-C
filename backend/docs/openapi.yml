@@ -85,7 +85,7 @@ paths:
       tags:
         - Authentication
       security:
-        - BearerAuth: []
+        - CookieAuth: []
       responses:
         '200':
           description: Logout exitoso
@@ -113,7 +113,7 @@ paths:
       tags:
         - Authentication
       security:
-        - BearerAuth: []
+        - CookieAuth: []
       responses:
         '200':
           description: Perfil del usuario obtenido exitosamente
@@ -130,10 +130,11 @@ paths:
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: JWT token stored in HttpOnly cookie
 
   schemas:
     # Request Schemas
@@ -243,7 +244,7 @@ components:
           format: date-time
           example: "2025-08-14T18:42:00.000Z"
 
-         ErrorResponse:
+              ErrorResponse:
        type: object
        properties:
          success:
@@ -292,7 +293,7 @@ components:
                example: "RATE_LIMIT_EXCEEDED"
              message:
                type: string
-               example: "Demasiadas solicitudes. Intente nuevamente en 15 minutos."
+               example: "Demasiados intentos de autenticación. Intente nuevamente en 15 minutos."
              retryAfter:
                type: integer
                description: Tiempo en segundos antes del siguiente intento
