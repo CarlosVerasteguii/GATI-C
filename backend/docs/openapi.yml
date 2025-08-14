@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: GATI-C Backend API
+  description: API para el sistema de gestión de activos de TI de la CFE
+  version: 0.1.0
+  contact:
+    name: GATI-C Development Team
+    email: dev@gati-c.cfe.gob.mx
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://api.gati-c.cfe.gob.mx
+    description: Production server
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check endpoint
+      description: Verifica el estado del servicio
+      tags:
+        - System
+      responses:
+        '200':
+          description: Servicio funcionando correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '429':
+          description: Demasiadas solicitudes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitErrorResponse'
+
+  /api/v1/auth/login:
+    post:
+      summary: Autenticación de usuario
+      description: Permite a los usuarios autenticarse con credenciales válidas
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+          headers:
+            Set-Cookie:
+              description: JWT token en cookie httpOnly
+              schema:
+                type: string
+                example: "jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Strict"
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Demasiados intentos de login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      summary: Cerrar sesión
+      description: Invalida la sesión del usuario actual. La autenticación se gestiona a través de una cookie HttpOnly segura enviada por el servidor tras un login exitoso. No es necesario enviar un header 'Authorization' para este endpoint desde un cliente web.
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+          headers:
+            Set-Cookie:
+              description: Cookie JWT eliminada
+              schema:
+                type: string
+                example: "jwt=; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/me:
+    get:
+      summary: Obtener perfil del usuario actual
+      description: Retorna la información del usuario autenticado. La autenticación se gestiona a través de una cookie HttpOnly segura enviada por el servidor tras un login exitoso. No es necesario enviar un header 'Authorization' para este endpoint desde un cliente web.
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil del usuario obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Request Schemas
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+          example: "usuario@cfe.gob.mx"
+        password:
+          type: string
+          minLength: 8
+          description: Contraseña del usuario
+          example: "password123"
+      additionalProperties: false
+
+    # Response Schemas
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-08-14T18:42:00.000Z"
+        service:
+          type: string
+          example: "GATI-C Backend"
+        version:
+          type: string
+          example: "0.1.0"
+
+    LoginSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            message:
+              type: string
+              example: "Login exitoso"
+        token:
+          type: string
+          description: JWT token (también enviado en cookie)
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    LogoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Sesión cerrada exitosamente"
+
+    UserProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "Carlos Vera"
+        email:
+          type: string
+          format: email
+          example: "carlos.vera@cfe.gob.mx"
+        role:
+          type: string
+          enum: ["Administrador", "Editor", "Lector"]
+          example: "Editor"
+        trusted_ip:
+          type: string
+          format: ipv4
+          description: IP de confianza para acceso rápido
+          example: "192.168.1.100"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-08-14T18:42:00.000Z"
+
+         ErrorResponse:
+       type: object
+       properties:
+         success:
+           type: boolean
+           example: false
+         error:
+           type: object
+           properties:
+             code:
+               type: string
+               description: Código de error único
+               example: "INVALID_CREDENTIALS"
+             message:
+               type: string
+               description: Mensaje de error legible
+               example: "Email o contraseña incorrectos"
+             details:
+               type: array
+               items:
+                 type: object
+                 properties:
+                   field:
+                     type: string
+                     description: Campo que causó el error
+                     example: "email"
+                   message:
+                     type: string
+                     description: Mensaje específico del campo
+                     example: "El email debe tener un formato válido"
+             timestamp:
+               type: string
+               format: date-time
+               example: "2025-08-14T18:42:00.000Z"
+
+     RateLimitErrorResponse:
+       type: object
+       properties:
+         success:
+           type: boolean
+           example: false
+         error:
+           type: object
+           properties:
+             code:
+               type: string
+               example: "RATE_LIMIT_EXCEEDED"
+             message:
+               type: string
+               example: "Demasiadas solicitudes. Intente nuevamente en 15 minutos."
+             retryAfter:
+               type: integer
+               description: Tiempo en segundos antes del siguiente intento
+               example: 900
+
+tags:
+  - name: System
+    description: Endpoints del sistema
+  - name: Authentication
+    description: Endpoints de autenticación y autorización

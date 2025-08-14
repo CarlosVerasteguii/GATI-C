@@ -1,0 +1,20 @@
+* [33m73e6131[m[33m ([m[1;31morigin/feat/backend-foundation[m[33m)[m feat: checkpoint - dashboard layout adjustments and error investigation
+* [33md4ee437[m fix(dashboard): adjust "Top Categorías" card layout to full width
+* [33m132ff0b[m feat(dashboard): remove "Productos que requieren atención" card
+* [33m312192d[m docs: Add strategic comments to color system and components
+* [33m521cbc0[m feat(ui): Implement semantic color system and unify StatusBadge component
+* [33ma41b02c[m Actúa como un desarrollador frontend senior realizando una refactorización de clases de CSS con precisión quirúrgica. Tu misión es migrar el archivo `app/(app)/dashboard/page.tsx` para que deje de usar clases de color legacy y utilice el nuevo sistema de colores semántico.
+* [33m4628344[m chore(analysis): complete 3-phase forensic audit of AppContext
+* [33m6668c7f[m[33m ([m[1;31morigin/feature/enterprise-configuration-page[m[33m)[m feat: implement enterprise-grade configuration page
+* [33m250364f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m checkpoint: inventory thresholds module audit completed
+* [33mfb2c5e6[m[33m ([m[1;32mfeature/tabla-inventario-anidada[m[33m)[m docs: fix document dates and remove deprecated maintenance state - Update dates to 2025-07-25 across all documentation - Remove 'En Mantenimiento' state references from inventory context
+* [33m95a5b53[m git commit -am "feat(backend): establish backend architecture documentation and API mocking strategy
+* [33m0390f26[m docs(trd): enforce real-date changelog and update timestamps in TRD-005
+* [33m2e782d0[m docs(trd): expand Task Requirements Document (TRD) with enterprise-level backend details
+* [33m5eb1ef5[m git commit -am "feat: editable tables and RBAC for inventory thresholds config (UI/UX, context, a11y)
+* [33m3ae3f5e[m feat(ui): enterprise alignment and contextual alerts for inventory thresholds config
+* [33m01b859b[m feat(context): add enterprise functions for configurable low stock thresholds
+* [33md4aa8e2[m docs(ui): document shadow variable and future card shadow refactor for dark/light mode
+* [33m71546c8[m feat(ui): enterprise visual improvements for dashboard cards and bugfixes
+* [33mf260956[m feat(dashboard): enterprise visual improvements for alert and metric cards
+* [33m8af0032[m feat(inventory): add warranty expiration date field and UI integration
