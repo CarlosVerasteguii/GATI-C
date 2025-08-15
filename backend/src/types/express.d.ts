@@ -1,9 +1,2 @@
-import { JWTPayload } from 'jose';
-
-declare global {
-    namespace Express {
-        interface Request {
-            user?: string | JWTPayload;
-        }
-    }
-}
+// Los tipos de Express están ahora declarados en auth.middleware.ts
+// Este archivo se mantiene para futuras extensiones de tipos si son necesarias
