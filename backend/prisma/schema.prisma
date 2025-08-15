@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,23 +7,101 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(USER)
-  isActive     Boolean  @default(true) @map("is_active")
-  lastLoginAt  DateTime? @map("last_login_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  @@map("users")
+enum UserRole {
+  ADMINISTRADOR
+  EDITOR
+  LECTOR
 }
 
-enum UserRole {
-  ADMIN
-  MANAGER
-  USER
-  VIEWER
+model User {
+  id            String        @id @default(cuid())
+  name          String
+  email         String        @unique
+  password_hash String
+  role          UserRole      @default(LECTOR)
+  trusted_ip    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  auditLogs     AuditLog[]
+  pendingTasks  PendingTask[]
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  name          String
+  serial_number String?     @unique
+  description   String?
+  cost          Float?
+  purchase_date DateTime?
+  condition     String?
+  brandId       String?
+  brand         Brand?      @relation(fields: [brandId], references: [id])
+  categoryId    String?
+  category      Category?   @relation(fields: [categoryId], references: [id])
+  locationId    String?
+  location      Location?   @relation(fields: [locationId], references: [id])
+  documents     Document[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Brand {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Location {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Document {
+  id                   String   @id @default(cuid())
+  original_filename    String
+  stored_uuid_filename String
+  productId            String
+  product              Product  @relation(fields: [productId], references: [id])
+  deleted_at           DateTime?
+  createdAt            DateTime @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  action       String
+  target_type  String
+  target_id    String
+  changes_json Json
+  createdAt    DateTime @default(now())
+}
+
+model PendingTask {
+  id          String         @id @default(cuid())
+  creatorId   String
+  creator     User           @relation(fields: [creatorId], references: [id])
+  type        String
+  status      String
+  details_json Json
+  taskAudit   TaskAuditLog[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model TaskAuditLog {
+  id        String      @id @default(cuid())
+  taskId    String
+  task      PendingTask @relation(fields: [taskId], references: [id])
+  userId    String
+  event     String
+  details   String?
+  createdAt DateTime    @default(now())
 }

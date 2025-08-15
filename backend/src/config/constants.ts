@@ -6,7 +6,7 @@
  */
 
 export const AUTH_CONSTANTS = {
-    AUTH_COOKIE_NAME: 'token'
+    AUTH_COOKIE_NAME: 'jwt' // Cambiado de 'token' a 'jwt' para alinearse con SRS/PRD
 } as const;
 
 export const HTTP_STATUS_CODES = {
