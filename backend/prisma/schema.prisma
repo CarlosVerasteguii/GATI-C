@@ -68,7 +68,7 @@ model Document {
   original_filename    String
   stored_uuid_filename String
   productId            String
-  product              Product  @relation(fields: [productId], references: [id])
+  product              Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   deleted_at           DateTime?
   createdAt            DateTime @default(now())
 }
@@ -76,7 +76,7 @@ model Document {
 model AuditLog {
   id           String   @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   action       String
   target_type  String
   target_id    String
@@ -87,7 +87,7 @@ model AuditLog {
 model PendingTask {
   id          String         @id @default(cuid())
   creatorId   String
-  creator     User           @relation(fields: [creatorId], references: [id])
+  creator     User           @relation(fields: [creatorId], references: [id], onDelete: Restrict)
   type        String
   status      String
   details_json Json
@@ -99,7 +99,7 @@ model PendingTask {
 model TaskAuditLog {
   id        String      @id @default(cuid())
   taskId    String
-  task      PendingTask @relation(fields: [taskId], references: [id])
+  task      PendingTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId    String
   event     String
   details   String?

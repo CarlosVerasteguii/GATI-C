@@ -1,9 +1,7 @@
 import { User, UserRole } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import prisma from '../../config/prisma.js';
 import { singleton } from 'tsyringe';
-import { eventBus, AppEvents, UserEventData } from '../../events/eventBus.js';
+import { AuditService } from '../audit/audit.service.js'; // Simulación de importación
 
 export interface RegisterUserData {
     email: string;
@@ -27,6 +25,7 @@ export class AuthService {
     private prisma;
     private jwtSecret: string;
     private jwtExpiresIn: string;
+    private auditService: AuditService; // Simulación de propiedad
 
     constructor() {
         this.prisma = prisma;
@@ -38,6 +37,7 @@ export class AuthService {
         }
 
         this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
+        this.auditService = new AuditService(); // Simulación de instanciación
     }
 
     /**
@@ -49,23 +49,24 @@ export class AuthService {
         // 2. Hashear la contraseña
         // 3. Crear el usuario en la base de datos
         // 4. Generar JWT
-        // 5. Emitir evento de registro exitoso
+        // 5. LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
         // 6. Retornar usuario y token
 
-        // Simulamos que el registro fue exitoso para demostrar el Event Bus
-        const user = { id: 'temp-user-id', email: userData.email, role: userData.role || UserRole.LECTOR } as User;
+        // Simulamos que el registro fue exitoso para demostrar la trazabilidad
+        const newUser = { id: 'new-user-id', name: userData.name } as User;
+        const token = 'fake-token'; // Placeholder
 
-        // Emitimos un evento en lugar de llamar a otro servicio directamente
-        const eventData: UserEventData = {
-            userId: user.id,
-            userEmail: user.email,
-            userRole: user.role,
-            timestamp: new Date()
-        };
+        // LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
+        // Esto garantiza la "Trazabilidad Absoluta" requerida por el SRS
+        await this.auditService.log({
+            userId: newUser.id,
+            action: 'USER_REGISTER_SUCCESS',
+            targetType: 'USER',
+            targetId: newUser.id,
+            changes: { name: newUser.name, email: userData.email } // Datos iniciales
+        });
 
-        eventBus.emit(AppEvents.USER_REGISTERED, eventData);
-
-        throw new Error('Método registerUser no implementado aún');
+        return { user: newUser, token };
     }
 
     /**
@@ -77,23 +78,24 @@ export class AuthService {
         // 2. Verificar contraseña
         // 3. Actualizar lastLoginAt
         // 4. Generar JWT
-        // 5. Emitir evento de login exitoso
+        // 5. LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
         // 6. Retornar usuario y token
 
-        // Simulamos que el login fue exitoso para demostrar el Event Bus
-        const user = { id: 'temp-user-id', email: loginData.email } as User;
+        // Simulamos que el login fue exitoso para demostrar la trazabilidad
+        const user = { id: 'user-id', name: 'Test User' } as User;
+        const token = 'fake-token'; // Placeholder
 
-        // Emitimos un evento en lugar de llamar a otro servicio directamente
-        // Esto cumple con el requisito del SRS de comunicación desacoplada
-        const eventData: UserEventData = {
+        // LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
+        // Esto garantiza que cada login sea registrado sin posibilidad de fallo silencioso
+        await this.auditService.log({
             userId: user.id,
-            userEmail: user.email,
-            timestamp: new Date()
-        };
+            action: 'USER_LOGIN_SUCCESS',
+            targetType: 'USER',
+            targetId: user.id,
+            changes: {} // No hay cambios en un login
+        });
 
-        eventBus.emit(AppEvents.USER_LOGGED_IN, eventData);
-
-        throw new Error('Método loginUser no implementado aún');
+        return { user, token };
     }
 
     /**
@@ -115,7 +117,17 @@ export class AuthService {
     async logoutUser(userId: string): Promise<boolean> {
         // TODO: Implementar lógica de logout
         // 1. Opcional: Invalidar token (blacklist)
-        // 2. Retornar true si se procesó correctamente
+        // 2. LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
+        // 3. Retornar true si se procesó correctamente
+
+        // LLAMADA DIRECTA Y OBLIGATORIA AL SERVICIO DE AUDITORÍA
+        await this.auditService.log({
+            userId: userId,
+            action: 'USER_LOGOUT_SUCCESS',
+            targetType: 'USER',
+            targetId: userId,
+            changes: {}
+        });
 
         throw new Error('Método logoutUser no implementado aún');
     }
