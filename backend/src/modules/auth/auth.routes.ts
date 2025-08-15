@@ -14,4 +14,11 @@ const authController = container.resolve(AuthController);
  */
 router.post('/register', authController.handleRegister.bind(authController));
 
+/**
+ * @route   POST /api/v1/auth/login
+ * @desc    Autentica un usuario existente
+ * @access  Public
+ */
+router.post('/login', authController.handleLogin.bind(authController));
+
 export default router;

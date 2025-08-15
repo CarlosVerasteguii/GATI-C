@@ -6,6 +6,11 @@ export type RegisterUserData = {
     password: string;
 };
 
+export type LoginUserData = {
+    email: string;
+    password: string;
+};
+
 export type AuthResult = {
     user: Omit<User, 'password_hash'>;
     token: string;
