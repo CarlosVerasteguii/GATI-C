@@ -73,7 +73,7 @@ export class AuthService {
     public async loginUser(loginData: LoginUserData): Promise<AuthResult> {
         const user = await this.prisma.user.findUnique({ where: { email: loginData.email } });
 
-        const fakeHash = '$2b$12$invalidsaltinvalidhashxxxxxxxxxxxxxxxxx';
+        const fakeHash = '$2b$12$Ea.2n.e.e.A9.E8.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.';
         const hashToCompare = user ? user.password_hash : fakeHash;
         const isPasswordValid = await bcrypt.compare(loginData.password, hashToCompare);
 
