@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService, RegisterUserData, LoginUserData } from './auth.service.js';
 import { ZodError } from 'zod';
 import { singleton, inject } from 'tsyringe';
@@ -15,7 +15,7 @@ export class AuthController {
      * Maneja el registro de nuevos usuarios
      * POST /api/v1/auth/register
      */
-    async handleRegister(req: Request, res: Response): Promise<void> {
+    async handleRegister(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // TODO: Implementar validación de entrada con Zod
             const userData: RegisterUserData = req.body;
@@ -32,25 +32,8 @@ export class AuthController {
                 }
             });
         } catch (error) {
-            if (error instanceof ZodError) {
-                res.status(400).json({
-                    success: false,
-                    error: {
-                        code: 'VALIDATION_ERROR',
-                        message: 'Datos de entrada inválidos',
-                        details: error.errors
-                    }
-                });
-            } else {
-                console.error('Error en registro:', error);
-                res.status(500).json({
-                    success: false,
-                    error: {
-                        code: 'INTERNAL_ERROR',
-                        message: 'Error interno del servidor'
-                    }
-                });
-            }
+            // Simplemente pasa el error al siguiente middleware (nuestro manejador de errores global)
+            next(error);
         }
     }
 
@@ -58,7 +41,7 @@ export class AuthController {
      * Maneja la autenticación de usuarios
      * POST /api/v1/auth/login
      */
-    async handleLogin(req: Request, res: Response): Promise<void> {
+    async handleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // TODO: Implementar validación de entrada con Zod
             const loginData: LoginUserData = req.body;
@@ -76,25 +59,8 @@ export class AuthController {
                 }
             });
         } catch (error) {
-            if (error instanceof ZodError) {
-                res.status(400).json({
-                    success: false,
-                    error: {
-                        code: 'VALIDATION_ERROR',
-                        message: 'Datos de entrada inválidos',
-                        details: error.errors
-                    }
-                });
-            } else {
-                console.error('Error en login:', error);
-                res.status(500).json({
-                    success: false,
-                    error: {
-                        code: 'INTERNAL_ERROR',
-                        message: 'Error interno del servidor'
-                    }
-                });
-            }
+            // Simplemente pasa el error al siguiente middleware (nuestro manejador de errores global)
+            next(error);
         }
     }
 
@@ -102,7 +68,7 @@ export class AuthController {
      * Maneja el cierre de sesión
      * POST /api/v1/auth/logout
      */
-    async handleLogout(req: Request, res: Response): Promise<void> {
+    async handleLogout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // TODO: Implementar lógica de logout
             // TODO: Limpiar cookie JWT
@@ -117,14 +83,8 @@ export class AuthController {
                 }
             });
         } catch (error) {
-            console.error('Error en logout:', error);
-            res.status(500).json({
-                success: false,
-                error: {
-                    code: 'INTERNAL_ERROR',
-                    message: 'Error interno del servidor'
-                }
-            });
+            // Simplemente pasa el error al siguiente middleware (nuestro manejador de errores global)
+            next(error);
         }
     }
 
@@ -132,7 +92,7 @@ export class AuthController {
      * Obtiene el perfil del usuario autenticado
      * GET /api/v1/auth/me
      */
-    async handleGetProfile(req: Request, res: Response): Promise<void> {
+    async handleGetProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // TODO: Implementar obtención de perfil
             // TODO: Extraer userId del JWT en req.user (middleware)
@@ -147,14 +107,8 @@ export class AuthController {
                 }
             });
         } catch (error) {
-            console.error('Error obteniendo perfil:', error);
-            res.status(500).json({
-                success: false,
-                error: {
-                    code: 'INTERNAL_ERROR',
-                    message: 'Error interno del servidor'
-                }
-            });
+            // Simplemente pasa el error al siguiente middleware (nuestro manejador de errores global)
+            next(error);
         }
     }
 }
