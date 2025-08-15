@@ -19,17 +19,21 @@ export class AuthService {
 
     public async registerUser(userData: RegisterUserData): Promise<AuthResult> {
         try {
-            const existingUser = await this.prisma.user.findUnique({
-                where: { email: userData.email },
-            });
-
-            if (existingUser) {
-                throw new ConflictError('El correo electrónico ya está en uso.');
-            }
-
             const hashedPassword = await bcrypt.hash(userData.password, 12);
 
+            // La transacción ahora envuelve TODA la lógica, incluida la verificación.
             const { newUser, token } = await this.prisma.$transaction(async (tx) => {
+                // 1. VERIFICAR USUARIO EXISTENTE DENTRO DE LA TRANSACCIÓN
+                // Esto previene condiciones de carrera. La base de datos bloquea la tabla apropiadamente.
+                const existingUser = await tx.user.findUnique({
+                    where: { email: userData.email },
+                });
+
+                if (existingUser) {
+                    throw new ConflictError('El correo electrónico ya está en uso.');
+                }
+
+                // 2. Crear el usuario
                 const createdUser = await tx.user.create({
                     data: {
                         name: userData.name,
@@ -38,6 +42,7 @@ export class AuthService {
                     },
                 });
 
+                // 3. Crear el log de auditoría
                 await this.auditService.logTransactional(tx, {
                     userId: createdUser.id,
                     action: 'USER_REGISTER_SUCCESS',
@@ -46,9 +51,18 @@ export class AuthService {
                     changes: { name: createdUser.name, email: createdUser.email, role: createdUser.role },
                 });
 
+                // 4. Generar el token JWT CON EXPIRACIÓN
                 const payload = { id: createdUser.id, role: createdUser.role };
-                const secret = process.env.JWT_SECRET as string;
-                const generatedToken = jwt.sign(payload, secret);
+                const secret = process.env.JWT_SECRET!;
+                const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+
+                // Usar una aproximación compatible con tipos estrictos
+                let generatedToken: string;
+                if (expiresIn === '24h') {
+                    generatedToken = jwt.sign(payload, secret, { expiresIn: '24h' });
+                } else {
+                    generatedToken = jwt.sign(payload, secret, { expiresIn: expiresIn as any });
+                }
 
                 return { newUser: createdUser, token: generatedToken };
             });
@@ -57,13 +71,20 @@ export class AuthService {
             return { user: userWithoutPassword, token };
 
         } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                // Por ejemplo, un error de restricción única que no sea el del email (aunque raro en este caso)
-                console.error('Prisma Error:', error.code, error.meta);
-                throw new AppError('Error al crear el usuario en la base de datos.', 500);
+            // Si el error ya es uno de nuestros errores de aplicación, lo relanzamos.
+            if (error instanceof AppError) {
+                throw error;
             }
-            // Re-lanza el error si ya es de un tipo que queremos manejar (ej. ConflictError) o para que el controlador lo atrape.
-            throw error;
+
+            // Si es un error de Prisma, lo envolvemos en un error de aplicación genérico.
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                console.error('Prisma Error en Registro:', { code: error.code, meta: error.meta });
+                throw new AppError('Error al procesar la solicitud en la base de datos.', 500);
+            }
+
+            // Para cualquier otro error inesperado, ocultamos los detalles.
+            console.error('Error Inesperado en Registro:', error);
+            throw new AppError('Ha ocurrido un error interno inesperado.', 500);
         }
     }
 }
