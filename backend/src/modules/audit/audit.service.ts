@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 /**
  * Servicio de Auditoría - Placeholder para la refactorización
  * 
@@ -13,6 +15,7 @@ export interface AuditLogData {
     changes: any;
 }
 
+@singleton()
 export class AuditService {
     /**
      * Registra un evento de auditoría en el sistema

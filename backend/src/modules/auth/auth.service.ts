@@ -1,7 +1,7 @@
 import { User, UserRole } from '@prisma/client';
 import prisma from '../../config/prisma.js';
-import { singleton } from 'tsyringe';
-import { AuditService } from '../audit/audit.service.js'; // Simulación de importación
+import { singleton, inject } from 'tsyringe';
+import { AuditService } from '../audit/audit.service.js';
 
 export interface RegisterUserData {
     email: string;
@@ -25,9 +25,8 @@ export class AuthService {
     private prisma;
     private jwtSecret: string;
     private jwtExpiresIn: string;
-    private auditService: AuditService; // Simulación de propiedad
 
-    constructor() {
+    constructor(@inject(AuditService) private readonly auditService: AuditService) {
         this.prisma = prisma;
         this.jwtSecret = process.env.JWT_SECRET || '';
 
@@ -37,7 +36,6 @@ export class AuthService {
         }
 
         this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
-        this.auditService = new AuditService(); // Simulación de instanciación
     }
 
     /**
