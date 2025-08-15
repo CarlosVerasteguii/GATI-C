@@ -17,9 +17,10 @@ export interface AuditLogData {
 
 @singleton()
 export class AuditService {
+
     /**
      * Registra un evento de auditoría en el sistema
-     * 
+     *
      * @param auditData Datos del evento de auditoría
      * @returns Promise<boolean> true si se registró exitosamente
      */

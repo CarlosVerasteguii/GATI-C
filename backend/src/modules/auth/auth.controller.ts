@@ -1,7 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService, RegisterUserData, LoginUserData } from './auth.service.js';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { singleton, inject } from 'tsyringe';
+
+// Esquema de validación para el registro de usuarios
+const registerSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    email: z.string().email('El email debe tener un formato válido'),
+    password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres')
+});
 
 @singleton()
 export class AuthController {
@@ -17,20 +24,11 @@ export class AuthController {
      */
     async handleRegister(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // TODO: Implementar validación de entrada con Zod
-            const userData: RegisterUserData = req.body;
+            // Validar datos de entrada con Zod
+            const validatedData = registerSchema.parse(req.body);
 
-            // TODO: Validar datos de entrada
-            // TODO: Llamar al servicio de autenticación
-            // TODO: Retornar respuesta exitosa con cookie JWT
-
-            res.status(501).json({
-                success: false,
-                error: {
-                    code: 'NOT_IMPLEMENTED',
-                    message: 'Endpoint de registro no implementado aún'
-                }
-            });
+            // Por ahora, solo retornamos los datos validados para confirmar que la validación funciona
+            res.status(200).json({ success: true, message: "Validation successful", data: validatedData });
         } catch (error) {
             // Simplemente pasa el error al siguiente middleware (nuestro manejador de errores global)
             next(error);

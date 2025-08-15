@@ -7,12 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMINISTRADOR
-  EDITOR
-  LECTOR
-}
-
 model User {
   id            String        @id @default(cuid())
   name          String
@@ -27,22 +21,26 @@ model User {
 }
 
 model Product {
-  id            String      @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String
-  serial_number String?     @unique
+  serial_number String?    @unique
   description   String?
   cost          Float?
   purchase_date DateTime?
   condition     String?
   brandId       String?
-  brand         Brand?      @relation(fields: [brandId], references: [id])
   categoryId    String?
-  category      Category?   @relation(fields: [categoryId], references: [id])
   locationId    String?
-  location      Location?   @relation(fields: [locationId], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   documents     Document[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  brand         Brand?     @relation(fields: [brandId], references: [id])
+  category      Category?  @relation(fields: [categoryId], references: [id])
+  location      Location?  @relation(fields: [locationId], references: [id])
+
+  @@index([brandId], map: "Product_brandId_fkey")
+  @@index([categoryId], map: "Product_categoryId_fkey")
+  @@index([locationId], map: "Product_locationId_fkey")
 }
 
 model Brand {
@@ -64,44 +62,58 @@ model Location {
 }
 
 model Document {
-  id                   String   @id @default(cuid())
+  id                   String    @id @default(cuid())
   original_filename    String
   stored_uuid_filename String
   productId            String
-  product              Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   deleted_at           DateTime?
-  createdAt            DateTime @default(now())
+  createdAt            DateTime  @default(now())
+  product              Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "Document_productId_fkey")
 }
 
 model AuditLog {
   id           String   @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   action       String
   target_type  String
   target_id    String
   changes_json Json
   createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
 }
 
 model PendingTask {
-  id          String         @id @default(cuid())
-  creatorId   String
-  creator     User           @relation(fields: [creatorId], references: [id], onDelete: Restrict)
-  type        String
-  status      String
+  id           String         @id @default(cuid())
+  creatorId    String
+  type         String
+  status       String
   details_json Json
-  taskAudit   TaskAuditLog[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  creator      User           @relation(fields: [creatorId], references: [id])
+  taskAudit    TaskAuditLog[]
+
+  @@index([creatorId], map: "PendingTask_creatorId_fkey")
 }
 
 model TaskAuditLog {
   id        String      @id @default(cuid())
   taskId    String
-  task      PendingTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId    String
   event     String
   details   String?
   createdAt DateTime    @default(now())
+  task      PendingTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId], map: "TaskAuditLog_taskId_fkey")
+}
+
+enum UserRole {
+  ADMINISTRADOR
+  EDITOR
+  LECTOR
 }
