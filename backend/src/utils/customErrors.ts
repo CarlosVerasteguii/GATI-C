@@ -1,81 +1,77 @@
-/**
- * Clases de error personalizadas para el sistema GATI-C
- * 
- * Estas clases extienden la funcionalidad de Error nativa de JavaScript
- * para proporcionar manejo de errores más robusto y tipado.
- */
+// backend/src/utils/customErrors.ts
 
 /**
- * Clase base para todos los errores de la aplicación
+ * Clase base para todos los errores operativos controlados en la aplicación.
+ * Esta implementación asegura que `instanceof` funcione correctamente en diferentes entornos
+ * y que el nombre de la clase de error se preserve.
  */
 export class AppError extends Error {
-    public statusCode: number;
-    public isOperational: boolean;
+    public readonly statusCode: number;
+    public readonly isOperational: boolean;
 
     constructor(message: string, statusCode: number, isOperational = true) {
         super(message);
         this.statusCode = statusCode;
         this.isOperational = isOperational;
 
-        // Asegurar que la cadena de prototipos sea correcta
-        Object.setPrototypeOf(this, AppError.prototype);
+        // Asigna el nombre de la clase del error específico (AuthError, etc.)
+        // Esto es crucial para la identificación de errores.
+        this.name = this.constructor.name;
 
-        // Capturar el stack trace
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, this.constructor);
-        }
+        // Mantiene un stack trace adecuado para la depuración
+        Error.captureStackTrace(this, this.constructor);
     }
 }
 
 /**
- * Error específico para problemas de autenticación
+ * Error para problemas relacionados con la autenticación (ej. token faltante, inválido o expirado).
+ * Código de estado: 401 Unauthorized
  */
 export class AuthError extends AppError {
     constructor(message = 'Error de autenticación') {
         super(message, 401);
-        Object.setPrototypeOf(this, AuthError.prototype);
     }
 }
 
 /**
- * Error específico para problemas de autorización
+ * Error para problemas relacionados con la autorización (ej. rol insuficiente).
+ * Código de estado: 403 Forbidden
  */
 export class AuthorizationError extends AppError {
-    constructor(message = 'Acceso denegado') {
+    constructor(message = 'No tienes permiso para realizar esta acción') {
         super(message, 403);
-        Object.setPrototypeOf(this, AuthorizationError.prototype);
     }
 }
 
 /**
- * Error específico para problemas de validación
+ * Error para datos de entrada inválidos que no pasan la validación.
+ * Código de estado: 400 Bad Request
  */
 export class ValidationError extends AppError {
-    public details?: any;
+    public readonly details?: any;
 
-    constructor(message = 'Error de validación', details?: any) {
+    constructor(message = 'Datos de entrada inválidos', details?: any) {
         super(message, 400);
         this.details = details;
-        Object.setPrototypeOf(this, ValidationError.prototype);
     }
 }
 
 /**
- * Error específico para recursos no encontrados
+ * Error para cuando no se encuentra un recurso solicitado.
+ * Código de estado: 404 Not Found
  */
 export class NotFoundError extends AppError {
     constructor(message = 'Recurso no encontrado') {
         super(message, 404);
-        Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }
 
 /**
- * Error específico para conflictos de datos
+ * Error para conflictos de datos (ej. email duplicado, constraint violation).
+ * Código de estado: 409 Conflict
  */
 export class ConflictError extends AppError {
     constructor(message = 'Conflicto de datos') {
         super(message, 409);
-        Object.setPrototypeOf(this, ConflictError.prototype);
     }
 }
