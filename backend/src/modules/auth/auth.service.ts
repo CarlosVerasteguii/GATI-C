@@ -1,6 +1,6 @@
 import { singleton, inject } from 'tsyringe';
 import bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'; // Usar importación de default
 import { Prisma, User } from '@prisma/client';
 import prisma from '../../config/prisma.js';
 import { AuditService } from '../audit/audit.service.js';
@@ -48,8 +48,10 @@ export class AuthService {
 
                 const payload = { id: createdUser.id, role: createdUser.role };
                 const secret = process.env.JWT_SECRET!;
-                const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-                const generatedToken = jwt.sign(payload, secret, { expiresIn });
+                const signOptions: jwt.SignOptions = {
+                    expiresIn: process.env.JWT_EXPIRES_IN || '24h'
+                };
+                const generatedToken = jwt.sign(payload, secret, signOptions);
 
                 return { newUser: createdUser, token: generatedToken };
             });
@@ -98,8 +100,10 @@ export class AuthService {
 
         const payload = { id: user.id, role: user.role };
         const secret = process.env.JWT_SECRET!;
-        const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-        const token = jwt.sign(payload, secret, { expiresIn });
+        const signOptions: jwt.SignOptions = {
+            expiresIn: process.env.JWT_EXPIRES_IN || '24h'
+        };
+        const token = jwt.sign(payload, secret, signOptions);
 
         const { password_hash, ...userWithoutPassword } = user;
 
