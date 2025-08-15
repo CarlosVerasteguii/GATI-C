@@ -5,7 +5,7 @@ import { Prisma, User } from '@prisma/client';
 import prisma from '../../config/prisma.js';
 import { AuditService } from '../audit/audit.service.js';
 import { AuthResult, LoginUserData, RegisterUserData } from '../../types/auth.types.js';
-import { AppError, AuthError, ConflictError } from '../../utils/customErrors.js';
+import { AppError, AuthError, ConflictError, NotFoundError } from '../../utils/customErrors.js';
 
 @singleton()
 export class AuthService {
@@ -92,5 +92,30 @@ export class AuthService {
         const token = await this.generateToken(user);
         const { password_hash, ...userWithoutPassword } = user;
         return { user: userWithoutPassword, token };
+    }
+
+    public async logoutUser(userId: string): Promise<{ success: boolean }> {
+        await this.auditService.log({
+            userId,
+            action: 'USER_LOGOUT_SUCCESS',
+            targetType: 'USER',
+            targetId: userId,
+            changes: { logoutAt: new Date() }
+        });
+
+        return { success: true };
+    }
+
+    public async getUserProfile(userId: string): Promise<Omit<User, 'password_hash'>> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            throw new NotFoundError('Usuario no encontrado.');
+        }
+
+        const { password_hash, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
 }

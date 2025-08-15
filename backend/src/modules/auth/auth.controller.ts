@@ -62,4 +62,39 @@ export class AuthController {
             next(error);
         }
     }
+
+    public async handleLogout(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+        try {
+            const userId = (req.user as any)?.id;
+            await this.authService.logoutUser(userId);
+
+            // Limpiar la cookie JWT del cliente
+            res.clearCookie(AUTH_CONSTANTS.AUTH_COOKIE_NAME, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: 'Sesión cerrada exitosamente.'
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async handleGetProfile(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+        try {
+            const userId = (req.user as any)?.id;
+            const userProfile = await this.authService.getUserProfile(userId);
+
+            return res.status(200).json({
+                success: true,
+                data: userProfile
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

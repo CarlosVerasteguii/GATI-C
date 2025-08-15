@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller.js';
 import { container } from 'tsyringe';
+import { protect } from '../../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -20,5 +21,19 @@ router.post('/register', authController.handleRegister.bind(authController));
  * @access  Public
  */
 router.post('/login', authController.handleLogin.bind(authController));
+
+/**
+ * @route   POST /api/v1/auth/logout
+ * @desc    Cierra la sesión del usuario autenticado
+ * @access  Private (Requiere autenticación)
+ */
+router.post('/logout', protect, authController.handleLogout.bind(authController));
+
+/**
+ * @route   GET /api/v1/auth/me
+ * @desc    Obtiene el perfil del usuario autenticado
+ * @access  Private (Requiere autenticación)
+ */
+router.get('/me', protect, authController.handleGetProfile.bind(authController));
 
 export default router;
