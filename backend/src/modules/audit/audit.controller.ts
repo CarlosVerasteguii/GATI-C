@@ -12,51 +12,16 @@ export class AuditController {
     constructor(private readonly auditService: AuditService) { }
 
     /**
-     * Obtiene el historial de auditoría para un usuario específico
+     * Placeholder para futuras implementaciones de auditoría
      */
-    async getUserAuditHistory(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async getAuditPlaceholder(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { userId } = req.params;
-
-            if (!userId) {
-                res.status(400).json({
-                    success: false,
-                    error: { message: 'userId es requerido' }
-                });
-                return;
-            }
-
-            const auditHistory = await this.auditService.getUserAuditHistory(userId);
-
-            res.json({
-                success: true,
-                data: auditHistory
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    /**
-     * Obtiene el historial de auditoría para un recurso específico
-     */
-    async getResourceAuditHistory(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const { targetType, targetId } = req.params;
-
-            if (!targetType || !targetId) {
-                res.status(400).json({
-                    success: false,
-                    error: { message: 'targetType y targetId son requeridos' }
-                });
-                return;
-            }
-
-            const auditHistory = await this.auditService.getResourceAuditHistory(targetType, targetId);
-
-            res.json({
-                success: true,
-                data: auditHistory
+            res.status(501).json({
+                success: false,
+                error: {
+                    code: 'NOT_IMPLEMENTED',
+                    message: 'Funcionalidad de auditoría no implementada aún'
+                }
             });
         } catch (error) {
             next(error);

@@ -1,55 +1,38 @@
+import { Prisma, PrismaClient } from '@prisma/client';
 import { singleton } from 'tsyringe';
-
-/**
- * Servicio de Auditoría - Placeholder para la refactorización
- * 
- * Este archivo es temporal y será implementado completamente
- * en la siguiente fase del desarrollo.
- */
+import prisma from '../../config/prisma.js';
 
 export interface AuditLogData {
     userId: string;
     action: string;
     targetType: string;
     targetId: string;
-    changes: any;
+    changes: object;
 }
+
+// Este tipo complejo es la forma correcta de tipar un cliente de transacción de Prisma
+type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 @singleton()
 export class AuditService {
-
-    /**
-     * Registra un evento de auditoría en el sistema
-     *
-     * @param auditData Datos del evento de auditoría
-     * @returns Promise<boolean> true si se registró exitosamente
-     */
-    async log(auditData: AuditLogData): Promise<boolean> {
-        // TODO: Implementar lógica completa de auditoría
-        // 1. Validar datos de entrada
-        // 2. Crear registro en la tabla AuditLog
-        // 3. Aplicar políticas de retención
-        // 4. Retornar confirmación
-
-        console.log('[AuditService] Logging audit event:', auditData);
-
-        // Simulación de éxito para la refactorización
-        return true;
+    public async log(data: AuditLogData): Promise<void> {
+        // Placeholder para futuras llamadas no transaccionales
+        return this.logTransactional(prisma, data);
     }
 
-    /**
-     * Obtiene el historial de auditoría para un usuario específico
-     */
-    async getUserAuditHistory(userId: string): Promise<AuditLogData[]> {
-        // TODO: Implementar consulta de historial
-        throw new Error('Método getUserAuditHistory no implementado aún');
-    }
-
-    /**
-     * Obtiene el historial de auditoría para un recurso específico
-     */
-    async getResourceAuditHistory(targetType: string, targetId: string): Promise<AuditLogData[]> {
-        // TODO: Implementar consulta de historial por recurso
-        throw new Error('Método getResourceAuditHistory no implementado aún');
+    public async logTransactional(
+        tx: PrismaTransactionClient,
+        data: AuditLogData
+    ): Promise<void> {
+        await tx.auditLog.create({
+            data: {
+                userId: data.userId,
+                action: data.action,
+                target_type: data.targetType,
+                target_id: data.targetId,
+                changes_json: data.changes as unknown as Prisma.InputJsonValue,
+            },
+        });
+        console.log(`Audit log created for action: ${data.action}`);
     }
 }
