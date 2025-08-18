@@ -3,6 +3,7 @@ import { singleton, inject } from 'tsyringe';
 import { z, ZodError } from 'zod';
 import { AuthService } from './auth.service.js';
 import { AUTH_CONSTANTS } from '../../config/constants.js';
+import { ValidationError } from '../../utils/customErrors.js';
 
 const registerSchema = z.object({
     name: z.string().min(1, { message: "El nombre es requerido." }),
@@ -37,6 +38,11 @@ export class AuthController {
                 data: result.user,
             });
         } catch (error) {
+            if (error instanceof ZodError) {
+                // Si es un error de Zod, lo convertimos en nuestro ValidationError personalizado.
+                return next(new ValidationError('Los datos de registro son inválidos.', error.errors));
+            }
+            // Pasamos cualquier otro error a nuestro manejador global.
             next(error);
         }
     }
@@ -59,6 +65,11 @@ export class AuthController {
                 data: result.user,
             });
         } catch (error) {
+            if (error instanceof ZodError) {
+                // Si es un error de Zod, lo convertimos en nuestro ValidationError personalizado.
+                return next(new ValidationError('Los datos de inicio de sesión son inválidos.', error.errors));
+            }
+            // Pasamos cualquier otro error a nuestro manejador global.
             next(error);
         }
     }

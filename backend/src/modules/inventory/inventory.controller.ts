@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { singleton, inject } from 'tsyringe';
+import { ZodError } from 'zod';
 import { InventoryService } from './inventory.service.js';
 import { createProductSchema } from './inventory.types.js';
+import { ValidationError } from '../../utils/customErrors.js';
 
 @singleton()
 export class InventoryController {
@@ -33,6 +35,11 @@ export class InventoryController {
             const created = await this.inventoryService.createProduct(parsed, userId);
             res.status(201).json({ success: true, data: created });
         } catch (error) {
+            if (error instanceof ZodError) {
+                // Si es un error de Zod, lo convertimos en nuestro ValidationError personalizado.
+                return next(new ValidationError('Los datos proporcionados son inválidos.', error.errors));
+            }
+            // Pasamos cualquier otro error a nuestro manejador global.
             next(error);
         }
     }
