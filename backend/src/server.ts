@@ -52,6 +52,10 @@ try {
     const authRoutes = (await import('./modules/auth/auth.routes.js')).default;
     app.use('/api/v1/auth', authRoutes);
 
+    // Inventory routes
+    const inventoryRoutes = (await import('./modules/inventory/inventory.routes.js')).default;
+    app.use('/api/v1/inventory', inventoryRoutes);
+
     // Health check endpoint
     app.get('/api/v1/health', (req, res) => {
         res.status(200).json({
