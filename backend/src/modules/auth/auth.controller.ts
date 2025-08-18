@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { singleton, inject } from 'tsyringe';
+import { singleton, injectable, inject } from 'tsyringe';
 import { z, ZodError } from 'zod';
 import { AuthService } from './auth.service.js';
 import { AUTH_CONSTANTS } from '../../config/constants.js';
@@ -16,7 +16,7 @@ const loginSchema = z.object({
     password: z.string().min(1, { message: "La contraseña es requerida." }),
 });
 
-@singleton()
+@injectable()
 export class AuthController {
     constructor(@inject(AuthService) private readonly authService: AuthService) { }
 

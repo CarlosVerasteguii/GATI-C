@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { singleton, inject } from 'tsyringe';
+import { singleton, injectable, inject } from 'tsyringe';
 import { ZodError } from 'zod';
 import { InventoryService } from './inventory.service.js';
 import { createProductSchema } from './inventory.types.js';
 import { ValidationError } from '../../utils/customErrors.js';
 
-@singleton()
+@injectable()
 export class InventoryController {
     private readonly inventoryService: InventoryService;
 
@@ -44,5 +44,3 @@ export class InventoryController {
         }
     }
 }
-
-
