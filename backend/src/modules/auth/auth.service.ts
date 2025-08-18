@@ -39,21 +39,27 @@ export class AuthService {
         try {
             const hashedPassword = await bcrypt.hash(userData.password, 12);
 
-            const { newUser } = await this.prisma.$transaction(async (tx) => {
-                const existingUser = await tx.user.findUnique({ where: { email: userData.email } });
-                if (existingUser) { throw new ConflictError('El correo electrónico ya está en uso.'); }
+            // Verificar si el usuario ya existe
+            const existingUser = await this.prisma.user.findUnique({ where: { email: userData.email } });
+            if (existingUser) {
+                throw new ConflictError('El correo electrónico ya está en uso.');
+            }
 
-                const createdUser = await tx.user.create({
-                    data: { name: userData.name, email: userData.email, password_hash: hashedPassword },
-                });
-
-                await this.auditService.logTransactional(tx, {
-                    userId: createdUser.id, action: 'USER_REGISTER_SUCCESS', targetType: 'USER',
-                    targetId: createdUser.id, changes: { name: createdUser.name, email: createdUser.email, role: createdUser.role },
-                });
-
-                return { newUser: createdUser };
+            // Operación principal: crear el usuario
+            const newUser = await this.prisma.user.create({
+                data: { name: userData.name, email: userData.email, password_hash: hashedPassword },
             });
+
+            // Operación de auditoría como "mejor esfuerzo"
+            try {
+                await this.auditService.log({
+                    userId: newUser.id, action: 'USER_REGISTER_SUCCESS', targetType: 'USER',
+                    targetId: newUser.id, changes: { name: newUser.name, email: newUser.email, role: newUser.role },
+                });
+            } catch (auditError) {
+                console.error('Error al registrar auditoría de registro de usuario:', auditError);
+                // El error en la auditoría no afecta la operación principal
+            }
 
             const token = await this.generateToken(newUser);
             const { password_hash, ...userWithoutPassword } = newUser;
@@ -81,16 +87,31 @@ export class AuthService {
             throw new AuthError('Credenciales inválidas.');
         }
 
-        await this.prisma.$transaction(async (tx) => {
-            await tx.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-            await this.auditService.logTransactional(tx, {
-                userId: user.id, action: 'USER_LOGIN_SUCCESS', targetType: 'USER',
-                targetId: user.id, changes: { lastLoginAt: new Date() }
-            });
-        });
-
+        // Generar token primero para asegurar que la operación principal funciona
         const token = await this.generateToken(user);
         const { password_hash, ...userWithoutPassword } = user;
+
+        // Operaciones secundarias (actualización de lastLoginAt y auditoría) como "mejor esfuerzo"
+        try {
+            // Actualizar la hora del último login
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { lastLoginAt: new Date() }
+            });
+
+            // Registrar la auditoría
+            await this.auditService.log({
+                userId: user.id,
+                action: 'USER_LOGIN_SUCCESS',
+                targetType: 'USER',
+                targetId: user.id,
+                changes: { lastLoginAt: new Date() }
+            });
+        } catch (updateError) {
+            console.error('Error al actualizar lastLoginAt o registrar auditoría de login:', updateError);
+            // El error en estas operaciones no afecta la operación principal (login)
+        }
+
         return { user: userWithoutPassword, token };
     }
 
