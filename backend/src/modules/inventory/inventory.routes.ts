@@ -11,6 +11,9 @@ const inventoryController = container.resolve(InventoryController);
 // GET /api/v1/inventory/ - Lista de productos (ruta protegida)
 router.get('/', protect, inventoryController.handleGetAllProducts.bind(inventoryController));
 
+// POST /api/v1/inventory/ - Crear producto (ruta protegida)
+router.post('/', protect, inventoryController.handleCreateProduct.bind(inventoryController));
+
 export default router;
 
 
