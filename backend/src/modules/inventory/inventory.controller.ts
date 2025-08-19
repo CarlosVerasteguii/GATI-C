@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { singleton, injectable, inject } from 'tsyringe';
 import { ZodError } from 'zod';
 import { InventoryService } from './inventory.service.js';
-import { createProductSchema } from './inventory.types.js';
+import { createProductSchema, updateProductSchema } from './inventory.types.js';
 import { ValidationError } from '../../utils/customErrors.js';
 
 @injectable()
@@ -40,6 +40,26 @@ export class InventoryController {
                 return next(new ValidationError('Los datos proporcionados son inválidos.', error.errors));
             }
             // Pasamos cualquier otro error a nuestro manejador global.
+            next(error);
+        }
+    }
+
+    public async handleUpdateProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const productId = req.params.id as string;
+            const parsed = updateProductSchema.parse(req.body);
+
+            const userId = (req.user?.id as string) || '';
+            if (!userId) {
+                return next(new Error('Usuario no autenticado.'));
+            }
+
+            const updated = await this.inventoryService.updateProduct(productId, parsed, userId);
+            res.status(200).json({ success: true, data: updated });
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return next(new ValidationError('Los datos proporcionados son inválidos.', error.errors));
+            }
             next(error);
         }
     }

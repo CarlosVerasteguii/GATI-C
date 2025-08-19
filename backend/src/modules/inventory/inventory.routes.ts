@@ -14,6 +14,9 @@ router.get('/', protect, inventoryController.handleGetAllProducts.bind(inventory
 // POST /api/v1/inventory/ - Crear producto (ruta protegida)
 router.post('/', protect, inventoryController.handleCreateProduct.bind(inventoryController));
 
+// PUT /api/v1/inventory/:id - Actualizar producto (ruta protegida)
+router.put('/:id', protect, inventoryController.handleUpdateProduct.bind(inventoryController));
+
 export default router;
 
 

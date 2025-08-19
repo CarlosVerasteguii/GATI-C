@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { singleton, inject } from 'tsyringe';
 import prisma from '../../config/prisma.js';
 import { AuditService } from '../audit/audit.service.js';
-import { CreateProductData } from './inventory.types.js';
+import { CreateProductData, UpdateProductData } from './inventory.types.js';
 import { AppError } from '../../utils/customErrors.js';
 
 @singleton()
@@ -71,6 +71,63 @@ export class InventoryService {
                 console.error('Error Inesperado en Creación de Producto:', error);
             }
             throw new AppError('No se pudo crear el producto en la base de datos.', 500);
+        }
+    }
+
+    public async updateProduct(
+        productId: string,
+        productData: UpdateProductData,
+        userId: string
+    ): Promise<Prisma.ProductGetPayload<{ include: { brand: true; category: true; location: true } }>> {
+        try {
+            // Validar existencia (lanza si no existe)
+            const existing = await this.prisma.product.findUniqueOrThrow({
+                where: { id: productId },
+                select: { id: true },
+            });
+
+            // Construir objeto de actualización solo con campos presentes
+            const data: Prisma.ProductUncheckedUpdateInput = {
+                ...(productData.name !== undefined ? { name: productData.name } : {}),
+                ...(productData.serial_number !== undefined ? { serial_number: productData.serial_number ?? null } : {}),
+                ...(productData.description !== undefined ? { description: productData.description ?? null } : {}),
+                ...(productData.cost !== undefined ? { cost: productData.cost ?? null } : {}),
+                ...(productData.purchase_date !== undefined
+                    ? { purchase_date: productData.purchase_date ? new Date(productData.purchase_date) : null }
+                    : {}),
+                ...(productData.condition !== undefined ? { condition: productData.condition ?? null } : {}),
+                ...(productData.brandId !== undefined ? { brandId: productData.brandId ?? null } : {}),
+                ...(productData.categoryId !== undefined ? { categoryId: productData.categoryId ?? null } : {}),
+                ...(productData.locationId !== undefined ? { locationId: productData.locationId ?? null } : {}),
+            };
+
+            const updated = await this.prisma.product.update({
+                where: { id: existing.id },
+                data,
+                include: { brand: true, category: true, location: true },
+            });
+
+            // Auditoría de mejor esfuerzo (no bloqueante)
+            this.auditService
+                .log({
+                    userId,
+                    action: 'PRODUCT_UPDATED',
+                    targetType: 'PRODUCT',
+                    targetId: updated.id,
+                    changes: data,
+                })
+                .catch((err) => {
+                    console.error('Error al registrar auditoría de actualización de producto:', err);
+                });
+
+            return updated;
+        } catch (error: any) {
+            if (error?.code) {
+                console.error('Prisma Error en Actualización de Producto:', { code: error.code, meta: error.meta });
+            } else {
+                console.error('Error Inesperado en Actualización de Producto:', error);
+            }
+            throw new AppError('No se pudo actualizar el producto en la base de datos.', 500);
         }
     }
 }

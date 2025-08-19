@@ -1,0 +1,54 @@
+---
+description: The master architectural constitution for the GATI-C project. These are non-negotiable principles for all backend and frontend development.
+globs:
+  - 'backend/src/**/*.ts'
+  - 'frontend/src/**/*.ts'
+  - 'frontend/src/**/*.tsx'
+alwaysApply: true
+---
+
+# GATI-C Project Constitution & Architectural Rules
+
+## Core Principles (The Manifesto)
+
+1.  **UX First:** UI speed and responsiveness are the highest priority.
+2.  **Pragmatic Simplicity:** Prefer the simplest, most maintainable solution. Avoid over-engineering.
+3.  **Best-Effort Traceability:** Auditing is important but non-blocking. The primary user operation must not fail due to an audit log failure.
+4.  **Focus on the Core:** Prioritize the "Pending Tasks" and Inventory management features.
+5.  **Trust the Team:** Eliminate complex internal approval workflows.
+
+---
+
+## Backend Architecture Rules (`backend/`)
+
+-   **ORM:** Interact with the database **exclusively** via Prisma Client.
+-   **Dependency Injection:** Use IoC with `tsyringe`. **Never** instantiate services or controllers with `new`.
+-   **Dependency Scopes:**
+    -   Controllers **MUST** be `@injectable` (transient scope).
+    -   Stateless services **SHOULD** be `@singleton`.
+-   **Error Handling:**
+    -   Controllers **MUST** use `next(error)` to delegate all errors to the global handler.
+    -   Controllers **MUST** catch `ZodError` and wrap it in our custom `ValidationError`.
+-   **Traceability:** Auditing **MUST** be done via direct service calls (e.g., `auditService.log()`).
+-   **Security (JWT):** The standard library is **`jose`**. Tokens **MUST** have an expiration.
+-   **Security (General):**
+    -   Hash passwords with **`bcrypt`**.
+    -   **NEVER** filter sensitive data like `password_hash` in API responses.
+    -   **MUST** mitigate timing attacks in login logic.
+
+---
+
+## Frontend Architecture Rules (`frontend/`)
+
+-   **State Management:** Global state **MUST** be managed with **dedicated Zustand stores per domain** (e.g., `useAuthStore`). The "God Context" pattern is forbidden.
+-   **Data Fetching:** Abstract API calls into a dedicated layer (e.g., services in `lib/api/`).
+-   **Component Design:** Use Functional Components with Hooks. Strictly separate logic from presentation. Use TypeScript for props.
+
+---
+
+## General Conventions
+
+-   **Language:** TypeScript in `strict` mode.
+-   **Formatting:** Prettier (using project's `.prettierrc`).
+-   **Naming:** PascalCase for Components/Types; camelCase for functions/variables.
+-   **Commits:** Use the "Conventional Commits" specification. All commit messages **MUST** be in English.
