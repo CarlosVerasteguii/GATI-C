@@ -114,7 +114,7 @@ export class InventoryService {
                     action: 'PRODUCT_UPDATED',
                     targetType: 'PRODUCT',
                     targetId: updated.id,
-                    changes: { before: existing, after: productData },
+                    changes: { before: existing, after: updated },
                 })
                 .catch((err) => {
                     console.error('Error al registrar auditoría de actualización de producto:', err);
