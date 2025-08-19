@@ -3,7 +3,7 @@ import { singleton, injectable, inject } from 'tsyringe';
 import { ZodError } from 'zod';
 import { InventoryService } from './inventory.service.js';
 import { createProductSchema, updateProductSchema } from './inventory.types.js';
-import { ValidationError } from '../../utils/customErrors.js';
+import { ValidationError, AuthError } from '../../utils/customErrors.js';
 
 @injectable()
 export class InventoryController {
@@ -29,7 +29,7 @@ export class InventoryController {
             const userId = (req.user?.id as string) || '';
             if (!userId) {
                 // Debe estar protegido por middleware, pero verificamos por seguridad
-                return next(new Error('Usuario no autenticado.'));
+                return next(new AuthError('Usuario no autenticado.'));
             }
 
             const created = await this.inventoryService.createProduct(parsed, userId);
@@ -51,7 +51,7 @@ export class InventoryController {
 
             const userId = (req.user?.id as string) || '';
             if (!userId) {
-                return next(new Error('Usuario no autenticado.'));
+                return next(new AuthError('Usuario no autenticado.'));
             }
 
             const updated = await this.inventoryService.updateProduct(productId, parsed, userId);

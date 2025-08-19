@@ -3,7 +3,7 @@ import { singleton, inject } from 'tsyringe';
 import prisma from '../../config/prisma.js';
 import { AuditService } from '../audit/audit.service.js';
 import { CreateProductData, UpdateProductData } from './inventory.types.js';
-import { AppError } from '../../utils/customErrors.js';
+import { AppError, NotFoundError } from '../../utils/customErrors.js';
 
 @singleton()
 export class InventoryService {
@@ -80,10 +80,10 @@ export class InventoryService {
         userId: string
     ): Promise<Prisma.ProductGetPayload<{ include: { brand: true; category: true; location: true } }>> {
         try {
-            // Validar existencia (lanza si no existe)
+            // Validar existencia (obtener estado completo del producto antes de actualizar)
             const existing = await this.prisma.product.findUniqueOrThrow({
                 where: { id: productId },
-                select: { id: true },
+                include: { brand: true, category: true, location: true },
             });
 
             // Construir objeto de actualización solo con campos presentes
@@ -114,7 +114,7 @@ export class InventoryService {
                     action: 'PRODUCT_UPDATED',
                     targetType: 'PRODUCT',
                     targetId: updated.id,
-                    changes: data,
+                    changes: { before: existing, after: productData },
                 })
                 .catch((err) => {
                     console.error('Error al registrar auditoría de actualización de producto:', err);
@@ -122,12 +122,15 @@ export class InventoryService {
 
             return updated;
         } catch (error: any) {
-            if (error?.code) {
-                console.error('Prisma Error en Actualización de Producto:', { code: error.code, meta: error.meta });
-            } else {
-                console.error('Error Inesperado en Actualización de Producto:', error);
+            // Mapear errores de Prisma a nuestro error 404 de dominio
+            if ((error as any)?.name === 'NotFoundError') {
+                throw new NotFoundError('El producto que intenta actualizar no existe.');
             }
-            throw new AppError('No se pudo actualizar el producto en la base de datos.', 500);
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+                throw new NotFoundError('El producto que intenta actualizar no existe.');
+            }
+            // Dejar que otros errores se propaguen al manejador global
+            throw error;
         }
     }
 }
