@@ -24,12 +24,20 @@ router.post(
 // GET /api/v1/inventory/:id - Obtener producto por ID (ruta protegida)
 router.get('/:id', protect, inventoryController.handleGetProductById.bind(inventoryController));
 
-// PUT /api/v1/inventory/:id - Actualizar producto (ruta protegida)
-router.put('/:id', protect, inventoryController.handleUpdateProduct.bind(inventoryController));
+// PUT /api/v1/inventory/:id - Actualizar producto (ruta protegida + RBAC)
+router.put(
+    '/:id',
+    protect,
+    authorize([UserRole.ADMINISTRADOR, UserRole.EDITOR]),
+    inventoryController.handleUpdateProduct.bind(inventoryController)
+);
 
-// DELETE /api/v1/inventory/:id - Eliminar producto (ruta protegida)
-router.delete('/:id', protect, inventoryController.handleDeleteProduct.bind(inventoryController));
+// DELETE /api/v1/inventory/:id - Eliminar producto (ruta protegida + RBAC)
+router.delete(
+    '/:id',
+    protect,
+    authorize([UserRole.ADMINISTRADOR, UserRole.EDITOR]),
+    inventoryController.handleDeleteProduct.bind(inventoryController)
+);
 
 export default router;
-
-
