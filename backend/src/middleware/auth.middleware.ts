@@ -1,16 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { jwtVerify, JWTPayload } from 'jose';
+import { jwtVerify } from 'jose';
 import { AUTH_CONSTANTS } from '../config/constants.js';
 import { AuthError } from '../utils/customErrors.js';
-
-// Extendemos la interfaz Request una sola vez, aquí, ya que es el único lugar donde se usa.
-declare global {
-    namespace Express {
-        interface Request {
-            user?: JWTPayload;
-        }
-    }
-}
+import prisma from '../config/prisma.js';
 
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -25,7 +17,21 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
             algorithms: ['HS256']
         });
 
-        req.user = payload;
+        // Extraer el id de usuario del token (preferimos `sub` establecido al firmar el JWT)
+        const userId = (payload.sub as string) ?? (payload as any)?.id;
+        if (!userId) {
+            throw new AuthError('Token de autenticación inválido.');
+        }
+
+        // Consultar el usuario más reciente desde la base de datos
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.isActive) {
+            throw new AuthError('Token de autenticación inválido.');
+        }
+
+        const { password_hash, ...safeUser } = user;
+        // Adjuntar el objeto de usuario completo (sin hash) a la request
+        req.user = safeUser as any;
         next();
     } catch (error: any) {
         // El bloque catch ahora maneja todos los errores, incluido el AuthError de "token no proporcionado".
