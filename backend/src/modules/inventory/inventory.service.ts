@@ -154,6 +154,40 @@ export class InventoryService {
             throw error;
         }
     }
+
+    public async deleteProduct(productId: string, userId: string): Promise<void> {
+        try {
+            // Validar existencia antes de eliminar (capturar estado completo para auditoría)
+            const existing = await this.prisma.product.findUniqueOrThrow({
+                where: { id: productId },
+                include: { brand: true, category: true, location: true },
+            });
+
+            await this.prisma.product.delete({ where: { id: productId } });
+
+            // Auditoría de mejor esfuerzo (no bloqueante)
+            this.auditService
+                .log({
+                    userId,
+                    action: 'PRODUCT_DELETED',
+                    targetType: 'PRODUCT',
+                    targetId: existing.id,
+                    changes: existing,
+                })
+                .catch((err) => {
+                    console.error('Error al registrar auditoría de eliminación de producto:', err);
+                });
+        } catch (error: any) {
+            // Mapear errores de Prisma a nuestro error 404 de dominio
+            if ((error as any)?.name === 'NotFoundError') {
+                throw new NotFoundError('El producto que intenta eliminar no existe.');
+            }
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+                throw new NotFoundError('El producto que intenta eliminar no existe.');
+            }
+            throw error;
+        }
+    }
 }
 
 

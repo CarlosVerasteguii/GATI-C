@@ -20,6 +20,9 @@ router.get('/:id', protect, inventoryController.handleGetProductById.bind(invent
 // PUT /api/v1/inventory/:id - Actualizar producto (ruta protegida)
 router.put('/:id', protect, inventoryController.handleUpdateProduct.bind(inventoryController));
 
+// DELETE /api/v1/inventory/:id - Eliminar producto (ruta protegida)
+router.delete('/:id', protect, inventoryController.handleDeleteProduct.bind(inventoryController));
+
 export default router;
 
 

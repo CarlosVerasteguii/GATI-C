@@ -73,4 +73,18 @@ export class InventoryController {
             next(error);
         }
     }
+
+    public async handleDeleteProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const productId = req.params.id as string;
+            const userId = (req.user?.id as string) || '';
+            if (!userId) {
+                return next(new AuthError('Usuario no autenticado.'));
+            }
+            await this.inventoryService.deleteProduct(productId, userId);
+            res.status(204).send();
+        } catch (error) {
+            next(error);
+        }
+    }
 }
