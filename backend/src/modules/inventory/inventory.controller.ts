@@ -22,6 +22,16 @@ export class InventoryController {
         }
     }
 
+    public async handleGetProductById(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const productId = req.params.id as string;
+            const product = await this.inventoryService.getProductById(productId);
+            res.status(200).json({ success: true, data: product });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public async handleCreateProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const parsed = createProductSchema.parse(req.body);

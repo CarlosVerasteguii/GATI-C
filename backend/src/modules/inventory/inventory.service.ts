@@ -27,6 +27,27 @@ export class InventoryService {
         return products;
     }
 
+    public async getProductById(
+        productId: string
+    ): Promise<Prisma.ProductGetPayload<{ include: { brand: true; category: true; location: true } }>> {
+        try {
+            const product = await this.prisma.product.findUniqueOrThrow({
+                where: { id: productId },
+                include: { brand: true, category: true, location: true },
+            });
+            return product;
+        } catch (error: any) {
+            // Mapear errores de Prisma a nuestro error 404 de dominio
+            if ((error as any)?.name === 'NotFoundError') {
+                throw new NotFoundError('El producto solicitado no existe.');
+            }
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+                throw new NotFoundError('El producto solicitado no existe.');
+            }
+            throw error;
+        }
+    }
+
     public async createProduct(
         productData: CreateProductData,
         userId: string
