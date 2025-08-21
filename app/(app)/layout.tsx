@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/app-layout"
 import { showInfo, showWarning, showSuccess } from "@/hooks/use-toast"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 export default function MainAppLayout({
   children,
@@ -10,12 +11,18 @@ export default function MainAppLayout({
   children: React.ReactNode
 }) {
   const [isOnline, setIsOnline] = useState(true)
+  const { checkSession } = useAuthStore()
 
   // Estado para el renderizado en dos pasos - evita conflictos de hidratación
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    checkSession()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

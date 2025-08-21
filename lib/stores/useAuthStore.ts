@@ -12,6 +12,7 @@ interface AuthState {
 interface AuthActions {
     login: (usernameOrEmail: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    checkSession: () => Promise<void>;
     addUser: (user: Omit<User, 'id'> & Partial<Pick<User, 'id'>>) => void;
     updateCurrentUser: (updates: Partial<User>) => void;
 }
@@ -51,6 +52,23 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         } catch (err) {
             // Ensure UI logs the user out regardless of API outcome
             set({ user: null, isAuthenticated: false, error: null });
+        }
+    },
+
+    checkSession: async () => {
+        set({ isLoading: true });
+        try {
+            const { getProfile } = await import('../api/auth');
+            const profile = await getProfile();
+            if (profile) {
+                set({ user: profile as User, isAuthenticated: true });
+            } else {
+                set({ user: null, isAuthenticated: false });
+            }
+        } catch {
+            set({ user: null, isAuthenticated: false });
+        } finally {
+            set({ isLoading: false });
         }
     },
 

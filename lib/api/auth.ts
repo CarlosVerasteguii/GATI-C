@@ -52,3 +52,27 @@ export async function logoutUser(): Promise<void> {
         throw new Error(message);
     }
 }
+
+export async function getProfile(): Promise<LoginResponseUser | null> {
+    const response = await fetch("http://localhost:3001/api/v1/auth/me", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    try {
+        const payload = await response.json();
+        if (!payload || typeof payload !== "object" || !payload.user) {
+            return null;
+        }
+        return payload.user as LoginResponseUser;
+    } catch {
+        return null;
+    }
+}
