@@ -6,6 +6,7 @@ interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     users: User[];
+    error?: string | null;
 }
 
 interface AuthActions {
@@ -27,31 +28,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     isAuthenticated: false,
     isLoading: false,
     users: fakeUsers.map(({ password: _p, ...u }) => u as User),
+    error: null,
 
     login: async (usernameOrEmail: string, password: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-            // Simulate latency
-            await new Promise((resolve) => setTimeout(resolve, 300));
-
-            const found = get().users.find((u) => (
-                u.email.toLowerCase() === usernameOrEmail.toLowerCase() ||
-                u.nombre.toLowerCase() === usernameOrEmail.toLowerCase()
-            ) && (password === 'password123')); // Mock validation
-
-            if (!found) {
-                throw new Error('INVALID_CREDENTIALS');
-            }
-
-            // Avoid keeping password in memory
-            const userWithoutPassword = found;
-            set({
-                user: userWithoutPassword as User,
-                isAuthenticated: true,
-                isLoading: false,
-            });
-        } catch (err) {
-            set({ isLoading: false });
+            const { loginUser } = await import('../api/auth');
+            const loggedInUser = await loginUser(usernameOrEmail, password);
+            set({ user: loggedInUser as User, isAuthenticated: true, isLoading: false, error: null });
+        } catch (err: any) {
+            const message = err?.message || 'Login failed';
+            set({ isLoading: false, error: message });
             throw err;
         }
     },

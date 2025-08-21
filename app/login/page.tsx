@@ -42,8 +42,6 @@ export default function LoginPage() {
   const [isAccessRequestModalOpen, setIsAccessRequestModalOpen] = useState(false)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isAboutOpen, setIsAboutOpen] = useState(false) // Added back for the About dialog
-  const [isLoading, setIsLoading] = useState(false)
-
   const { login, isLoading, isAuthenticated, user } = useAuthStore()
   const router = useRouter()
 
