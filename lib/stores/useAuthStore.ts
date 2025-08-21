@@ -5,6 +5,7 @@ interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    sessionChecked: boolean;
     users: User[];
     error?: string | null;
 }
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     user: null,
     isAuthenticated: false,
     isLoading: false,
+    sessionChecked: false,
     users: fakeUsers.map(({ password: _p, ...u }) => u as User),
     error: null,
 
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         } catch {
             set({ user: null, isAuthenticated: false });
         } finally {
-            set({ isLoading: false });
+            set({ isLoading: false, sessionChecked: true });
         }
     },
 
