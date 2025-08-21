@@ -35,3 +35,20 @@ export async function loginUser(email: string, password: string): Promise<LoginR
 
     return payload.user as LoginResponseUser;
 }
+
+export async function logoutUser(): Promise<void> {
+    const response = await fetch("http://localhost:3001/api/v1/auth/logout", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        let payload: any = null;
+        try { payload = await response.json(); } catch { }
+        const message = (payload && (payload.message || payload.error)) || `Logout failed with status ${response.status}`;
+        throw new Error(message);
+    }
+}
