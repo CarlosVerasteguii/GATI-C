@@ -146,8 +146,7 @@ interface AppState {
   lowStockThresholds: InventoryLowStockThresholds;
 }
 
-// Datos de ejemplo
-const defaultUsersData: User[] = []
+// Datos de ejemplo (usuarios migrados a useAuthStore)
 
 const defaultInventoryData: InventoryItem[] = [
   // Laptops

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useApp } from '@/contexts/app-context';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -29,8 +28,7 @@ type BulkAssignModalProps = {
 };
 
 export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSuccess }: BulkAssignModalProps) {
-  const { state, addUserToUsersData } = useApp();
-  const { user } = useAuthStore();
+  const { user, users, addUser } = useAuthStore() as any;
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -51,15 +49,14 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
   }
 
   const handleCreateNewUser = (newLabel: string) => {
-    const newId = Date.now();
-    const newUser: User = {
-      id: newId,
+    const payload: Partial<User> = {
       nombre: newLabel,
       email: `${newLabel.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-      rol: "Lector"
+      rol: 'Lector',
     };
-    addUserToUsersData(newUser);
-    return newId;
+    addUser(payload as any);
+    const last = (users || []).slice(-1)[0];
+    return last ? last.id : Date.now();
   }
 
   return (
@@ -87,19 +84,13 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
-                          {field.value ? state.usersData.find(u => u.id === Number(field.value))?.nombre : "Seleccionar usuario..."}
+                          {field.value ? (users || []).find((u: User) => u.id === Number(field.value))?.nombre : "Seleccionar usuario..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command
-                        filter={(value, search) => {
-                          const user = state.usersData.find(u => u.id === Number(value));
-                          if (!user) return 0;
-                          return user.nombre.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-                        }}
-                      >
+                      <Command>
                         <CommandInput
                           placeholder="Buscar o crear usuario..."
                           value={inputValue}
@@ -126,7 +117,7 @@ export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSucces
                             )}
                           </CommandEmpty>
                           <CommandGroup>
-                            {state.usersData.map((user) => (
+                            {(users || []).map((user: User) => (
                               <CommandItem value={String(user.id)} key={user.id} onSelect={() => {
                                 form.setValue("assignee", String(user.id));
                                 setPopoverOpen(false);

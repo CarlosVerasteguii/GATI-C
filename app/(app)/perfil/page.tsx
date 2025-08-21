@@ -24,8 +24,8 @@ interface ExtendedUser {
 }
 
 export default function ProfilePage() {
-  const { state, updateUserInUsersData, addRecentActivity } = useApp()
-  const { user } = useAuthStore()
+  const { state, addRecentActivity } = useApp()
+  const { user, updateCurrentUser } = useAuthStore() as any
 
 
   const currentUser = user as ExtendedUser | null
@@ -74,9 +74,7 @@ export default function ProfilePage() {
 
     // Simular una demora para mejor UX
     setTimeout(() => {
-      updateUserInUsersData(currentUser.id, {
-        password: newPassword
-      })
+      updateCurrentUser({ password: newPassword })
 
       addRecentActivity({
         type: "Cambio de Contraseña",
@@ -116,9 +114,7 @@ export default function ProfilePage() {
     // Simular una demora para mejor UX
     setTimeout(() => {
       // Usamos any para evitar problemas de tipo con trustedIp
-      updateUserInUsersData(currentUser.id, {
-        trustedIp: newIpAddress
-      } as any)
+      updateCurrentUser({ trustedIp: newIpAddress } as any)
 
       addRecentActivity({
         type: "Actualización de IP Confiable",

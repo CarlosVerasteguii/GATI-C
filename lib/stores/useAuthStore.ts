@@ -12,6 +12,7 @@ interface AuthActions {
     login: (usernameOrEmail: string, password: string) => Promise<void>;
     logout: () => void;
     addUser: (user: Omit<User, 'id'> & Partial<Pick<User, 'id'>>) => void;
+    updateCurrentUser: (updates: Partial<User>) => void;
 }
 
 // Mock users list (migrated from legacy context)
@@ -63,11 +64,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         const nextId = Math.max(0, ...get().users.map(u => u.id)) + 1;
         const userToAdd: User = {
             id: newUser.id ?? nextId,
-            nombre: newUser.nombre,
-            email: newUser.email,
-            rol: newUser.rol,
+            nombre: newUser.nombre || 'Nuevo Usuario',
+            email: newUser.email || `${Date.now()}@example.com`,
+            rol: newUser.rol || 'Lector',
             departamento: newUser.departamento,
         };
         set({ users: [...get().users, userToAdd] });
+    },
+    updateCurrentUser: (updates) => {
+        const current = get().user;
+        if (!current) return;
+        const updated = { ...current, ...updates } as User;
+        set({ user: updated, users: get().users.map(u => u.id === updated.id ? updated : u) });
     },
 }));
