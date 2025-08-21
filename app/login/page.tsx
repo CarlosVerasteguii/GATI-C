@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { LogIn, Info, HelpCircle, Loader2, PackageMinus, PackagePlus } from "lucide-react"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
-import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { QuickLoadModal } from "@/components/quick-load-modal"
 import { QuickRetireModal } from "@/components/quick-retire-modal" // New QuickRetireModal
@@ -44,13 +44,13 @@ export default function LoginPage() {
   const [isAboutOpen, setIsAboutOpen] = useState(false) // Added back for the About dialog
   const [isLoading, setIsLoading] = useState(false)
 
-  const { state, setUser, addRecentActivity } = useApp()
+  const { login, isLoading, isAuthenticated, user } = useAuthStore()
   const router = useRouter()
 
   // Load remembered credentials on component mount
   useEffect(() => {
     // If user is already logged in, redirect to dashboard
-    if (state.user) {
+    if (isAuthenticated) {
       router.push("/dashboard")
       return
     }
@@ -74,25 +74,19 @@ export default function LoginPage() {
         localStorage.removeItem("gati-c-remember-me")
       }
     }
-  }, [state.user, router])
+  }, [isAuthenticated, router])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    setIsLoading(true)
+    try {
+      await login(username, password)
 
-    // Remove debug console.log for production
-    // console.log("Attempting login with:", { username, password })
-
-    const foundUser = state.usersData.find(
-      (user) => user.nombre.toLowerCase() === username.toLowerCase() && user.password === password, // Check password
-    )
-
-    if (foundUser) {
       // Handle Remember Me functionality
       if (rememberMe) {
+        const rememberedName = (user?.nombre ?? username)
         localStorage.setItem("gati-c-remember-me", JSON.stringify({
-          username: foundUser.nombre,
+          username: rememberedName,
           rememberMe: true,
           lastLogin: new Date().toISOString()
         }))
@@ -102,43 +96,25 @@ export default function LoginPage() {
           duration: 2000
         })
       } else {
-        // Clear any existing remembered credentials if user unchecked the box
         localStorage.removeItem("gati-c-remember-me")
       }
 
-      setUser(foundUser)
-      addRecentActivity({
-        type: "Inicio de Sesión",
-        description: `Usuario ${foundUser.nombre} (${foundUser.rol}) ha iniciado sesión ${rememberMe ? 'con credenciales recordadas' : ''}.`,
-        date: new Date().toLocaleString(),
-        details: {
-          userId: foundUser.id,
-          userName: foundUser.nombre,
-          userRole: foundUser.rol,
-          rememberMe: rememberMe,
-          loginMethod: rememberMe ? "remembered" : "manual"
-        },
-      })
       showSuccess({
         title: "Inicio de sesión exitoso",
-        description: `Bienvenido, ${foundUser.nombre}!`
+        description: `Bienvenido, ${user?.nombre || username}!`
       })
       router.push("/dashboard")
-    } else {
+    } catch (err) {
       showError({
         title: "Error de inicio de sesión",
         description: "Credenciales incorrectas. Por favor, inténtalo de nuevo."
       })
     }
-
-    setIsLoading(false)
   }
 
   // Determine if quick actions should be available (e.g., for trusted IPs or specific roles)
   // For demo, let's make it available if any user is logged in or if a specific trusted user exists
-  const simulatedCurrentIp = "192.168.1.100"
-  const trustedUserForQuickActions = state.usersData.find((user) => (user as any).trustedIp === simulatedCurrentIp)
-  const showQuickActions = !!trustedUserForQuickActions
+  const showQuickActions = false
 
   return (
     <>

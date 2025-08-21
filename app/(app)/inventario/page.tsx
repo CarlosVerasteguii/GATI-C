@@ -78,6 +78,7 @@ import { BulkRetireModal } from "@/components/bulk-retire-modal"
 import { BrandCombobox } from "@/components/brand-combobox"
 import { EmptyState } from "@/components/empty-state"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
 import { ActionMenu } from "@/components/action-menu"
 import { cn } from "@/lib/utils"
@@ -156,6 +157,7 @@ const allColumns: ColumnDefinition[] = [
 
 export default function InventarioPage() {
   const { state, dispatch: appDispatch, liberarAsignacion, devolverPrestamo } = useApp()
+  const { user } = useAuthStore()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -175,7 +177,7 @@ export default function InventarioPage() {
 
   // Reemplazar la constante ITEMS_PER_PAGE por un estado
   const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
-    const userId = state.user?.id;
+    const userId = user?.id;
     const pageId = "inventario";
 
     // Obtener de preferencias de usuario si están disponibles
@@ -275,7 +277,7 @@ export default function InventarioPage() {
 
   // Column state, loaded from user preferences or default
   const [columns, setColumns] = useState<ColumnDefinition[]>(() => {
-    const userId = state.user?.id;
+    const userId = user?.id;
     const pageId = "inventario";
     const userPrefs = state.userColumnPreferences?.find(pref => pref.page === pageId);
 
@@ -387,18 +389,18 @@ export default function InventarioPage() {
 
   // Save column preferences when they change
   useEffect(() => {
-    if (state.user?.id) {
+    if (user?.id) {
       const visibleColumnIds = columns.filter(col => col.visible).map(col => col.id);
       dispatch({
         type: 'UPDATE_USER_COLUMN_PREFERENCES',
         payload: {
-          userId: state.user.id,
+          userId: user.id,
           pageId: "inventario",
           columns: visibleColumnIds
         }
       })
     }
-  }, [columns, state.user?.id, dispatch])
+  }, [columns, user?.id, dispatch])
 
   // Sorting logic
   const handleSort = (columnId: string) => {
@@ -768,7 +770,7 @@ export default function InventarioPage() {
   const handleReactivate = (product: InventoryItem) => {
     setSelectedProduct(product)
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       setPendingActionDetails({
         type: "Reactivación",
         productId: product.id,
@@ -911,7 +913,7 @@ export default function InventarioPage() {
                   ...(state.tasks.find((t) => t.id === processingTaskId)?.auditLog || []),
                   {
                     event: "FINALIZACIÓN",
-                    user: state.user?.nombre || "Sistema",
+                    user: user?.nombre || "Sistema",
                     dateTime: new Date().toISOString(),
                     description: `Tarea de carga procesada y producto añadido/actualizado en inventario.`,
                   },
@@ -990,12 +992,12 @@ export default function InventarioPage() {
       fechaAdquisicion: (formData.get("fechaAdquisicion") as string | null) ?? undefined,
       contratoId: (formData.get("contratoId") as string) || null,
       costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
-      garantia: (formData.get("garantia") as string | null) ?? undefined,
+      // garantia no existe en InventoryItem; remover del payload
       vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined,
       ubicacion: formData.get("ubicacion") as string || undefined,
     }
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       // Removed modalMode !== "process-carga" condition
       setPendingActionDetails({
         type:
@@ -1082,7 +1084,7 @@ export default function InventarioPage() {
   }
 
   const confirmRetirement = () => {
-    if (state.user?.rol === "Editor" && selectedProduct) {
+    if (user?.rol === "Editor" && selectedProduct) {
       setPendingActionDetails({
         type: "Retiro de Producto",
         productId: selectedProduct.id,
@@ -1133,7 +1135,7 @@ export default function InventarioPage() {
         payload: {
           id: Math.floor(Math.random() * 1000),
           type: pendingActionDetails.type as any, // Cast para evitar errores de tipo
-          requestedBy: state.user?.nombre || "Editor",
+          requestedBy: user?.nombre || "Editor",
           date: new Date().toISOString(),
           status: "Pendiente",
           details: pendingActionDetails,
@@ -1160,7 +1162,7 @@ export default function InventarioPage() {
     }
   }
 
-  const isLector = state.user?.rol === "Lector" // Corregido según PRD
+  const isLector = user?.rol === "Lector" // Corregido según PRD
 
   // Function to calculate available and unavailable quantities for non-serialized items
   const getNonSerializedQtyBreakdown = (item: InventoryItem): QtyBreakdown | null => {
@@ -1224,7 +1226,7 @@ export default function InventarioPage() {
     }
   }
 
-  const canShowBulkActions = selectedRowIds.length > 0 && state.user?.rol !== "Lector" // Corregido según PRD
+  const canShowBulkActions = selectedRowIds.length > 0 && user?.rol !== "Lector" // Corregido según PRD
 
   // Función simulada para subir documentos
   const handleFileUpload = () => {
@@ -1390,7 +1392,7 @@ export default function InventarioPage() {
         break;
       case 'liberar':
         if ('id' in targetItem) {
-          liberarAsignacion(targetItem.id);
+          liberarAsignacion(targetItem.id, user || null);
           showSuccess({
             title: "Activo Liberado",
             description: `El activo "${targetItem.nombre}" ha sido marcado como Disponible.`,
@@ -1399,14 +1401,14 @@ export default function InventarioPage() {
         break;
       case 'devolver':
         if ('id' in targetItem) {
-          if (state.user?.rol === 'Lector') {
+          if (user?.rol === 'Lector') {
             showError({
               title: "Permiso denegado",
               description: "No tienes permiso para realizar esta acción."
             });
             return;
           }
-          devolverPrestamo(targetItem.id);
+          devolverPrestamo(targetItem.id, user || null);
           showSuccess({
             title: "Préstamo Devuelto",
             description: "El activo ha sido devuelto al inventario."

@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
 
 interface RetireProductModalProps {
@@ -30,6 +31,7 @@ interface RetireProductModalProps {
 
 export function RetireProductModal({ open, onOpenChange, product, onSuccess }: RetireProductModalProps) {
   const { state, updateInventoryItemStatus, addPendingRequest, addRecentActivity, updateInventory } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
   const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
@@ -81,7 +83,7 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
       productModel: product.modelo, // Added for non-serialized logic
     }
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       setPendingActionDetails(actionDetails)
       setIsConfirmEditorOpen(true)
       setIsLoading(false)
@@ -168,13 +170,13 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
     addPendingRequest({
       type: pendingActionDetails.type,
       details: pendingActionDetails,
-      requestedBy: state.user?.nombre || "Editor",
+      requestedBy: user?.nombre || "Editor",
       date: new Date().toISOString(),
       status: "Pendiente",
       auditLog: [
         {
           event: "CREACIÓN",
-          user: state.user?.nombre || "Editor",
+          user: user?.nombre || "Editor",
           dateTime: new Date().toISOString(),
           description: `Solicitud de ${pendingActionDetails.type.toLowerCase()} creada.`,
         },

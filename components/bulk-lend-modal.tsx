@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { Loader2, Calendar } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
 
 interface BulkLendModalProps {
@@ -27,6 +28,7 @@ interface BulkLendModalProps {
 
 export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess }: BulkLendModalProps) {
   const { state, addPendingRequest, addRecentActivity, updateInventory, updatePrestamos } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [userName, setUserName] = useState("") // New state for user name
   const [userEmail, setUserEmail] = useState("") // New state for user email
@@ -52,7 +54,7 @@ export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess 
       setNotes("")
 
       let updatedInventory = [...state.inventoryData]
-      const lentItems = []
+      const lentItems: any[] = []
 
       selectedProducts.forEach((product) => {
         if (product.numeroSerie === null) {
@@ -134,7 +136,7 @@ export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess 
 
     setIsLoading(true)
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       setIsConfirmEditorOpen(true)
       setIsLoading(false)
       return
@@ -145,6 +147,7 @@ export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess 
 
   const handleConfirmEditorAction = () => {
     addPendingRequest({
+      id: Date.now(),
       type: "Préstamo Masivo",
       details: {
         selectedProductIds: selectedProducts.map((p) => ({ id: p.id, name: p.nombre, serial: p.numeroSerie })),
@@ -153,13 +156,13 @@ export function BulkLendModal({ open, onOpenChange, selectedProducts, onSuccess 
         returnDate: returnDate,
         notes: notes,
       },
-      requestedBy: state.user?.nombre || "Editor",
+      requestedBy: user?.nombre || "Editor",
       date: new Date().toISOString(),
       status: "Pendiente",
       auditLog: [
         {
           event: "CREACIÓN",
-          user: state.user?.nombre || "Editor",
+          user: user?.nombre || "Editor",
           dateTime: new Date().toISOString(),
           description: `Solicitud de préstamo masivo para ${selectedProducts.length} productos creada.`,
         },

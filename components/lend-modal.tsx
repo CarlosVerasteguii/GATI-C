@@ -19,6 +19,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { User } from "@/types/inventory";
 import { UserCombobox } from '@/components/ui/user-combobox';
 import { InventoryItem } from "@/types/inventory";
@@ -32,6 +33,7 @@ interface LendModalProps {
 
 export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalProps) {
   const { state, updateInventoryItemStatus, addRecentActivity, addPendingRequest, updateInventoryItem, addHistoryEvent } = useApp()
+  const { user } = useAuthStore()
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
@@ -65,7 +67,7 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
 
     addHistoryEvent(product.id, {
       fecha: new Date().toISOString(),
-      usuario: state.user?.nombre || 'Sistema',
+      usuario: user?.nombre || 'Sistema',
       accion: 'Préstamo',
       detalles: `Prestado a ${selectedUser.nombre} hasta el ${returnDate.toLocaleDateString()}.`
     });
@@ -89,8 +91,9 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
       return
     }
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       addPendingRequest({
+        id: Date.now(),
         type: "Préstamo",
         details: {
           productId: product.id,
@@ -100,13 +103,13 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
           lentToEmail: selectedUser.email,
           returnDate: returnDate ? format(returnDate, "PPP") : "N/A",
         },
-        requestedBy: state.user?.nombre || "Editor",
+        requestedBy: user?.nombre || "Editor",
         date: new Date().toISOString(),
         status: "Pendiente",
         auditLog: [
           {
             event: "CREACIÓN",
-            user: state.user?.nombre || "Editor",
+            user: user?.nombre || "Editor",
             dateTime: new Date().toISOString(),
             description: `Solicitud de préstamo para ${product.nombre} creada.`,
           },
@@ -137,7 +140,7 @@ export function LendModal({ open, onOpenChange, product, onSuccess }: LendModalP
               value={selectedUser}
               onValueChange={setSelectedUser}
               placeholder="Selecciona o crea un usuario"
-              currentUserRole={state.user?.rol || "Lector"}
+              currentUserRole={user?.rol || "Lector"}
             />
           </div>
           <div className="space-y-2 col-span-2">

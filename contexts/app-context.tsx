@@ -123,8 +123,6 @@ const defaultLowStockThresholds: InventoryLowStockThresholds = {
 };
 
 interface AppState {
-  user: User | null
-  usersData: User[]
   inventoryData: InventoryItem[]
   asignadosData: AsignadoItem[]
   prestamosData: PrestamoItem[]
@@ -149,11 +147,7 @@ interface AppState {
 }
 
 // Datos de ejemplo
-const defaultUsersData: User[] = [
-  { id: 1, nombre: "Carlos Vera", email: "carlos@example.com", password: "password123", rol: "Administrador" },
-  { id: 2, nombre: "Ana López", email: "ana@example.com", password: "password123", rol: "Editor" },
-  { id: 3, nombre: "Pedro García", email: "pedro@example.com", password: "password123", rol: "Lector" }, // Corregido según PRD
-]
+const defaultUsersData: User[] = []
 
 const defaultInventoryData: InventoryItem[] = [
   // Laptops
@@ -449,8 +443,6 @@ const defaultPendingTasksData: PendingTask[] = [
 ]
 
 const defaultInitialState: AppState = {
-  user: null,
-  usersData: defaultUsersData,
   inventoryData: defaultInventoryData,
   asignadosData: defaultAsignadosData,
   prestamosData: defaultPrestamosData,
@@ -501,11 +493,10 @@ type AppAction =
 interface AppContextType {
   state: AppState
   dispatch: (action: AppAction) => void
-  setUser: (user: User | null) => void
   updateInventory: (inventory: InventoryItem[]) => void
   addInventoryItem: (item: InventoryItem) => void
   updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void
-  liberarAsignacion: (itemId: number) => void
+  liberarAsignacion: (itemId: number, currentUser: User | null) => void
   updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => void
   removeInventoryItem: (id: number) => void
   updateAsignados: (asignados: AsignadoItem[]) => void
@@ -522,8 +513,6 @@ interface AppContextType {
   updatePendingActionRequests: (requests: PendingActionRequest[]) => void
   addPendingRequest: (request: PendingActionRequest) => void
   addRecentActivity: (activity: RecentActivity) => void
-  updateUserInUsersData: (userId: number, updates: Partial<User>) => void
-  addUserToUsersData: (user: User) => void
   addPendingTask: (task: PendingTask) => void
   updatePendingTask: (taskId: number, updates: Partial<PendingTask>) => void
   updateUserColumnPreferences: (userId: number, pageId: string, columns: string[], itemsPerPage?: number) => void
@@ -532,7 +521,7 @@ interface AppContextType {
   updateProveedores: (proveedores: string[]) => void;
   updateUbicaciones: (ubicaciones: string[]) => void;
   addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
-  devolverPrestamo: (itemId: number) => void;
+  devolverPrestamo: (itemId: number, currentUser: User | null) => void;
   getEffectiveLowStockThreshold: (product: InventoryItem) => number;
   // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
   /**
@@ -695,10 +684,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  const setUser = useCallback((user: User | null) => {
-    setState((prevState) => ({ ...prevState, user }))
-  }, [])
-
   const updateInventory = useCallback((inventory: InventoryItem[]) => {
     setState((prevState) => ({ ...prevState, inventoryData: inventory }))
   }, [])
@@ -707,7 +692,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     // Prepara el evento de historial inicial
     const creationEvent: HistoryEvent = {
       fecha: new Date().toISOString(),
-      usuario: state.user?.nombre || 'Sistema', // Usar el nombre del usuario actual
+      usuario: 'Sistema',
       accion: 'Creación',
       detalles: `El activo fue creado en el sistema.`
     };
@@ -719,7 +704,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     };
 
     dispatch({ type: 'ADD_INVENTORY_ITEM', payload: itemWithHistory });
-  }, [state.user, dispatch]);
+  }, [dispatch]);
 
   const updateInventoryItem = useCallback((id: number, updates: Partial<InventoryItem>) => {
     setState((prevState) => ({
@@ -808,20 +793,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     setState((prevState) => ({
       ...prevState,
       recentActivities: [activity, ...prevState.recentActivities].slice(0, 50), // Keep last 50 activities
-    }))
-  }, [])
-
-  const updateUserInUsersData = useCallback((userId: number, updates: Partial<User>) => {
-    setState((prevState) => ({
-      ...prevState,
-      usersData: prevState.usersData.map((user) => (user.id === userId ? { ...user, ...updates } : user)),
-    }))
-  }, [])
-
-  const addUserToUsersData = useCallback((user: User) => {
-    setState((prevState) => ({
-      ...prevState,
-      usersData: [...prevState.usersData, user],
     }))
   }, [])
 
@@ -919,7 +890,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     dispatch({ type: 'ADD_HISTORY_EVENT', payload: { itemId, event } });
   }, [dispatch]);
 
-  const liberarAsignacion = useCallback((itemId: number) => {
+  const liberarAsignacion = useCallback((itemId: number, currentUser: User | null) => {
     dispatch({
       type: 'UPDATE_INVENTORY_ITEM_STATUS',
       payload: { id: itemId, status: 'Disponible' }
@@ -927,13 +898,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
 
     addHistoryEvent(itemId, {
       fecha: new Date().toISOString(),
-      usuario: state.user?.nombre || 'Sistema',
+      usuario: currentUser?.nombre || 'Sistema',
       accion: 'Liberación',
       detalles: 'El activo ha sido devuelto al stock.'
     });
-  }, [dispatch, state.user, addHistoryEvent])
+  }, [dispatch, addHistoryEvent])
 
-  const devolverPrestamo = useCallback((itemId: number) => {
+  const devolverPrestamo = useCallback((itemId: number, currentUser: User | null) => {
     // 1. Actualizar el estado en la lista principal de inventario
     updateInventoryItem(itemId, {
       estado: "Disponible",
@@ -951,11 +922,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     // 3. Registrar el evento en el historial
     addHistoryEvent(itemId, {
       fecha: new Date().toISOString(),
-      usuario: state.user?.nombre || 'Sistema',
+      usuario: currentUser?.nombre || 'Sistema',
       accion: 'Devolución de Préstamo',
       detalles: 'El activo ha sido devuelto al stock.'
     });
-  }, [state.user, state.prestamosData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
+  }, [state.prestamosData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
 
   /**
    * getEffectiveLowStockThreshold: Returns the low stock threshold for a product.
@@ -1077,7 +1048,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const value = {
     state,
     dispatch,
-    setUser,
     updateInventory,
     addInventoryItem,
     updateInventoryItem,
@@ -1103,8 +1073,6 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updatePendingActionRequests,
     addPendingRequest,
     addRecentActivity,
-    updateUserInUsersData,
-    addUserToUsersData,
     addPendingTask,
     updatePendingTask,
     updateUserColumnPreferences,

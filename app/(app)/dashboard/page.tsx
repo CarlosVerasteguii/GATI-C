@@ -17,6 +17,7 @@ import {
   Eye,
 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { useToast } from '@/hooks/use-toast';
 import { StatusBadge } from "@/components/status-badge"
 import { ActivityDetailSheet } from "@/components/activity-detail-sheet"
@@ -56,6 +57,7 @@ interface PrestamoExtendido extends InventoryItem {
 
 export default function DashboardPage() {
   const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity, devolverPrestamo } = useApp()
+  const { user } = useAuthStore()
   const { toast, showSuccess } = useToast();
   const [selectedLoan, setSelectedLoan] = useState<PrestamoItemExtended | null>(null)
   const [isLoanDetailSheetOpen, setIsLoanDetailSheetOpen] = useState(false)
@@ -282,7 +284,7 @@ export default function DashboardPage() {
     if (!selectedLoan) return;
 
     // Llama a la función centralizada del contexto
-    devolverPrestamo(selectedLoan.id);
+    devolverPrestamo(selectedLoan.id, user || null);
 
     // Muestra una notificación de éxito (usando showSuccess del sistema)
     showSuccess({

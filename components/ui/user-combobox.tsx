@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { showSuccess, showError } from "@/hooks/use-toast"
 import { User } from "@/types/inventory"
 
@@ -19,7 +20,8 @@ interface UserComboboxProps {
 }
 
 export function UserCombobox({ value, onValueChange, placeholder = "Selecciona un usuario", currentUserRole }: UserComboboxProps) {
-    const { state, addUserToUsersData, addRecentActivity } = useApp()
+    const { addRecentActivity } = useApp()
+    const { users, addUser } = useAuthStore() as any
     const [open, setOpen] = React.useState(false)
     const [inputValue, setInputValue] = React.useState(value?.nombre || "")
 
@@ -35,18 +37,17 @@ export function UserCombobox({ value, onValueChange, placeholder = "Selecciona u
     }
 
     const handleCreateNewUser = () => {
-        const existingUser = state.usersData.find(u => u.nombre.toLowerCase() === inputValue.toLowerCase());
+        const existingUser = users.find((u: User) => u.nombre.toLowerCase() === inputValue.toLowerCase());
 
         if (inputValue && !existingUser) {
             const newUser: User = {
-                id: Math.max(0, ...state.usersData.map(u => u.id)) + 1,
+                id: Math.max(0, ...users.map((u: User) => u.id)) + 1,
                 nombre: inputValue,
                 email: `${inputValue.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Email de ejemplo
-                rol: "Lector", // Rol por defecto
-                password: "password123" // Contraseña temporal
-            };
+                rol: "Lector",
+            } as User;
 
-            addUserToUsersData(newUser);
+            addUser(newUser);
             onValueChange(newUser);
             setOpen(false);
 
@@ -93,7 +94,7 @@ export function UserCombobox({ value, onValueChange, placeholder = "Selecciona u
                             </div>
                         </CommandEmpty>
                         <CommandGroup>
-                            {state.usersData.map((user) => (
+                            {users.map((user: User) => (
                                 <CommandItem key={user.id} value={user.nombre} onSelect={() => handleSelect(user)}>
                                     <Check className={cn("mr-2 h-4 w-4", value?.id === user.id ? "opacity-100" : "opacity-0")} />
                                     {user.nombre}

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-context';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 export default function InventoryThresholdsConfigPage() {
@@ -11,6 +12,7 @@ export default function InventoryThresholdsConfigPage() {
         setGlobalLowStockThreshold,
         cleanOrphanThresholds,
     } = useApp();
+    const { user } = useAuthStore();
 
     // Estado local para edición del umbral global
     const [globalInput, setGlobalInput] = useState(state.lowStockThresholds.globalThreshold.toString());
@@ -133,7 +135,6 @@ export default function InventoryThresholdsConfigPage() {
         );
     }, [state.categorias, categorySearch]);
 
-    const user = state.user;
     const isAdmin = user?.rol === 'Administrador';
     if (!isAdmin) {
         return (

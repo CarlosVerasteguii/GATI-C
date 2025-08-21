@@ -5,10 +5,10 @@ import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const { state } = useApp()
+  const { isAuthenticated } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -23,11 +23,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   ]
 
   useEffect(() => {
-    // Check if the user is null AND the current path is a protected route
-    if (!state.user && protectedRoutes.includes(pathname)) {
+    if (!isAuthenticated && protectedRoutes.includes(pathname)) {
       router.push("/login")
     }
-  }, [state.user, pathname, router, protectedRoutes])
+  }, [isAuthenticated, pathname, router, protectedRoutes])
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>

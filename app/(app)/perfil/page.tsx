@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast"
 import { Lock, User, Mail, Shield, Wifi, Loader2 } from "lucide-react"
 
@@ -24,9 +25,10 @@ interface ExtendedUser {
 
 export default function ProfilePage() {
   const { state, updateUserInUsersData, addRecentActivity } = useApp()
+  const { user } = useAuthStore()
 
 
-  const currentUser = state.user as ExtendedUser | null
+  const currentUser = user as ExtendedUser | null
 
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")

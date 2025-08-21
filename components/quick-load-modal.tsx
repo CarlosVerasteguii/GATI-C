@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { showError, showInfo } from "@/hooks/use-toast"
 import { Loader2, PackagePlus, HelpCircle } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BrandCombobox } from "./brand-combobox"
 
@@ -54,6 +55,7 @@ export function QuickLoadModal({
   initialHasSerialNumber = false,
 }: QuickLoadModalProps) {
   const { state, addPendingTask, addRecentActivity } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [hasSerialNumber, setHasSerialNumber] = useState(initialHasSerialNumber)
   const [formData, setFormData] = useState({
@@ -103,7 +105,7 @@ export function QuickLoadModal({
         id: Math.floor(Math.random() * 10000),
         type: "CARGA",
         creationDate: new Date().toISOString(),
-        createdBy: state.user?.nombre || "Usuario Rápido", // Use logged in user or default
+        createdBy: user?.nombre || "Usuario Rápido", // Use logged in user or default
         status: "Pendiente",
         details: {
           productName: formData.productName,
@@ -120,7 +122,7 @@ export function QuickLoadModal({
         auditLog: [
           {
             event: "CREACIÓN",
-            user: state.user?.nombre || "Usuario Rápido",
+            user: user?.nombre || "Usuario Rápido",
             dateTime: new Date().toISOString(),
             description: `Solicitud de carga rápida para ${formData.productName} (${quantity} unidades) creada.`,
           },
@@ -132,13 +134,13 @@ export function QuickLoadModal({
       })
       addRecentActivity({
         type: "Creación de Tarea",
-        description: `Tarea de carga rápida para ${formData.productName} creada por ${state.user?.nombre || "Usuario Rápido"}`,
+        description: `Tarea de carga rápida para ${formData.productName} creada por ${user?.nombre || "Usuario Rápido"}`,
         date: new Date().toLocaleString(),
         details: {
           productName: formData.productName,
           quantity: quantity,
           serialNumbers: hasSerialNumber ? serialsArray : null,
-          createdBy: state.user?.nombre || "Usuario Rápido",
+          createdBy: user?.nombre || "Usuario Rápido",
         },
       })
       // Reset form

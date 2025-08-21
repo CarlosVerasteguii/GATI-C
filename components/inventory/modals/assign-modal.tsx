@@ -2,7 +2,7 @@
 
 // Imports de React y hooks
 import React, { useState, useEffect } from 'react';
-import { useApp } from '@/contexts/app-context';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 // Imports de Zod y React Hook Form
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,13 +30,10 @@ interface AssignModalProps {
 }
 
 export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) {
-    const { state, addUserToUsersData } = useApp(); // Obtenemos usuarios y función desde el contexto
+    const { users: authUsers, addUser } = useAuthStore() as any;
 
     // Convertimos los usuarios del contexto al formato que espera el componente
-    const users = state.usersData.map(user => ({
-        value: user.id.toString(),
-        label: user.nombre
-    }));
+    const users: { value: string; label: string }[] = (authUsers || []).map((u: User) => ({ value: u.id.toString(), label: u.nombre }));
 
     // Estados separados como en BrandCombobox
     const [open, setOpen] = useState(false); // Estado para controlar el Popover
@@ -60,14 +57,14 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
     const assigneeValue = form.watch("assignee");
     useEffect(() => {
         if (!open && assigneeValue) {
-            const selectedUser = users.find(user => user.value === assigneeValue);
+            const selectedUser = users.find((user: { value: string; label: string }) => user.value === assigneeValue);
             setInputValue(selectedUser?.label || "");
         }
     }, [assigneeValue, users, open]);
 
     const handleSelectUser = (userValue: string) => {
         form.setValue("assignee", userValue);
-        const selectedUser = users.find(user => user.value === userValue);
+        const selectedUser = users.find((user: { value: string; label: string }) => user.value === userValue);
         setInputValue(selectedUser?.label || "");
         setOpen(false);
     };
@@ -76,12 +73,13 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
         if (inputValue && !users.some(user => user.label.toLowerCase() === inputValue.toLowerCase())) {
             // Crear un nuevo usuario en el contexto
             const newUser: User = {
-                id: Math.max(...state.usersData.map(u => u.id), 0) + 1, // Generar nuevo ID
+                id: Math.floor(Math.random() * 100000) + 1,
                 nombre: inputValue,
-                email: `${inputValue.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Email temporal
-                rol: "Lector" // Rol por defecto
+                email: `${inputValue.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+                rol: "Lector"
             };
-            addUserToUsersData(newUser);
+            // Add to Auth Store (source of truth)
+            addUser(newUser);
             form.setValue("assignee", newUser.id.toString());
             setInputValue(inputValue); // Mantener el nombre en el input
             setOpen(false);
@@ -169,7 +167,7 @@ export function AssignModal({ isOpen, onClose, productData }: AssignModalProps) 
                                                         </div>
                                                     </CommandEmpty>
                                                     <CommandGroup>
-                                                        {users.map((user) => (
+                                                        {users.map((user: { value: string; label: string }) => (
                                                             <CommandItem
                                                                 value={user.label}
                                                                 key={user.value}

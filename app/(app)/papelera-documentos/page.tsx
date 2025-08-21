@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Trash2, RotateCcw, Search, FileText, Calendar, User, Package, Info, X } from 'lucide-react'
 import { useApp } from '@/contexts/app-context'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { showSuccess, showError } from '@/hooks/use-toast'
 
 interface DeletedDocument {
@@ -41,13 +42,14 @@ const mapRoleToEnglish = (spanishRole: string): string => {
 
 export default function PapeleraDocumentosPage() {
     const { state } = useApp()
+    const { user } = useAuthStore()
     const [searchTerm, setSearchTerm] = useState("")
     const [filterProduct, setFilterProduct] = useState("")
     const [filterReason, setFilterReason] = useState("")
     const [filterUser, setFilterUser] = useState("")
 
     // Verificar permisos - CORREGIDO para usar roles en español
-    const userRole = state.user?.rol
+    const userRole = user?.rol
     const hasAccess = userRole === "Administrador" || userRole === "Editor"
     const canRestore = userRole === "Administrador"
 

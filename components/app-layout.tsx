@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
-import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useDevice } from "@/hooks/use-device"
 import { useNavigation } from "@/hooks/use-navigation"
@@ -36,7 +36,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { state, setUser } = useApp()
+  const { user, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
@@ -56,7 +56,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   })
 
   const handleLogout = () => {
-    setUser(null)
+    logout()
     router.push("/login")
   }
 
@@ -112,7 +112,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   ]
 
-  const filteredNavItems = navItems.filter((item) => state.user && item.roles.includes(state.user.rol))
+  const filteredNavItems = navItems.filter((item) => user && item.roles.includes(user.rol))
 
   // Ajustar el tamaño de los iconos y el espaciado según el dispositivo
   const getIconSize = () => {
@@ -199,7 +199,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <div className="flex items-center gap-3">
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm font-medium">
-                      {state.user?.nombre} ({state.user?.rol})
+                      {user?.nombre} ({user?.rol})
                     </span>
                   </div>
                   <ThemeToggle />
@@ -211,7 +211,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="relative" title={`${state.user?.nombre} (${state.user?.rol})`}>
+                <div className="relative" title={`${user?.nombre} (${user?.rol})`}>
                   <Users className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <ThemeToggle />
@@ -285,7 +285,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-muted-foreground">
-                      {state.user?.nombre} ({state.user?.rol})
+                      {user?.nombre} ({user?.rol})
                     </span>
                   </div>
                   <ThemeToggle />

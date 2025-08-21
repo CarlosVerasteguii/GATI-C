@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Loader2, Edit, PackagePlus, PackageMinus, UserPlus, Calendar, RefreshCcw } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { showSuccess } from "@/hooks/use-toast"
 import { BrandCombobox } from "./brand-combobox"
 
@@ -22,6 +23,7 @@ interface EditTaskSheetProps {
 
 export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) {
   const { state, updatePendingTask, addRecentActivity } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
 
   // States for form fields, initialized from task details
@@ -128,9 +130,9 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
           ...(task.auditLog || []),
           {
             event: "EDICIÓN",
-            user: state.user?.nombre || "Administrador",
+            user: user?.nombre || "Administrador",
             dateTime: new Date().toISOString(),
-            description: `Tarea editada por ${state.user?.nombre || "Administrador"}.`,
+            description: `Tarea editada por ${user?.nombre || "Administrador"}.`,
           },
         ],
       })

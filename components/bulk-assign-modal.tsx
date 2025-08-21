@@ -5,6 +5,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useApp } from '@/contexts/app-context';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,6 +30,7 @@ type BulkAssignModalProps = {
 
 export function BulkAssignModal({ open, onOpenChange, selectedProducts, onSuccess }: BulkAssignModalProps) {
   const { state, addUserToUsersData } = useApp();
+  const { user } = useAuthStore();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 

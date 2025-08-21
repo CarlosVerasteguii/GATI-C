@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { showError, showSuccess, showWarning } from "@/hooks/use-toast"
 import { Loader2, Edit, HelpCircle, ExternalLink, Trash2 } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BrandCombobox } from "./brand-combobox"
 import { ProviderCombobox } from './provider-combobox';
@@ -40,6 +41,7 @@ export function EditProductModal({
   onSuccess
 }: EditProductModalProps) {
   const { state, addPendingTask, addInventoryItem, updateInventoryItem, addHistoryEvent } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
@@ -270,13 +272,13 @@ export function EditProductModal({
 
     const mode = product ? 'edit' : 'add';
 
-    if (state.user?.rol === 'Administrador') {
+    if (user?.rol === 'Administrador') {
       if (mode === 'edit' && product) {
         updateInventoryItem(product.id, updates);
 
         addHistoryEvent(product.id, {
           fecha: new Date().toISOString(),
-          usuario: state.user?.nombre || 'Sistema',
+          usuario: user?.nombre || 'Sistema',
           accion: 'Edición',
           detalles: 'Se han modificado los detalles del producto.'
         });
@@ -325,7 +327,7 @@ export function EditProductModal({
           id: Math.floor(Math.random() * 10000),
           type: mode === 'edit' ? "Edición de Producto" : "Creación de Producto",
           creationDate: new Date().toISOString(),
-          createdBy: state.user?.nombre || "Usuario Desconocido",
+          createdBy: user?.nombre || "Usuario Desconocido",
           status: "Pendiente",
           details: {
             originalProductId: product?.id,
@@ -334,7 +336,7 @@ export function EditProductModal({
           auditLog: [
             {
               event: "CREACIÓN",
-              user: state.user?.nombre || "Usuario Desconocido",
+              user: user?.nombre || "Usuario Desconocido",
               dateTime: new Date().toISOString(),
               description: `Solicitud de ${mode === 'edit' ? 'edición' : 'creación'} para el producto ${updates.nombre} creada.`,
             },
@@ -500,7 +502,7 @@ export function EditProductModal({
                     type="date"
                     value={formData.fechaIngreso}
                     onChange={(e) => handleInputChange("fechaIngreso", e.target.value)}
-                    disabled={state.user?.rol !== "Administrador"}
+                    disabled={user?.rol !== "Administrador"}
                     required
                   />
                 </div>

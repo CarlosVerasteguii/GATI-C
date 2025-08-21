@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
 import { UserCombobox } from '@/components/ui/user-combobox';
 import { User } from "@/types/inventory";
@@ -32,6 +33,7 @@ interface AssignModalProps {
 
 export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignModalProps) {
   const { state, updateInventoryItem, addPendingRequest, addRecentActivity, addInventoryItem, updateInventory, addHistoryEvent } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
   const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
@@ -87,7 +89,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
       quantity,
     }
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       setPendingActionDetails(actionDetails)
       setIsConfirmEditorOpen(true)
       setIsLoading(false)
@@ -112,7 +114,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
 
         addHistoryEvent(details.productId, {
           fecha: new Date().toISOString(),
-          usuario: state.user?.nombre || 'Sistema',
+          usuario: user?.nombre || 'Sistema',
           accion: 'Asignación',
           detalles: `Asignado a ${details.assignedTo}. Notas: ${details.notes || 'N/A'}`
         });
@@ -156,7 +158,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
 
           addHistoryEvent(existingAssignedStack.id, {
             fecha: new Date().toISOString(),
-            usuario: state.user?.nombre || 'Sistema',
+            usuario: user?.nombre || 'Sistema',
             accion: 'Asignación',
             detalles: `Asignado a ${details.assignedTo}. Cantidad: ${details.quantity}. Notas: ${details.notes || 'N/A'}`
           });
@@ -175,7 +177,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
 
           addHistoryEvent(newAssignedItem.id, {
             fecha: new Date().toISOString(),
-            usuario: state.user?.nombre || 'Sistema',
+            usuario: user?.nombre || 'Sistema',
             accion: 'Asignación',
             detalles: `Asignado a ${details.assignedTo}. Cantidad: ${details.quantity}. Notas: ${details.notes || 'N/A'}`
           });
@@ -208,7 +210,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
       id: Date.now(),
       type: pendingActionDetails.type,
       details: pendingActionDetails,
-      requestedBy: state.user?.nombre || "Editor",
+      requestedBy: user?.nombre || "Editor",
       date: new Date().toISOString(),
       status: "Pendiente",
     })
@@ -237,7 +239,7 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
                   value={assignedToUser}
                   onValueChange={setAssignedToUser}
                   placeholder="Selecciona o crea un usuario"
-                  currentUserRole={state.user?.rol || "Lector"}
+                  currentUserRole={user?.rol || "Lector"}
                 />
               </div>
               {product.numeroSerie === null && (
@@ -273,8 +275,9 @@ export function AssignModal({ open, onOpenChange, product, onSuccess }: AssignMo
         open={isConfirmEditorOpen}
         onOpenChange={setIsConfirmEditorOpen}
         onConfirm={handleConfirmEditorAction}
-        actionType={pendingActionDetails?.type || 'acción'}
-        actionDescription={`el producto ${pendingActionDetails?.productName} a ${pendingActionDetails?.assignedTo}`}
+        title="Confirmar Solicitud de Asignación"
+        description={`Se enviará una solicitud para asignar el producto ${pendingActionDetails?.productName} a ${pendingActionDetails?.assignedTo}.`}
+        confirmText="Enviar Solicitud"
       />
     </>
   )

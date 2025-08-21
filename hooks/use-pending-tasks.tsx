@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 
 interface PendingTasksCount {
     total: number
@@ -19,6 +20,7 @@ interface PendingTasksCount {
  */
 export function usePendingTasks() {
     const { state } = useApp()
+    const { user } = useAuthStore()
     const [isLoading, setIsLoading] = useState(false)
     const [tasksCount, setTasksCount] = useState<PendingTasksCount>({
         total: 0,
@@ -30,7 +32,7 @@ export function usePendingTasks() {
 
     // Función para obtener el conteo de tareas pendientes
     const fetchPendingTasks = useCallback(async () => {
-        if (!state.user || !["Administrador", "Editor"].includes(state.user.rol)) {
+        if (!user || !["Administrador", "Editor"].includes(user.rol)) {
             return // Solo Admins y Editores ven tareas pendientes
         }
 
@@ -46,7 +48,7 @@ export function usePendingTasks() {
                 total: Math.floor(Math.random() * 15), // 0-14 tareas
                 quickLoads: Math.floor(Math.random() * 8), // 0-7 cargas rápidas
                 quickRetires: Math.floor(Math.random() * 5), // 0-4 retiros rápidos
-                editorRequests: state.user.rol === "Administrador" ? Math.floor(Math.random() * 3) : 0, // 0-2 solicitudes (solo para Admin)
+                editorRequests: user.rol === "Administrador" ? Math.floor(Math.random() * 3) : 0, // 0-2 solicitudes (solo para Admin)
                 lastUpdated: new Date()
             }
 
@@ -61,7 +63,7 @@ export function usePendingTasks() {
         } finally {
             setIsLoading(false)
         }
-    }, [state.user])
+    }, [user])
 
     // Función manual para refrescar
     const refresh = useCallback(() => {
@@ -82,7 +84,7 @@ export function usePendingTasks() {
     // Refrescar cuando cambia el usuario o su rol
     useEffect(() => {
         fetchPendingTasks()
-    }, [state.user?.rol, fetchPendingTasks])
+    }, [user?.rol, fetchPendingTasks])
 
     return {
         ...tasksCount,

@@ -17,6 +17,7 @@ import { showSuccess, showInfo } from "@/hooks/use-toast"
 import { Loader2, Edit } from "lucide-react"
 import { BrandCombobox } from "@/components/brand-combobox"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
 
 interface BulkEditModalProps {
@@ -28,6 +29,7 @@ interface BulkEditModalProps {
 
 export function BulkEditModal({ open, onOpenChange, selectedProductIds, onSuccess }: BulkEditModalProps) {
   const { state, addPendingRequest, addRecentActivity } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     categoria: "",
@@ -77,7 +79,7 @@ export function BulkEditModal({ open, onOpenChange, selectedProductIds, onSucces
   const handleBulkEdit = async () => {
     setIsLoading(true)
 
-    if (state.user?.rol === "Editor") {
+    if (user?.rol === "Editor") {
       // Do not clear form here, clear it after confirmation
       setIsConfirmEditorOpen(true)
       setIsLoading(false) // Reset loading if opening confirmation dialog
@@ -95,13 +97,13 @@ export function BulkEditModal({ open, onOpenChange, selectedProductIds, onSucces
         selectedProductIds: selectedProductIds, // Directive 3.1: Pass actual IDs
         updates: formData,
       },
-      requestedBy: state.user?.nombre || "Editor",
+      requestedBy: user?.nombre || "Editor",
       date: new Date().toISOString(),
       status: "Pendiente",
       auditLog: [
         {
           event: "CREACIÓN",
-          user: state.user?.nombre || "Editor",
+          user: user?.nombre || "Editor",
           dateTime: new Date().toISOString(),
           description: `Solicitud de edición masiva para ${selectedProductIds.length} productos creada.`,
         },

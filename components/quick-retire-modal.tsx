@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { Loader2, PackageMinus, HelpCircle } from "lucide-react"
 import { useApp } from "@/contexts/app-context"
+import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ProductSearchCombobox } from "./product-search-combobox"
 
@@ -28,6 +29,7 @@ interface QuickRetireModalProps {
 
 export function QuickRetireModal({ open, onOpenChange }: QuickRetireModalProps) {
   const { state, addPendingTask, addRecentActivity } = useApp()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isSerializedRetirement, setIsSerializedRetirement] = useState(true) // Default to serial number input
   const [formData, setFormData] = useState({
@@ -99,7 +101,7 @@ export function QuickRetireModal({ open, onOpenChange }: QuickRetireModalProps) 
       addPendingTask({
         type: "RETIRO",
         creationDate: new Date().toISOString(),
-        createdBy: state.user?.nombre || "Usuario Rápido",
+        createdBy: user?.nombre || "Usuario Rápido",
         status: "Pendiente",
         details: {
           productIdentifier: formData.productIdentifier,
@@ -117,7 +119,7 @@ export function QuickRetireModal({ open, onOpenChange }: QuickRetireModalProps) 
         auditLog: [
           {
             event: "CREACIÓN",
-            user: state.user?.nombre || "Usuario Rápido",
+            user: user?.nombre || "Usuario Rápido",
             dateTime: new Date().toISOString(),
             description: `Solicitud de retiro rápido para ${isSerializedRetirement ? "números de serie" : formData.productIdentifier} (${quantityToRetire} unidades) creada.`,
           },
@@ -129,13 +131,13 @@ export function QuickRetireModal({ open, onOpenChange }: QuickRetireModalProps) 
       })
       addRecentActivity({
         type: "Creación de Tarea",
-        description: `Tarea de retiro rápido para ${isSerializedRetirement ? "múltiples ítems" : formData.productIdentifier} creada por ${state.user?.nombre || "Usuario Rápido"}`,
+        description: `Tarea de retiro rápido para ${isSerializedRetirement ? "múltiples ítems" : formData.productIdentifier} creada por ${user?.nombre || "Usuario Rápido"}`,
         date: new Date().toLocaleString(),
         details: {
           productIdentifier: formData.productIdentifier,
           quantity: quantityToRetire,
           retireReason: formData.retireReason,
-          createdBy: state.user?.nombre || "Usuario Rápido",
+          createdBy: user?.nombre || "Usuario Rápido",
         },
       })
       // Reset form
