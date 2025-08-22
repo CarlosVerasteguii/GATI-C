@@ -95,6 +95,7 @@ import { LocationCombobox } from '@/components/location-combobox';
 import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
 import { useInventory } from "@/hooks/useInventory";
+import { createProductAPI, type CreateProductData } from "@/lib/api/inventory";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -162,7 +163,7 @@ export default function InventarioPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const { inventory, isLoading: inventoryLoading, isError: inventoryError } = useInventory()
+  const { inventory, isLoading: inventoryLoading, isError: inventoryError, mutate } = useInventory()
   const inventoryData = React.useMemo(() => Array.isArray(inventory) ? (inventory as unknown as InventoryItem[]) : [], [inventory])
 
   // Definir el reducer local para manejar acciones específicas del componente
@@ -754,7 +755,55 @@ export default function InventarioPage() {
   }
 
   const handleAddProduct = () => {
-    showInfo({ title: "Modo lectura", description: "Añadir producto deshabilitado temporalmente." })
+    setIsAddProductModalOpen(true)
+  }
+
+  const handleCreateProduct = async (productData: InventoryItem) => {
+    try {
+      // Convertir InventoryItem a CreateProductData
+      const createData: CreateProductData = {
+        nombre: productData.nombre,
+        marca: productData.marca,
+        modelo: productData.modelo,
+        numeroSerie: productData.numeroSerie,
+        categoria: productData.categoria,
+        descripcion: productData.descripcion,
+        estado: productData.estado,
+        cantidad: productData.cantidad,
+        fechaIngreso: productData.fechaIngreso,
+        ubicacion: productData.ubicacion,
+        proveedor: productData.proveedor,
+        costo: productData.costo,
+        fechaAdquisicion: productData.fechaAdquisicion,
+        fechaVencimientoGarantia: productData.fechaVencimientoGarantia,
+        vidaUtil: productData.vidaUtil,
+        isSerialized: productData.isSerialized,
+        contratoId: productData.contratoId,
+      }
+
+      // Llamar a la API para crear el producto
+      await createProductAPI(createData)
+
+      // Revalidar los datos del inventario
+      await mutate()
+
+      // Cerrar el modal
+      setIsAddProductModalOpen(false)
+
+      // Mostrar notificación de éxito
+      showSuccess({
+        title: "Producto creado",
+        description: `El producto "${productData.nombre}" ha sido creado exitosamente.`
+      })
+    } catch (error) {
+      console.error('Error creating product:', error)
+
+      // Mostrar notificación de error
+      showError({
+        title: "Error al crear producto",
+        description: "No se pudo crear el producto. Por favor, inténtalo de nuevo."
+      })
+    }
   }
 
   const executeSaveProduct = (_productData: Partial<InventoryItem>) => {
@@ -1205,7 +1254,7 @@ export default function InventarioPage() {
               <Button variant="outline" onClick={() => setIsImportModalOpen(true)} disabled>
                 Importar
               </Button>
-              <Button onClick={handleAddProduct} disabled>
+              <Button onClick={handleAddProduct}>
                 Añadir Producto
               </Button>
             </div>
@@ -1383,6 +1432,14 @@ export default function InventarioPage() {
           />
         </SheetContent>
       </Sheet>
+
+      {/* Modal para añadir/editar producto */}
+      <EditProductModal
+        open={isAddProductModalOpen}
+        onOpenChange={setIsAddProductModalOpen}
+        product={null}
+        onSuccess={handleCreateProduct}
+      />
     </TooltipProvider>
   )
 }

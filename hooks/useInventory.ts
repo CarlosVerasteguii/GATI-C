@@ -7,12 +7,13 @@ interface ApiResponse<T> {
 }
 
 export function useInventory() {
-    const { data, error, isLoading } = useSWR<ApiResponse<any[]>>('/api/v1/inventory', fetcher);
+    const { data, error, isLoading, mutate } = useSWR<ApiResponse<any[]>>('/api/v1/inventory', fetcher);
 
     return {
         inventory: data?.data,
         isLoading,
         isError: error,
+        mutate,
     } as const;
 }
 
