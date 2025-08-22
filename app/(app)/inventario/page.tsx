@@ -94,6 +94,7 @@ import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
 import { LocationCombobox } from '@/components/location-combobox';
 import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
+import { useInventory } from "@/hooks/useInventory";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -156,10 +157,13 @@ const allColumns: ColumnDefinition[] = [
 ]
 
 export default function InventarioPage() {
-  const { state, dispatch: appDispatch, liberarAsignacion, devolverPrestamo } = useApp()
+  const { state, dispatch: appDispatch } = useApp()
   const { user } = useAuthStore()
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  const { inventory, isLoading: inventoryLoading, isError: inventoryError } = useInventory()
+  const inventoryData = React.useMemo(() => Array.isArray(inventory) ? (inventory as unknown as InventoryItem[]) : [], [inventory])
 
   // Definir el reducer local para manejar acciones específicas del componente
   const inventoryReducer = (state: any, action: any) => {
@@ -196,8 +200,8 @@ export default function InventarioPage() {
 
   const [selectedRowIds, setSelectedRowIds] = useState<number[]>([])
   const selectedProductsData = useMemo(() => {
-    return state.inventoryData.filter(item => selectedRowIds.includes(item.id));
-  }, [selectedRowIds, state.inventoryData]);
+    return inventoryData.filter(item => selectedRowIds.includes(item.id));
+  }, [selectedRowIds, inventoryData]);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isDetailSheetOpen, setIsDetailSheetOpen] = useState(false)
@@ -261,9 +265,9 @@ export default function InventarioPage() {
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   const proveedoresUnicos = React.useMemo(() => {
-    const proveedores = new Set(state.inventoryData.map(item => item.proveedor).filter(Boolean));
+    const proveedores = new Set(inventoryData.map(item => item.proveedor).filter(Boolean));
     return Array.from(proveedores) as string[];
-  }, [state.inventoryData]);
+  }, [inventoryData]);
 
   // Lista de motivos de retiro
   const retirementReasons = [
@@ -467,7 +471,7 @@ export default function InventarioPage() {
 
   // Hooks de Procesamiento de Datos - Cadena de Transformación
   const expandedInventory = React.useMemo(() => {
-    return state.inventoryData.flatMap(item => {
+    return inventoryData.flatMap(item => {
       if (item.isSerialized === false && item.cantidad > 1) {
         // Para stacks, expandir en items virtuales
         return Array.from({ length: item.cantidad }, (_, index) => ({
@@ -481,7 +485,7 @@ export default function InventarioPage() {
       // Para items normales, solo añadir la reactKey
       return { ...item, reactKey: item.id.toString(), isVirtual: false };
     });
-  }, [state.inventoryData]);
+  }, [inventoryData]);
 
   const filteredData = React.useMemo(() => {
     const results = expandedInventory.filter((item: InventoryItem) => {
@@ -686,7 +690,7 @@ export default function InventarioPage() {
   // Calcular el número total de páginas
   const totalPages = Math.ceil(groupedAndFilteredData.length / itemsPerPage);
 
-  const selectedProducts = state.inventoryData.filter((item) => selectedRowIds.includes(item.id))
+  const selectedProducts = inventoryData.filter((item) => selectedRowIds.includes(item.id))
 
   const handleRowSelect = (id: number, checked: boolean) => {
     // En nuestra nueva tabla, el ID que recibimos siempre es de un 'InventoryItem' (un hijo)
@@ -1162,7 +1166,8 @@ export default function InventarioPage() {
     }
   }
 
-  const isLector = user?.rol === "Lector" // Corregido según PRD
+  const isLector = true // Modo solo lectura temporal
+  const isReadOnly = true
 
   // Function to calculate available and unavailable quantities for non-serialized items
   const getNonSerializedQtyBreakdown = (item: InventoryItem): QtyBreakdown | null => {
@@ -1175,7 +1180,7 @@ export default function InventarioPage() {
     let pendingRetireCount = 0
     let totalInInventory = 0
 
-    const allInstances = state.inventoryData.filter(
+    const allInstances = inventoryData.filter(
       (invItem) => invItem.nombre === item.nombre && invItem.modelo === item.modelo && invItem.numeroSerie === null,
     )
 
@@ -1267,34 +1272,45 @@ export default function InventarioPage() {
   }, [localState.lastRefresh]);
 
   const allCategories = useMemo(() => {
-    const categories = new Set((state.inventoryData || []).map((p) => p.categoria).filter(Boolean))
+    const categories = new Set((inventoryData || []).map((p) => p.categoria).filter(Boolean))
     return [...Array.from(categories).sort()]
-  }, [state.inventoryData])
+  }, [inventoryData])
 
   const allBrands = useMemo(() => {
-    const brands = new Set((state.inventoryData || []).map((p) => p.marca).filter(Boolean))
+    const brands = new Set((inventoryData || []).map((p) => p.marca).filter(Boolean))
     return [...Array.from(brands).sort()]
-  }, [state.inventoryData])
+  }, [inventoryData])
 
   const allStatuses = useMemo(() => {
-    const statuses = new Set((state.inventoryData || []).map((p) => p.estado).filter(Boolean))
+    const statuses = new Set((inventoryData || []).map((p) => p.estado).filter(Boolean))
     return [...Array.from(statuses).sort()]
-  }, [state.inventoryData])
+  }, [inventoryData])
 
   // Verificar si hay filtros avanzados activos
   const hasAdvancedFilters = advancedFilters.fechaInicio || advancedFilters.fechaFin ||
     advancedFilters.proveedor || advancedFilters.contratoId ||
     advancedFilters.costoMin !== null || advancedFilters.costoMax !== null;
 
+  if (inventoryLoading) {
+    return (
+      <div className="flex items-center justify-center p-8 text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cargando inventario...
+      </div>
+    )
+  }
+
+  if (inventoryError) {
+    return (
+      <div className="p-4 text-sm text-red-600">Error al cargar inventario. Inténtalo más tarde.</div>
+    )
+  }
+
   if (groupedAndFilteredData.length === 0 && !searchTerm && !filterCategoria && !filterMarca && !filterEstado && !hasAdvancedFilters) {
     return (
       <EmptyState
         title="No hay productos en el inventario"
         description="Comienza añadiendo productos a tu inventario."
-        action={{
-          label: "Añadir Producto",
-          onClick: handleAddProduct
-        }}
+        action={undefined}
       />
     )
   }
@@ -1336,24 +1352,24 @@ export default function InventarioPage() {
 
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
+    if (action !== 'Ver Detalles') {
+      showInfo({
+        title: 'Modo lectura',
+        description: 'Las acciones de modificación están deshabilitadas temporalmente.'
+      })
+      return;
+    }
     const isGroup = 'isParent' in data && data.isParent;
     let targetItem: InventoryItem | undefined | null = null;
 
     // --- LÓGICA DE DECISIÓN MEJORADA ---
     if (isGroup) {
-      // Si la acción es sobre un grupo...
-      if (action === 'Retiro Rápido') {
-        // Para retiro rápido, pasamos todo el grupo al modal.
-        // handleOpenQuickRetire(data);
-        return; // Salimos de la función aquí.
-      } else {
-        // Para otras acciones (Asignar, Prestar), buscamos un hijo disponible.
-        targetItem = data.children.find((child: InventoryItem) => child.estado === 'Disponible');
-        if (!targetItem) {
-          console.error(`Acción '${action}' falló: No hay unidades disponibles en el grupo.`);
-          // Aquí podríamos usar showError() para notificar al usuario.
-          return;
-        }
+      // En modo lectura, para ver detalles de un grupo tomamos el primer hijo disponible
+      targetItem = data.children.find((child: InventoryItem) => child.estado === 'Disponible')
+        || data.children[0];
+      if (!targetItem) {
+        console.error("No hay unidades en el grupo para ver detalles.");
+        return;
       }
     } else {
       // Si la acción es sobre un hijo, ese es nuestro objetivo.
@@ -1369,51 +1385,8 @@ export default function InventarioPage() {
 
     // Router de acciones que ahora recibe un targetItem válido.
     switch (action) {
-      case 'Asignar':
-        handleAssign(targetItem);
-        break;
-      case 'Prestar':
-        handleLend(targetItem);
-        break;
       case 'Ver Detalles':
         handleViewDetails(targetItem);
-        break;
-      case 'Editar':
-        handleEdit(targetItem);
-        break;
-      case 'Duplicar':
-        handleDuplicate(targetItem);
-        break;
-      case 'Marcar como Retirado': // Para la acción de "Retiro Definitivo"
-        handleMarkAsRetired(targetItem);
-        break;
-      case 'Reactivar':
-        handleReactivate(targetItem);
-        break;
-      case 'liberar':
-        if ('id' in targetItem) {
-          liberarAsignacion(targetItem.id, user || null);
-          showSuccess({
-            title: "Activo Liberado",
-            description: `El activo "${targetItem.nombre}" ha sido marcado como Disponible.`,
-          });
-        }
-        break;
-      case 'devolver':
-        if ('id' in targetItem) {
-          if (user?.rol === 'Lector') {
-            showError({
-              title: "Permiso denegado",
-              description: "No tienes permiso para realizar esta acción."
-            });
-            return;
-          }
-          devolverPrestamo(targetItem.id, user || null);
-          showSuccess({
-            title: "Préstamo Devuelto",
-            description: "El activo ha sido devuelto al inventario."
-          });
-        }
         break;
       default:
         console.warn(`Acción no manejada: ${action}`);

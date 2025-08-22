@@ -76,3 +76,8 @@ export async function apiClient(input: RequestInfo | URL, init: RequestInit = {}
 }
 
 
+// SWR fetcher compatible with our apiClient
+export const fetcher = async (url: string) => {
+    const response = await apiClient(url);
+    return response.json();
+};
