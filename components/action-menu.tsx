@@ -17,9 +17,10 @@ interface ActionMenuItem {
 
 interface ActionMenuProps {
   actions: ActionMenuItem[]
+  isReadOnly?: boolean
 }
 
-export function ActionMenu({ actions }: ActionMenuProps) {
+export function ActionMenu({ actions, isReadOnly = false }: ActionMenuProps) {
   return (
     <TooltipProvider>
       <DropdownMenu>
@@ -36,7 +37,7 @@ export function ActionMenu({ actions }: ActionMenuProps) {
                 key={index}
                 onClick={action.onClick}
                 className={action.destructive ? "text-red-600" : ""}
-                disabled={action.disabled}
+                disabled={action.disabled || (isReadOnly && action.label !== 'Ver Detalles')}
               >
                 {action.icon && <action.icon className="mr-2 h-4 w-4" />}
                 {action.label}

@@ -37,6 +37,7 @@ type GroupedInventoryTableProps = {
     sortColumn: string | null;
     sortDirection: 'asc' | 'desc';
     columns: ColumnDefinition[];
+    isReadOnly?: boolean;
 };
 
 const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
@@ -56,7 +57,8 @@ export function GroupedInventoryTable({
     onSort,
     sortColumn,
     sortDirection,
-    columns
+    columns,
+    isReadOnly = false
 }: GroupedInventoryTableProps) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
@@ -194,6 +196,7 @@ export function GroupedInventoryTable({
                                 onRowSelect={onRowSelect}
                                 isLector={isLector}
                                 onParentRowSelect={onParentRowSelect}
+                                isReadOnly={isReadOnly}
                             />
                             {expandedRows[parent.product.id] && (
                                 parent.children.map((child) => (
@@ -205,6 +208,7 @@ export function GroupedInventoryTable({
                                         selectedRowIds={selectedRowIds}
                                         onRowSelect={onRowSelect}
                                         isLector={isLector}
+                                        isReadOnly={isReadOnly}
                                         onAction={onAction}
                                     />
                                 ))

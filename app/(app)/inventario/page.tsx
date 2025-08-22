@@ -80,7 +80,7 @@ import { EmptyState } from "@/components/empty-state"
 import { useApp } from "@/contexts/app-context"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
-import { ActionMenu } from "@/components/action-menu"
+// import { ActionMenu } from "@/components/action-menu"
 import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
@@ -316,6 +316,7 @@ export default function InventarioPage() {
 
   // Handle URL params for processing tasks
   useEffect(() => {
+    if (isReadOnly) return
     const processCargaTaskId = searchParams.get("processCargaTaskId")
     const highlightRetireTask = searchParams.get("highlightRetireTask")
 
@@ -732,373 +733,48 @@ export default function InventarioPage() {
     setIsDetailSheetOpen(true)
   }
 
-  const handleEdit = (product: InventoryItem) => {
-    setSelectedProduct(product)
-    setModalMode("edit")
-    setTempMarca(product.marca)
-    setIsAddProductModalOpen(true)
+  const handleEdit = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Edición deshabilitada temporalmente." })
   }
 
-  const handleDuplicate = (product: InventoryItem) => {
-    setSelectedProduct(product)
-    setModalMode("duplicate")
-    setTempMarca(product.marca)
-    setIsAddProductModalOpen(true)
+  const handleDuplicate = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Duplicar deshabilitado temporalmente." })
   }
 
-  const handleMarkAsRetired = (product: InventoryItem) => {
-    setSelectedProduct(product)
-    setIsConfirmDialogOpen(true)
+  const handleMarkAsRetired = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
   }
 
-  const executeReactivate = (product: InventoryItem) => {
-    appDispatch({
-      type: 'UPDATE_INVENTORY_ITEM_STATUS',
-      payload: { id: product.id, status: "Disponible" }
-    })
-    appDispatch({
-      type: 'ADD_RECENT_ACTIVITY',
-      payload: {
-        type: "Reactivación",
-        description: `${product.nombre} reactivado`,
-        date: new Date().toLocaleString(),
-        details: { product: { id: product.id, name: product.nombre, serial: product.numeroSerie } },
-      }
-    })
-    showSuccess({
-      title: "Producto reactivado",
-      description: `${product.nombre} ha sido reactivado y está disponible.`,
-    })
+  const executeReactivate = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Reactivación deshabilitada temporalmente." })
   }
 
-  const handleReactivate = (product: InventoryItem) => {
-    setSelectedProduct(product)
-
-    if (user?.rol === "Editor") {
-      setPendingActionDetails({
-        type: "Reactivación",
-        productId: product.id,
-        productName: product.nombre,
-        productSerialNumber: product.numeroSerie,
-      })
-      setIsConfirmEditorOpen(true)
-      return
-    }
-
-    setIsReactivateConfirmOpen(true)
+  const handleReactivate = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Reactivación deshabilitada temporalmente." })
   }
 
   const handleAddProduct = () => {
-    setSelectedProduct(null)
-    setModalMode("add")
-    setTempMarca("")
-    setIsAddProductModalOpen(true)
+    showInfo({ title: "Modo lectura", description: "Añadir producto deshabilitado temporalmente." })
   }
 
-  const executeSaveProduct = (productData: Partial<InventoryItem>) => {
-    // Toast de autoguardado inmediato
-    showInfo({
-      title: "Guardando cambios...",
-      description: "Sincronizando datos con el servidor"
-    })
-
-    // Simulation logic remains the same
-    setTimeout(() => {
-      let newInventory = [...state.inventoryData]
-
-      if (modalMode === "add") {
-        // Add new product
-        const newId = Math.max(...state.inventoryData.map((item) => item.id)) + 1
-        const newProduct = {
-          id: newId,
-          fechaIngreso: new Date().toISOString().split("T")[0],
-          ...productData,
-        } as InventoryItem
-
-        newInventory = [...state.inventoryData, newProduct]
-        showSuccess({
-          title: "Producto añadido",
-          description: `${productData.nombre} ha sido añadido al inventario exitosamente.`,
-        })
-        appDispatch({
-          type: 'ADD_RECENT_ACTIVITY',
-          payload: {
-            type: "Creación de Producto",
-            description: `Producto "${productData.nombre}" creado`,
-            date: new Date().toLocaleString(),
-            details: newProduct,
-          }
-        })
-      } else if (modalMode === "edit") {
-        // Edit existing product
-        const originalProduct = state.inventoryData.find((item) => item.id === selectedProduct?.id)
-        newInventory = state.inventoryData.map((item) =>
-          item.id === selectedProduct?.id
-            ? {
-              ...item,
-              ...productData,
-            }
-            : item,
-        )
-
-        // Toast mejorado con información de cambios
-        showSuccess({
-          title: "Producto actualizado",
-          description: `Cambios guardados para "${productData.nombre || originalProduct?.nombre}"`
-        })
-        appDispatch({
-          type: 'ADD_RECENT_ACTIVITY',
-          payload: {
-            type: "Edición de Producto",
-            description: `Producto "${productData.nombre || originalProduct?.nombre}" actualizado`,
-            date: new Date().toLocaleString(),
-            details: { originalProduct, updatedProduct: productData },
-          }
-        })
-      } else if (modalMode === "duplicate") {
-        // Duplicate product
-        const newId = Math.max(...state.inventoryData.map((item) => item.id)) + 1
-        const duplicatedProduct = {
-          ...productData,
-          id: newId,
-          estado: "Disponible" as const,
-          numeroSerie: null, // Reset serial number for duplicated items
-          fechaIngreso: new Date().toISOString().split("T")[0],
-        } as InventoryItem
-
-        newInventory = [...state.inventoryData, duplicatedProduct]
-        showSuccess({
-          title: "Producto duplicado",
-          description: `Se ha creado una copia de "${productData.nombre}".`,
-        })
-        appDispatch({
-          type: 'ADD_RECENT_ACTIVITY',
-          payload: {
-            type: "Duplicación de Producto",
-            description: `Producto "${productData.nombre}" duplicado`,
-            date: new Date().toLocaleString(),
-            details: duplicatedProduct,
-          }
-        })
-      } else if (modalMode === "process-carga") {
-        // Process pending task
-        if (processingTaskId) {
-          const task = state.tasks.find((t) => t.id === processingTaskId)
-          if (!task) return
-
-          const newId = Math.max(...state.inventoryData.map((item) => item.id)) + 1
-          const newProduct = {
-            id: newId,
-            nombre: task.details.productName,
-            marca: task.details.brand || "Sin marca",
-            modelo: task.details.model || "Sin modelo",
-            categoria: task.details.category || "Sin categoría",
-            descripcion: task.details.description || "",
-            estado: "Disponible" as const,
-            cantidad: task.details.quantity,
-            numeroSerie: task.details.serialNumbers?.[0] || null,
-            fechaIngreso: new Date().toISOString().split("T")[0],
-            proveedor: task.details.proveedor || null,
-            fechaAdquisicion: task.details.fechaAdquisicion || null,
-            contratoId: task.details.contratoId || null,
-          } as InventoryItem
-
-          newInventory = [...state.inventoryData, newProduct]
-
-          // Remove the processed task
-          const updatedTasks = state.tasks.filter((t) => t.id !== processingTaskId)
-          appDispatch({
-            type: 'UPDATE_PENDING_TASK',
-            payload: {
-              id: processingTaskId,
-              updates: {
-                status: "Finalizada",
-                auditLog: [
-                  ...(state.tasks.find((t) => t.id === processingTaskId)?.auditLog || []),
-                  {
-                    event: "FINALIZACIÓN",
-                    user: user?.nombre || "Sistema",
-                    dateTime: new Date().toISOString(),
-                    description: `Tarea de carga procesada y producto añadido/actualizado en inventario.`,
-                  },
-                ],
-              }
-            }
-          })
-
-          showSuccess({
-            title: "Tarea procesada exitosamente",
-            description: `El producto "${task.details.productName}" ha sido añadido al inventario.`,
-          })
-          appDispatch({
-            type: 'ADD_RECENT_ACTIVITY',
-            payload: {
-              type: "Procesamiento de Tarea",
-              description: `Tarea #${processingTaskId} procesada: "${task.details.productName}" añadido`,
-              date: new Date().toLocaleString(),
-              details: { taskId: processingTaskId, newProduct },
-            }
-          })
-        }
-      }
-
-      appDispatch({
-        type: 'UPDATE_INVENTORY',
-        payload: newInventory
-      })
-      setIsAddProductModalOpen(false)
-      setSelectedProduct(null)
-      setProcessingTaskId(null)
-      setIsLoading(false)
-      setModalMode("add")
-      setActiveFormTab("basic")
-      setTempMarca("")
-      // Clear form data after successful save
-      const form = document.getElementById("product-form") as HTMLFormElement
-      if (form) {
-        form.reset()
-      }
-    }, 1200) // Ligeramente más tiempo para mostrar el progreso
+  const executeSaveProduct = (_productData: Partial<InventoryItem>) => {
+    showInfo({ title: "Modo lectura", description: "Guardado deshabilitado temporalmente." })
   }
 
   const handleSaveProduct = async () => {
-    setIsLoading(true)
-    const form = document.getElementById("product-form") as HTMLFormElement
-    const formData = new FormData(form)
-
-    // Verificar campos obligatorios independientemente de la pestaña activa
-    const nombre = formData.get("nombre") as string || selectedProduct?.nombre
-    const marca = tempMarca || selectedProduct?.marca
-    const modelo = formData.get("modelo") as string || selectedProduct?.modelo
-    const categoria = formData.get("categoria") as string || selectedProduct?.categoria
-
-    if (!nombre || !marca || !modelo || !categoria) {
-      showError({
-        title: "Campos requeridos",
-        description: "Por favor, completa todos los campos obligatorios (Nombre, Marca, Modelo y Categoría).",
-      })
-      setIsLoading(false)
-      // Cambiar a la pestaña básica si hay campos faltantes
-      setActiveFormTab("basic")
-      return
-    }
-
-    const productData: Partial<InventoryItem> = {
-      nombre: nombre,
-      marca: marca,
-      modelo: modelo,
-      categoria: categoria,
-      descripcion: (formData.get("descripcion") as string || '').trim() || undefined,
-      estado: selectedProduct?.estado || "Disponible",
-      cantidad: hasSerialNumber ? 1 : Number.parseInt(formData.get("cantidad") as string) || 1,
-      numeroSerie: hasSerialNumber ? (formData.get("numerosSerie") as string) || null : null,
-      proveedor: (formData.get("proveedor") as string | null) ?? undefined,
-      fechaAdquisicion: (formData.get("fechaAdquisicion") as string | null) ?? undefined,
-      contratoId: (formData.get("contratoId") as string) || null,
-      costo: formData.get("costo") ? parseFloat(formData.get("costo") as string) : undefined,
-      // garantia no existe en InventoryItem; remover del payload
-      vidaUtil: (formData.get("vidaUtil") as string | null) ?? undefined,
-      ubicacion: formData.get("ubicacion") as string || undefined,
-    }
-
-    if (user?.rol === "Editor") {
-      // Removed modalMode !== "process-carga" condition
-      setPendingActionDetails({
-        type:
-          modalMode === "add"
-            ? "Creación de Producto"
-            : modalMode === "edit"
-              ? "Edición de Producto"
-              : "Duplicación de Producto",
-        productData: productData,
-        originalProductId: selectedProduct?.id,
-      })
-      setIsConfirmEditorOpen(true)
-      setIsLoading(false)
-      return
-    }
-
-    executeSaveProduct(productData)
+    showInfo({ title: "Modo lectura", description: "Guardar deshabilitado temporalmente." })
   }
 
   const handleImportCSV = () => {
-    setShowImportProgress(true)
-    setImportProgress(0)
-
-    const interval = setInterval(() => {
-      setImportProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setTimeout(() => {
-            setShowImportProgress(false)
-            setIsImportModalOpen(false)
-            appDispatch({ type: 'UPDATE_INVENTORY', payload: state.inventoryData }) // Trigger re-render with current data
-            showSuccess({
-              title: "Importación completada",
-              description: "Se han importado 25 productos exitosamente.",
-            })
-            appDispatch({
-              type: 'ADD_RECENT_ACTIVITY',
-              payload: {
-                type: "Importación CSV",
-                description: "Se importaron 25 productos",
-                date: new Date().toLocaleString(),
-                details: { count: 25 },
-              }
-            })
-          }, 500)
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
+    showInfo({ title: "Modo lectura", description: "Importación deshabilitada temporalmente." })
   }
 
   const executeRetirement = () => {
-    // Validar que exista un producto seleccionado
-    if (!selectedProduct) {
-      showError({
-        title: "Error",
-        description: "No hay producto seleccionado para retirar.",
-      })
-      return
-    }
-
-    appDispatch({
-      type: 'UPDATE_INVENTORY_ITEM_STATUS',
-      payload: { id: selectedProduct.id, status: "Retirado" }
-    })
-    appDispatch({
-      type: 'ADD_RECENT_ACTIVITY',
-      payload: {
-        type: "Retiro de Producto",
-        description: `${selectedProduct.nombre} retirado`,
-        date: new Date().toLocaleString(),
-        details: {
-          product: { id: selectedProduct.id, name: selectedProduct.nombre, serial: selectedProduct.numeroSerie },
-        },
-      }
-    })
-    showSuccess({
-      title: "Producto retirado",
-      description: `${selectedProduct.nombre} ha sido marcado como retirado.`,
-    })
-    setIsConfirmDialogOpen(false) // Ensure dialog is closed
-    setSelectedProduct(null) // Clear selected product
+    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
   }
 
   const confirmRetirement = () => {
-    if (user?.rol === "Editor" && selectedProduct) {
-      setPendingActionDetails({
-        type: "Retiro de Producto",
-        productId: selectedProduct.id,
-        productName: selectedProduct.nombre,
-        productSerialNumber: selectedProduct.numeroSerie,
-      })
-      setIsConfirmEditorOpen(true)
-      return
-    }
-    executeRetirement()
+    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
   }
 
   const getModalTitle = () => {
@@ -1116,14 +792,12 @@ export default function InventarioPage() {
     }
   }
 
-  const handleAssign = (product: InventoryItem) => {
-    setSelectedProduct(product)
-    setIsAssignModalOpen(true)
+  const handleAssign = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Asignación deshabilitada temporalmente." })
   }
 
-  const handleLend = (product: InventoryItem) => {
-    setSelectedProduct(product)
-    setIsLendModalOpen(true)
+  const handleLend = (_product: InventoryItem) => {
+    showInfo({ title: "Modo lectura", description: "Préstamo deshabilitado temporalmente." })
   }
 
   const handleBulkSuccess = () => {
@@ -1474,6 +1148,7 @@ export default function InventarioPage() {
               {/* Botones de acciones masivas */}
               <Button
                 size="sm"
+                disabled
                 onClick={() => setIsBulkAssignModalOpen(true)}
               >
                 Asignar Selección
@@ -1481,6 +1156,7 @@ export default function InventarioPage() {
               <Button
                 variant="destructive"
                 size="sm"
+                disabled
                 onClick={() => setIsBulkRetireModalOpen(true)}
               >
                 Retirar Selección
@@ -1526,10 +1202,10 @@ export default function InventarioPage() {
               <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
                 Filtros Avanzados
               </Button>
-              <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+              <Button variant="outline" onClick={() => setIsImportModalOpen(true)} disabled>
                 Importar
               </Button>
-              <Button onClick={handleAddProduct}>
+              <Button onClick={handleAddProduct} disabled>
                 Añadir Producto
               </Button>
             </div>
@@ -1599,11 +1275,12 @@ export default function InventarioPage() {
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}
               onAction={handleMenuAction}
-              isLector={isLector}
+              isLector={true}
               onParentRowSelect={handleParentRowSelect}
               onSort={handleSort}
               sortColumn={sortColumn}
               sortDirection={sortDirection}
+              isReadOnly={true}
             />
           </CardContent>
           <CardFooter className="flex items-center justify-between py-4">
@@ -1658,36 +1335,10 @@ export default function InventarioPage() {
         {/* ... rest of the JSX ... */}
       </div>
 
-      {/* --- INICIO DE MODALES DE ACCIONES MASIVAS --- */}
-      <BulkAssignModal
-        open={isBulkAssignModalOpen}
-        onOpenChange={setIsBulkAssignModalOpen}
-        selectedProducts={selectedProductsData}
-        onSuccess={handleBulkSuccess}
-      />
-      <BulkRetireModal
-        open={isBulkRetireModalOpen}
-        onOpenChange={setIsBulkRetireModalOpen}
-        selectedProducts={selectedProductsData}
-        onSuccess={handleBulkSuccess}
-      />
-      {/* --- FIN DE MODALES DE ACCIONES MASIVAS --- */}
+      {/* --- INICIO DE MODALES DE ACCIONES MASIVAS (deshabilitadas en sólo lectura) --- */}
+      {/* <BulkAssignModal ... /> y <BulkRetireModal ... /> omitidos temporalmente */}
 
-      {/* Modal de Préstamo Individual */}
-      <LendModal
-        open={isLendModalOpen}
-        onOpenChange={setIsLendModalOpen}
-        product={selectedProduct}
-        onSuccess={handleBulkSuccess}
-      />
-
-      {/* Modal de Asignación Individual */}
-      <AssignModal
-        open={isAssignModalOpen}
-        onOpenChange={setIsAssignModalOpen}
-        product={selectedProduct}
-        onSuccess={handleBulkSuccess}
-      />
+      {/* Modales de Préstamo/Asignación omitidos en modo sólo lectura */}
 
       {/* Panel de Detalles */}
       <DetailSheet
@@ -1696,45 +1347,11 @@ export default function InventarioPage() {
         product={selectedProduct}
       />
 
-      {/* Modal de Edición de Producto */}
-      <EditProductModal
-        open={isAddProductModalOpen}
-        onOpenChange={setIsAddProductModalOpen}
-        product={selectedProduct}
-        onSuccess={handleBulkSuccess}
-      />
+      {/* Modal de Edición de Producto omitido en modo sólo lectura */}
 
-      {/* Diálogo de Confirmación para Retiro Definitivo */}
-      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Retiro Definitivo</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedProduct && `¿Estás seguro de que deseas marcar "${selectedProduct.nombre}" como retirado? Esta acción no se puede deshacer.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={executeRetirement}>Confirmar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Diálogo de Confirmación para Retiro omitido en modo sólo lectura */}
 
-      {/* Diálogo de Confirmación para Reactivar */}
-      <AlertDialog open={isReactivateConfirmOpen} onOpenChange={setIsReactivateConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Reactivación</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedProduct && `¿Estás seguro de que deseas reactivar "${selectedProduct.nombre}" y devolverlo al inventario como "Disponible"?`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => selectedProduct && executeReactivate(selectedProduct)}>Confirmar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Diálogo de Confirmación para Reactivar omitido en modo sólo lectura */}
 
       <Sheet open={isAdvancedFilterOpen} onOpenChange={setIsAdvancedFilterOpen}>
         <SheetContent>

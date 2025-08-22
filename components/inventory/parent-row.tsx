@@ -31,6 +31,7 @@ interface ParentRowProps {
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
     onParentRowSelect: (group: GroupedProduct, checked: boolean) => void;
+    isReadOnly?: boolean;
 }
 
 export function ParentRow({
@@ -42,7 +43,8 @@ export function ParentRow({
     selectedRowIds,
     onRowSelect,
     isLector,
-    onParentRowSelect
+    onParentRowSelect,
+    isReadOnly = false
 }: ParentRowProps) {
     const { product, summary } = parentProduct;
 
@@ -158,14 +160,14 @@ export function ParentRow({
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction('Asignar', parentProduct)}>
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', parentProduct)}>
                             Asignar desde Stock
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Prestar', parentProduct)}>
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Prestar', parentProduct)}>
                             Prestar desde Stock
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction('Retiro Rápido', parentProduct)}>
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Retiro Rápido', parentProduct)}>
                             Retiro Rápido de Stock
                         </DropdownMenuItem>
                     </DropdownMenuContent>

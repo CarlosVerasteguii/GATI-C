@@ -33,6 +33,7 @@ interface ChildRowProps {
     selectedRowIds: number[];
     onRowSelect: (id: number, checked: boolean) => void;
     isLector: boolean;
+    isReadOnly?: boolean;
     onAction: (action: string, asset: InventoryItem) => void;
 }
 
@@ -43,6 +44,7 @@ export function ChildRow({
     selectedRowIds,
     onRowSelect,
     isLector,
+    isReadOnly = false,
     onAction
 }: ChildRowProps) {
     const isSelected = selectedRowIds.includes(asset.id);
@@ -123,10 +125,10 @@ export function ChildRow({
                         <DropdownMenuItem onSelect={() => onAction('Ver Detalles', asset)}>
                             Ver Detalles
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Editar', asset)}>
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Editar', asset)}>
                             Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onAction('Duplicar', asset)}>
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Duplicar', asset)}>
                             Duplicar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -134,10 +136,10 @@ export function ChildRow({
                         {/* --- LÓGICA CONTEXTUAL --- */}
                         {asset.estado === 'Disponible' && (
                             <>
-                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
                                     Asignar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onAction('Prestar', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Prestar', asset)}>
                                     Prestar
                                 </DropdownMenuItem>
                             </>
@@ -145,10 +147,10 @@ export function ChildRow({
 
                         {asset.estado === 'Asignado' && (
                             <>
-                                <DropdownMenuItem onSelect={() => onAction('liberar', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('liberar', asset)}>
                                     Liberar Asignación
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
                                     Re-asignar
                                 </DropdownMenuItem>
                             </>
@@ -156,25 +158,25 @@ export function ChildRow({
 
                         {(asset.estado === 'Prestado') && (
                             <>
-                                <DropdownMenuItem onSelect={() => onAction('devolver', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('devolver', asset)}>
                                     <Undo2 className="mr-2 h-4 w-4" />
                                     <span>Devolver Préstamo</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => onAction('Asignar', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
                                     Re-asignar
                                 </DropdownMenuItem>
                             </>
                         )}
 
                         {asset.estado === 'Retirado' && (
-                            <DropdownMenuItem onSelect={() => onAction('Reactivar', asset)}>
+                            <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Reactivar', asset)}>
                                 Reactivar Activo
                             </DropdownMenuItem>
                         )}
                         {/* --- FIN LÓGICA CONTEXTUAL --- */}
 
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600" onSelect={() => onAction('Marcar como Retirado', asset)}>
+                        <DropdownMenuItem disabled={isReadOnly} className="text-red-600" onSelect={() => onAction('Marcar como Retirado', asset)}>
                             Retiro Definitivo
                         </DropdownMenuItem>
                     </DropdownMenuContent>
