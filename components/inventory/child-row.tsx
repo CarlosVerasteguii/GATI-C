@@ -176,8 +176,8 @@ export function ChildRow({
                         {/* --- FIN LÓGICA CONTEXTUAL --- */}
 
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isReadOnly} className="text-red-600" onSelect={() => onAction('Marcar como Retirado', asset)}>
-                            Retiro Definitivo
+                        <DropdownMenuItem disabled={isReadOnly} className="text-red-600" onSelect={() => onAction('Eliminar', asset)}>
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

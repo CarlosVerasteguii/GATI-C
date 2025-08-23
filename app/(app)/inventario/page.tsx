@@ -95,7 +95,7 @@ import { LocationCombobox } from '@/components/location-combobox';
 import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
 import { useInventory } from "@/hooks/useInventory";
-import { createProductAPI, type CreateProductData } from "@/lib/api/inventory";
+import { createProductAPI, updateProductAPI, deleteProductAPI, type CreateProductData, type UpdateProductData } from "@/lib/api/inventory";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -734,16 +734,18 @@ export default function InventarioPage() {
     setIsDetailSheetOpen(true)
   }
 
-  const handleEdit = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Edición deshabilitada temporalmente." })
+  const handleEdit = (product: InventoryItem) => {
+    setSelectedProduct(product)
+    setModalMode("edit")
+    setIsAddProductModalOpen(true)
   }
 
   const handleDuplicate = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Duplicar deshabilitado temporalmente." })
+    showInfo({ title: "Pendiente", description: "Duplicar no implementado en esta iteración." })
   }
 
   const handleMarkAsRetired = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
+    showInfo({ title: "Pendiente", description: "Flujo de retiro fuera de alcance de este cambio." })
   }
 
   const executeReactivate = (_product: InventoryItem) => {
@@ -751,58 +753,50 @@ export default function InventarioPage() {
   }
 
   const handleReactivate = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Reactivación deshabilitada temporalmente." })
+    showInfo({ title: "Pendiente", description: "Reactivación fuera de alcance de este cambio." })
   }
 
   const handleAddProduct = () => {
     setIsAddProductModalOpen(true)
   }
 
-  const handleCreateProduct = async (productData: InventoryItem) => {
+  const handleCreateProduct = async (productData: { mode: 'add' | 'edit'; payload: CreateProductData | UpdateProductData; productId?: string }) => {
     try {
-      // Convertir InventoryItem a CreateProductData
-      const createData: CreateProductData = {
-        nombre: productData.nombre,
-        marca: productData.marca,
-        modelo: productData.modelo,
-        numeroSerie: productData.numeroSerie,
-        categoria: productData.categoria,
-        descripcion: productData.descripcion,
-        estado: productData.estado,
-        cantidad: productData.cantidad,
-        fechaIngreso: productData.fechaIngreso,
-        ubicacion: productData.ubicacion,
-        proveedor: productData.proveedor,
-        costo: productData.costo,
-        fechaAdquisicion: productData.fechaAdquisicion,
-        fechaVencimientoGarantia: productData.fechaVencimientoGarantia,
-        vidaUtil: productData.vidaUtil,
-        isSerialized: productData.isSerialized,
-        contratoId: productData.contratoId,
+      if (productData.mode === 'add') {
+        await createProductAPI(productData.payload as CreateProductData)
+      } else if (productData.mode === 'edit' && productData.productId) {
+        await updateProductAPI(productData.productId, productData.payload as UpdateProductData)
       }
-
-      // Llamar a la API para crear el producto
-      await createProductAPI(createData)
 
       // Revalidar los datos del inventario
       await mutate()
 
-      // Cerrar el modal
       setIsAddProductModalOpen(false)
 
       // Mostrar notificación de éxito
       showSuccess({
-        title: "Producto creado",
-        description: `El producto "${productData.nombre}" ha sido creado exitosamente.`
+        title: productData.mode === 'add' ? "Producto creado" : "Producto actualizado",
+        description: productData.mode === 'add' ? "Se creó el producto correctamente." : "Se actualizó el producto correctamente."
       })
     } catch (error) {
       console.error('Error creating product:', error)
 
       // Mostrar notificación de error
       showError({
-        title: "Error al crear producto",
-        description: "No se pudo crear el producto. Por favor, inténtalo de nuevo."
+        title: productData.mode === 'add' ? "Error al crear producto" : "Error al actualizar producto",
+        description: "Ocurrió un error en la operación. Inténtalo de nuevo."
       })
+    }
+  }
+
+  const handleDeleteProduct = async (asset: InventoryItem) => {
+    try {
+      await deleteProductAPI(String(asset.id))
+      await mutate()
+      showSuccess({ title: "Producto eliminado", description: `Se eliminó "${asset.nombre}".` })
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      showError({ title: "Error al eliminar", description: "No se pudo eliminar el producto." })
     }
   }
 
@@ -1076,11 +1070,7 @@ export default function InventarioPage() {
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
     if (action !== 'Ver Detalles') {
-      showInfo({
-        title: 'Modo lectura',
-        description: 'Las acciones de modificación están deshabilitadas temporalmente.'
-      })
-      return;
+      // Allow edit/delete
     }
     const isGroup = 'isParent' in data && data.isParent;
     let targetItem: InventoryItem | undefined | null = null;
@@ -1110,6 +1100,15 @@ export default function InventarioPage() {
     switch (action) {
       case 'Ver Detalles':
         handleViewDetails(targetItem);
+        break;
+      case 'Editar':
+        handleEdit(targetItem)
+        break;
+      case 'Retiro Definitivo':
+        handleMarkAsRetired(targetItem)
+        break;
+      case 'Eliminar':
+        handleDeleteProduct(targetItem)
         break;
       default:
         console.warn(`Acción no manejada: ${action}`);
@@ -1329,7 +1328,7 @@ export default function InventarioPage() {
               onSort={handleSort}
               sortColumn={sortColumn}
               sortDirection={sortDirection}
-              isReadOnly={true}
+              isReadOnly={false}
             />
           </CardContent>
           <CardFooter className="flex items-center justify-between py-4">
@@ -1437,7 +1436,7 @@ export default function InventarioPage() {
       <EditProductModal
         open={isAddProductModalOpen}
         onOpenChange={setIsAddProductModalOpen}
-        product={null}
+        product={modalMode === 'edit' ? selectedProduct : null}
         onSuccess={handleCreateProduct}
       />
     </TooltipProvider>

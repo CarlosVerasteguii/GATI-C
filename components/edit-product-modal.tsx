@@ -25,13 +25,14 @@ import { ProviderCombobox } from './provider-combobox';
 import { LocationCombobox } from './location-combobox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { InventoryItem } from "@/types/inventory";
+import type { CreateProductData, UpdateProductData } from "@/lib/api/inventory";
 import React from "react";
 
 export interface EditProductModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product?: InventoryItem | null;
-  onSuccess?: (product: InventoryItem) => void;
+  onSuccess?: (args: { mode: 'add' | 'edit'; payload: CreateProductData | UpdateProductData; productId?: string }) => void;
 }
 
 export function EditProductModal({
@@ -40,7 +41,7 @@ export function EditProductModal({
   product,
   onSuccess
 }: EditProductModalProps) {
-  const { state, addPendingTask, addInventoryItem, updateInventoryItem, addHistoryEvent } = useApp()
+  const { state } = useApp()
   const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"basic" | "details" | "documents">("basic")
@@ -246,110 +247,32 @@ export function EditProductModal({
 
     setIsLoading(true)
 
-    // Prepare updates based on whether it's serialized or not
-    const updates = {
-      nombre: formData.productName,
-      marca: formData.brand,
-      modelo: formData.model,
-      categoria: formData.category,
-      descripcion: formData.description,
-      fechaIngreso: formData.fechaIngreso,
-      proveedor: formData.proveedor,
-      ubicacion: formData.ubicacion,
-      fechaAdquisicion: formData.fechaAdquisicion,
-      contratoId: formData.contratoId,
-      cantidad: tempCantidad,
-      numeroSerie: tempNumeroSerie,
-      costo: formData.costo ? parseFloat(formData.costo) : undefined,
-      fechaVencimientoGarantia: formData.fechaVencimientoGarantia || null,
-      vidaUtil: formData.vidaUtil || undefined,
-      documentosAdjuntos: attachedDocuments.map(doc => ({
-        name: doc.name,
-        url: doc.url
-      }))
-    }
-
-
     const mode = product ? 'edit' : 'add';
 
-    if (user?.rol === 'Administrador') {
+    // Build backend-aligned payload
+    const common = {
+      name: formData.productName,
+      serial_number: modalHasSerial ? (formData.serialNumber || null) : null,
+      description: formData.description || null,
+      cost: formData.costo ? parseFloat(formData.costo) : null,
+      purchase_date: formData.fechaAdquisicion || null,
+      condition: null as string | null,
+      brandId: null as string | null,
+      categoryId: null as string | null,
+      locationId: null as string | null,
+    };
+
+    try {
       if (mode === 'edit' && product) {
-        updateInventoryItem(product.id, updates);
-
-        addHistoryEvent(product.id, {
-          fecha: new Date().toISOString(),
-          usuario: user?.nombre || 'Sistema',
-          accion: 'Edición',
-          detalles: 'Se han modificado los detalles del producto.'
-        });
-
-        showSuccess({
-          title: "Producto Actualizado",
-          description: `${formData.productName} ha sido actualizado exitosamente.`
-        })
+        const updatePayload: UpdateProductData = { ...common };
+        onSuccess?.({ mode: 'edit', payload: updatePayload, productId: String(product.id) });
       } else {
-        // Estamos creando un nuevo producto
-        const newItem: InventoryItem = {
-          id: Math.floor(Math.random() * 100000) + 1000,
-          nombre: updates.nombre,
-          marca: updates.marca,
-          modelo: updates.modelo,
-          categoria: updates.categoria,
-          descripcion: updates.descripcion,
-          estado: 'Disponible',
-          cantidad: tempCantidad,
-          numeroSerie: tempNumeroSerie,
-          isSerialized: modalHasSerial, // <-- PROPIEDAD CLAVE
-          fechaIngreso: updates.fechaIngreso,
-          fechaAdquisicion: updates.fechaAdquisicion,
-          costo: updates.costo,
-          proveedor: updates.proveedor,
-          ubicacion: updates.ubicacion,
-          contratoId: updates.contratoId,
-          fechaVencimientoGarantia: updates.fechaVencimientoGarantia,
-          vidaUtil: updates.vidaUtil,
-          documentosAdjuntos: updates.documentosAdjuntos
-        };
-        addInventoryItem(newItem);
-        showSuccess({
-          title: "Producto Añadido",
-          description: "El nuevo producto ha sido añadido al inventario."
-        });
+        const createPayload: CreateProductData = { ...common };
+        onSuccess?.({ mode: 'add', payload: createPayload });
       }
-      setIsLoading(false);
       onOpenChange(false);
-      onSuccess?.(product || ({} as InventoryItem)); // Pass the product if it exists
-
-    } else {
-      // --- FLUJO PARA OTROS ROLES: CREAR TAREA PENDIENTE ---
-      setTimeout(() => {
-        addPendingTask({
-          id: Math.floor(Math.random() * 10000),
-          type: mode === 'edit' ? "Edición de Producto" : "Creación de Producto",
-          creationDate: new Date().toISOString(),
-          createdBy: user?.nombre || "Usuario Desconocido",
-          status: "Pendiente",
-          details: {
-            originalProductId: product?.id,
-            updates: updates,
-          },
-          auditLog: [
-            {
-              event: "CREACIÓN",
-              user: user?.nombre || "Usuario Desconocido",
-              dateTime: new Date().toISOString(),
-              description: `Solicitud de ${mode === 'edit' ? 'edición' : 'creación'} para el producto ${updates.nombre} creada.`,
-            },
-          ],
-        });
-        showSuccess({
-          title: "Solicitud Enviada",
-          description: "Tu solicitud ha sido enviada para aprobación."
-        });
-        setIsLoading(false);
-        onOpenChange(false);
-        onSuccess?.(product || ({} as InventoryItem)); // Pass the product if it exists
-      }, 1000);
+    } finally {
+      setIsLoading(false);
     }
   }
 
