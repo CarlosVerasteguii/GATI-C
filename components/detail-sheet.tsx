@@ -161,9 +161,8 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Detalles del Retiro</h4>
                   <div className="space-y-2 text-sm">
-                    {/* Aquí irían los detalles específicos del retiro */}
-                    <p><span className="text-muted-foreground">Motivo:</span> Fin de vida útil</p>
-                    <p><span className="text-muted-foreground">Fecha de retiro:</span> 2024-01-15</p>
+                    <p><span className="text-muted-foreground">Motivo:</span> {product.retirementReason || 'No especificado'}</p>
+                    <p><span className="text-muted-foreground">Fecha de retiro:</span> {product.retirementDate ? new Date(product.retirementDate).toLocaleDateString('es-MX') : 'N/D'}</p>
                   </div>
                 </div>
               )}
