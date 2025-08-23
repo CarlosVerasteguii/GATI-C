@@ -13,7 +13,7 @@ interface DetailSheetProps {
 export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
   if (!product) return null
 
-  const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const getStatusVariant = (status: InventoryItem['status']): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Disponible': return 'default';
       case 'Asignado': return 'secondary';
@@ -59,59 +59,59 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-muted-foreground">Nombre:</span>
-                    <p>{product.nombre}</p>
+                    <p>{product.name}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Marca:</span>
-                    <p>{product.marca}</p>
+                    <p>{product.brand}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Modelo:</span>
-                    <p>{product.modelo}</p>
+                    <p>{product.model}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Número de Serie:</span>
-                    <p>{product.numeroSerie || 'N/A'}</p>
+                    <p>{product.serialNumber || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Categoría:</span>
-                    <p>{product.categoria}</p>
+                    <p>{product.category}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Proveedor:</span>
-                    <p>{product.proveedor || 'No especificado'}</p>
+                    <p>{product.provider || 'No especificado'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Ubicación:</span>
-                    <p>{product.ubicacion || 'No especificada'}</p>
+                    <p>{product.location || 'No especificada'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">ID de Contrato:</span>
-                    <p>{product.contratoId || 'No especificado'}</p>
+                    <p>{product.contractId || 'No especificado'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Estado:</span>
-                    <p>{product.estado}</p>
+                    <p>{product.status}</p>
                   </div>
-                  {product.estado === 'Asignado' && (
+                  {product.status === 'Asignado' && (
                     <>
                       <div>
                         <span className="text-sm text-muted-foreground">Asignado a:</span>
-                        <p>{product.asignadoA || 'No especificado'}</p>
+                        <p>{product.assignedTo || 'No especificado'}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">Fecha de Asignación:</span>
-                        <p>{product.fechaAsignacion || 'No especificada'}</p>
+                        <p>{product.assignmentDate || 'No especificada'}</p>
                       </div>
                     </>
                   )}
                   <div>
                     <span className="text-sm text-muted-foreground">Costo de Adquisición:</span>
-                    <p>{typeof product.costo === 'number' ? product.costo.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</p>
+                    <p>{typeof product.cost === 'number' ? product.cost.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : '$0.00'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-muted-foreground">Garantía:</span>
-                    <p>{product.fechaVencimientoGarantia ? new Date(product.fechaVencimientoGarantia).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Sin garantía registrada'}</p>
+                    <p>{product.warrantyExpirationDate ? new Date(product.warrantyExpirationDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Sin garantía registrada'}</p>
                   </div>
                 </div>
               </div>
@@ -121,7 +121,7 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-muted-foreground">Descripción:</span>
-                    <p>{product.descripcion}</p>
+                    <p>{product.description}</p>
                   </div>
                 </div>
               </div>
@@ -132,32 +132,32 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
             <div className="space-y-4 pt-4">
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-muted-foreground">Estado Actual:</span>
-                <Badge variant={getStatusVariant(product.estado)} className="text-base px-3 py-1">
-                  {product.estado}
+                <Badge variant={getStatusVariant(product.status)} className="text-base px-3 py-1">
+                  {product.status}
                 </Badge>
               </div>
 
-              {product.estado === 'Asignado' && (
+              {product.status === 'Asignado' && (
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Detalles de la Asignación</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Asignado a:</span> {product.asignadoA || 'N/D'}</p>
-                    <p><span className="text-muted-foreground">Fecha:</span> {product.fechaAsignacion ? new Date(product.fechaAsignacion).toLocaleDateString() : 'N/D'}</p>
+                    <p><span className="text-muted-foreground">Asignado a:</span> {product.assignedTo || 'N/D'}</p>
+                    <p><span className="text-muted-foreground">Fecha:</span> {product.assignmentDate ? new Date(product.assignmentDate).toLocaleDateString() : 'N/D'}</p>
                   </div>
                 </div>
               )}
 
-              {product.estado === 'Prestado' && (
+              {product.status === 'Prestado' && (
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Detalles del Préstamo</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Prestado a:</span> {product.prestadoA || 'N/D'}</p>
-                    <p><span className="text-muted-foreground">Fecha de Devolución:</span> {product.fechaDevolucion ? new Date(product.fechaDevolucion).toLocaleDateString() : 'N/D'}</p>
+                    <p><span className="text-muted-foreground">Prestado a:</span> {product.lentTo || 'N/D'}</p>
+                    <p><span className="text-muted-foreground">Fecha de Devolución:</span> {product.returnDate ? new Date(product.returnDate).toLocaleDateString() : 'N/D'}</p>
                   </div>
                 </div>
               )}
 
-              {product.estado === 'Retirado' && (
+              {product.status === 'Retirado' && (
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Detalles del Retiro</h4>
                   <div className="space-y-2 text-sm">
@@ -172,17 +172,17 @@ export function DetailSheet({ open, onOpenChange, product }: DetailSheetProps) {
 
           <TabsContent value="historial" className="mt-4">
             <div className="space-y-4">
-              {product.historial && product.historial.length > 0 ? (
-                [...product.historial].reverse().map((event, index) => (
+              {product.history && product.history.length > 0 ? (
+                [...product.history].reverse().map((event, index) => (
                   <div key={index} className="flex items-start gap-4">
                     <div className="mt-1">
-                      {getHistoryIcon(event.accion)}
+                      {getHistoryIcon(event.action)}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium">{event.accion} por {event.usuario}</p>
-                      <p className="text-sm text-muted-foreground">{event.detalles}</p>
+                      <p className="font-medium">{event.action} por {event.user}</p>
+                      <p className="text-sm text-muted-foreground">{event.details}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(event.fecha).toLocaleString()}
+                        {new Date(event.date).toLocaleString()}
                       </p>
                     </div>
                   </div>
