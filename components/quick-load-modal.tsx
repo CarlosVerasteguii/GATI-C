@@ -33,9 +33,9 @@ interface QuickLoadModalProps {
   initialModel?: string
   initialCategory?: string
   initialDescription?: string
-  initialProveedor?: string
-  initialFechaAdquisicion?: string
-  initialContratoId?: string
+  initialProvider?: string
+  initialPurchaseDate?: string
+  initialContractId?: string
   initialHasSerialNumber?: boolean
 }
 
@@ -49,9 +49,9 @@ export function QuickLoadModal({
   initialModel = "",
   initialCategory = "",
   initialDescription = "",
-  initialProveedor = "",
-  initialFechaAdquisicion = "",
-  initialContratoId = "",
+  initialProvider = "",
+  initialPurchaseDate = "",
+  initialContractId = "",
   initialHasSerialNumber = false,
 }: QuickLoadModalProps) {
   const { state, addPendingTask, addRecentActivity } = useApp()
@@ -66,11 +66,10 @@ export function QuickLoadModal({
     model: initialModel,
     category: initialCategory,
     description: initialDescription,
-    proveedor: initialProveedor,
-    fechaAdquisicion: initialFechaAdquisicion,
-    contratoId: initialContratoId,
+    provider: initialProvider,
+    purchaseDate: initialPurchaseDate,
+    contractId: initialContractId,
   })
-
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -115,9 +114,9 @@ export function QuickLoadModal({
           model: formData.model,
           category: formData.category,
           description: formData.description,
-          proveedor: formData.proveedor, // New field
-          fechaAdquisicion: formData.fechaAdquisicion, // New field
-          contratoId: formData.contratoId, // New field
+          provider: formData.provider, // Updated field name
+          purchaseDate: formData.purchaseDate, // Updated field name
+          contractId: formData.contractId, // Updated field name
         },
         auditLog: [
           {
@@ -152,9 +151,9 @@ export function QuickLoadModal({
         model: "",
         category: "",
         description: "",
-        proveedor: "",
-        fechaAdquisicion: "",
-        contratoId: "",
+        provider: "",
+        purchaseDate: "",
+        contractId: "",
       })
       setHasSerialNumber(false)
       setIsLoading(false)
@@ -207,7 +206,7 @@ export function QuickLoadModal({
                     <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {state.categorias.map((category) => (
+                    {state.categories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -221,28 +220,28 @@ export function QuickLoadModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
               <h3 className="col-span-full text-lg font-semibold border-b pb-2 mb-2">Detalles de Adquisición</h3>
               <div className="space-y-2">
-                <Label htmlFor="proveedor">Proveedor</Label>
+                <Label htmlFor="provider">Proveedor</Label>
                 <Input
-                  id="proveedor"
-                  value={formData.proveedor}
-                  onChange={(e) => handleInputChange("proveedor", e.target.value)}
+                  id="provider"
+                  value={formData.provider}
+                  onChange={(e) => handleInputChange("provider", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="fechaAdquisicion">Fecha de Adquisición</Label>
+                <Label htmlFor="purchaseDate">Fecha de Adquisición</Label>
                 <Input
-                  id="fechaAdquisicion"
+                  id="purchaseDate"
                   type="date"
-                  value={formData.fechaAdquisicion}
-                  onChange={(e) => handleInputChange("fechaAdquisicion", e.target.value)}
+                  value={formData.purchaseDate}
+                  onChange={(e) => handleInputChange("purchaseDate", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contratoId">SICE / Contrato ID</Label>
+                <Label htmlFor="contractId">SICE / Contrato ID</Label>
                 <Input
-                  id="contratoId"
-                  value={formData.contratoId}
-                  onChange={(e) => handleInputChange("contratoId", e.target.value)}
+                  id="contractId"
+                  value={formData.contractId}
+                  onChange={(e) => handleInputChange("contractId", e.target.value)}
                 />
               </div>
               <div className="space-y-2">

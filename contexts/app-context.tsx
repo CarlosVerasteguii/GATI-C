@@ -3,6 +3,10 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react"
 import type { InventoryItem, User, HistoryEvent } from "@/types/inventory"
 
+// It's likely this type should live in `types/inventory.ts` alongside InventoryItem,
+// but for now we can define it here to resolve type errors.
+export type InventoryStatus = "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
+
 // Application state type definitions
 interface AssignmentItem {
   id: number
@@ -496,7 +500,7 @@ interface AppContextType {
   addInventoryItem: (item: InventoryItem) => void
   updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void
   releaseAssignment: (itemId: number, currentUser: User | null) => void
-  updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => void
+  updateInventoryItemStatus: (id: number, status: InventoryStatus) => void;
   removeInventoryItem: (id: number) => void
   updateAssignments: (assignments: AssignmentItem[]) => void
   addAssignment: (assignment: AssignmentItem) => void
@@ -586,7 +590,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
           ...prev,
           inventoryData: prev.inventoryData.map(item =>
             item.id === action.payload.id ?
-              { ...item, status: action.payload.status as any } :
+              { ...item, status: action.payload.status } :
               item
           ),
         }));
@@ -830,7 +834,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
           };
         } else {
           // Create new preference
-          const allColumnsForPage = pageId === "inventario"
+          const allColumnsForPage = pageId === "inventory"
             ? [
               { id: "name", label: "Nombre", visible: true },
               { id: "brand", label: "Marca", visible: true },
@@ -1051,7 +1055,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     addInventoryItem,
     updateInventoryItem,
     releaseAssignment,
-    updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => {
+    updateInventoryItemStatus: (id: number, status: InventoryStatus) => {
       const item = state.inventoryData.find(i => i.id === id)
       if (item) {
         updateInventoryItem(id, { status: status })
