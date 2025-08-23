@@ -425,7 +425,7 @@ export function EditProductModal({
                     type="date"
                     value={formData.entryDate}
                     onChange={(e) => handleInputChange("entryDate", e.target.value)}
-                    disabled={user?.rol !== "Administrador"}
+                    disabled={user?.role !== "Administrador"}
                     required
                   />
                 </div>
@@ -447,9 +447,9 @@ export function EditProductModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contratoId">ID de Contrato</Label>
+                  <Label htmlFor="contractId">ID de Contrato</Label>
                   <Input
-                    id="contratoId"
+                    id="contractId"
                     value={formData.contractId || ''}
                     onChange={(e) => handleInputChange("contractId", e.target.value)}
                     placeholder="Ej: CFE-2024-001"

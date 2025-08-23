@@ -43,11 +43,11 @@ export interface InventoryItem {
 // Este tipo representa un usuario.
 export interface User {
     id: number;
-    nombre: string;
+    name: string;
     email: string;
     password?: string;
-    rol: "Administrador" | "Editor" | "Lector";
-    departamento?: string;
+    role: "Administrador" | "Editor" | "Lector";
+    department?: string;
 }
 
 // Este es el tipo para nuestra estructura de datos AGRUPADA que usa la tabla.

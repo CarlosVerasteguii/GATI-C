@@ -3,41 +3,41 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react"
 import type { InventoryItem, User, HistoryEvent } from "@/types/inventory"
 
-// Definición de tipos para el estado de la aplicación
-interface AsignadoItem {
+// Application state type definitions
+interface AssignmentItem {
   id: number
-  articuloId: number // ID del item de inventario original
-  nombre: string
-  numeroSerie: string | null
-  asignadoA: string
-  fechaAsignacion: string // YYYY-MM-DD
-  estado: "Activo" | "Devuelto"
-  notas?: string
-  registradoPor?: string
+  inventoryItemId: number // ID of the original inventory item
+  name: string
+  serialNumber: string | null
+  assignedTo: string
+  assignmentDate: string // YYYY-MM-DD
+  status: "Activo" | "Devuelto"
+  notes?: string
+  registeredBy?: string
 }
 
-interface PrestamoItem {
+interface LoanItem {
   id: number
-  articuloId: number // ID del item de inventario original
-  nombre: string
-  numeroSerie: string | null
-  prestadoA: string
-  fechaPrestamo: string // YYYY-MM-DD
-  fechaDevolucion: string // YYYY-MM-DD
-  estado: "Activo" | "Devuelto" | "Vencido"
-  diasRestantes: number
-  notas?: string
-  registradoPor?: string
+  inventoryItemId: number // ID of the original inventory item
+  name: string
+  serialNumber: string | null
+  lentTo: string
+  loanDate: string // YYYY-MM-DD
+  returnDate: string // YYYY-MM-DD
+  status: "Activo" | "Devuelto" | "Vencido"
+  remainingDays: number
+  notes?: string
+  registeredBy?: string
 }
 
-interface SolicitudAcceso {
+interface AccessRequest {
   id: number
-  nombre: string
+  name: string
   email: string
-  justificacion: string
-  fecha: string
-  estado: "Pendiente" | "Aprobada" | "Rechazada"
-  password?: string // Temporal password storage for approved access requests
+  justification: string
+  date: string
+  status: "Pendiente" | "Aprobada" | "Rechazada"
+  password?: string // Temporary password storage for approved access requests
 }
 
 interface PendingActionRequest {
@@ -124,16 +124,16 @@ const defaultLowStockThresholds: InventoryLowStockThresholds = {
 
 interface AppState {
   inventoryData: InventoryItem[]
-  asignadosData: AsignadoItem[]
-  prestamosData: PrestamoItem[]
-  solicitudesAcceso: SolicitudAcceso[]
+  assignmentsData: AssignmentItem[]
+  loansData: LoanItem[]
+  accessRequests: AccessRequest[]
   pendingActionRequests: PendingActionRequest[]
   recentActivities: RecentActivity[]
   tasks: PendingTask[]
-  categorias: string[]
-  marcas: string[]
-  proveedores: string[];
-  ubicaciones: string[];
+  categories: string[]
+  brands: string[]
+  providers: string[];
+  locations: string[];
   retirementReasons: string[]
   userColumnPreferences: UserColumnPreference[]
   userTheme?: string // Añadimos el tema del usuario al estado
@@ -152,188 +152,188 @@ const defaultInventoryData: InventoryItem[] = [
   // Laptops
   {
     id: 1,
-    nombre: "Laptop de Desarrollo Avanzado",
-    marca: "Dell",
-    modelo: "XPS 15",
-    numeroSerie: "DXPS15-001",
-    categoria: "Laptops",
-    estado: "Disponible",
-    cantidad: 1,
-    fechaIngreso: "2023-01-15",
-    ubicacion: "Oficina Principal - Piso 2",
-    proveedor: "Compudel",
-    costo: 2200,
-    fechaAdquisicion: "2023-01-10",
+    name: "Laptop de Desarrollo Avanzado",
+    brand: "Dell",
+    model: "XPS 15",
+    serialNumber: "DXPS15-001",
+    category: "Laptops",
+    status: "Disponible", // Mantengo el valor literal en español
+    quantity: 1,
+    entryDate: "2023-01-15",
+    location: "Oficina Principal - Piso 2",
+    provider: "Compudel",
+    cost: 2200,
+    purchaseDate: "2023-01-10",
     isSerialized: true,
-    fechaVencimientoGarantia: "2024-01-15", // Garantía vencida
-    historial: [
+    warrantyExpirationDate: "2024-01-15",
+    history: [
       {
-        fecha: "2023-01-15",
-        usuario: "Carlos Vera",
-        accion: "Ingreso de Producto",
-        detalles: "Nuevo producto agregado al inventario"
+        date: "2023-01-15",
+        user: "Carlos Vera",
+        action: "Ingreso de Producto",
+        details: "Nuevo producto agregado al inventario"
       },
       {
-        fecha: "2023-03-20",
-        usuario: "Ana López",
-        accion: "Asignación",
-        detalles: "Asignado al departamento de Desarrollo"
+        date: "2023-03-20",
+        user: "Ana López",
+        action: "Asignación",
+        details: "Asignado al departamento de Desarrollo"
       }
     ]
   },
   {
     id: 2,
-    nombre: "Laptop de Gerencia",
-    marca: "Apple",
-    modelo: "MacBook Pro 16",
-    numeroSerie: "AMBP16-002",
-    categoria: "Laptops",
-    estado: "Disponible",
-    cantidad: 1,
-    fechaIngreso: "2023-03-20",
-    ubicacion: "Almacén Central",
-    proveedor: "iShop",
-    costo: 2500,
-    fechaAdquisicion: "2023-03-15",
+    name: "Laptop de Gerencia",
+    brand: "Apple",
+    model: "MacBook Pro 16",
+    serialNumber: "AMBP16-002",
+    category: "Laptops",
+    status: "Disponible",
+    quantity: 1,
+    entryDate: "2023-03-20",
+    location: "Almacén Central",
+    provider: "iShop",
+    cost: 2500,
+    purchaseDate: "2023-03-15",
     isSerialized: true,
-    fechaVencimientoGarantia: "2024-09-15", // Próxima a vencer (3 meses desde hoy)
-    historial: [
+    warrantyExpirationDate: "2024-09-15",
+    history: [
       {
-        fecha: "2023-03-20",
-        usuario: "Carlos Vera",
-        accion: "Ingreso de Producto",
-        detalles: "Nuevo MacBook Pro ingresado al inventario"
+        date: "2023-03-20",
+        user: "Carlos Vera",
+        action: "Ingreso de Producto",
+        details: "Nuevo MacBook Pro ingresado al inventario"
       },
       {
-        fecha: "2023-05-10",
-        usuario: "Ana López",
-        accion: "Actualización de Estado",
-        detalles: "Movido a estado Disponible después de configuración inicial"
+        date: "2023-05-10",
+        user: "Ana López",
+        action: "Actualización de Estado",
+        details: "Movido a estado Disponible después de configuración inicial"
       }
     ]
   },
   {
     id: 3,
-    nombre: "Estación de Trabajo Móvil",
-    marca: "HP",
-    modelo: "ZBook Fury G8",
-    numeroSerie: "HPZF-003",
-    categoria: "Laptops",
-    estado: "Disponible",
-    cantidad: 1,
-    fechaIngreso: "2022-11-05",
-    ubicacion: "Soporte Técnico",
-    proveedor: "HP Directo",
-    costo: 3100,
-    fechaAdquisicion: "2022-10-25",
+    name: "Estación de Trabajo Móvil",
+    brand: "HP",
+    model: "ZBook Fury G8",
+    serialNumber: "HPZF-003",
+    category: "Laptops",
+    status: "Disponible",
+    quantity: 1,
+    entryDate: "2022-11-05",
+    location: "Soporte Técnico",
+    provider: "HP Directo",
+    cost: 3100,
+    purchaseDate: "2022-10-25",
     isSerialized: true,
-    fechaVencimientoGarantia: "2026-12-31", // Garantía lejana
-    historial: [
+    warrantyExpirationDate: "2026-12-31",
+    history: [
       {
-        fecha: "2022-11-05",
-        usuario: "Carlos Vera",
-        accion: "Ingreso de Producto",
-        detalles: "Nuevo ZBook Fury G8 ingresado al inventario"
+        date: "2022-11-05",
+        user: "Carlos Vera",
+        action: "Ingreso de Producto",
+        details: "Nuevo ZBook Fury G8 ingresado al inventario"
       }
     ]
   },
   {
     id: 4,
-    nombre: "Laptop para Viajes",
-    marca: "Lenovo",
-    modelo: "ThinkPad X1 Carbon",
-    numeroSerie: "LTPX1-004",
-    categoria: "Laptops",
-    estado: "Prestado",
-    prestadoA: "Ana Gómez",
-    fechaPrestamo: "2024-06-15",
-    fechaDevolucion: "2024-06-30",
-    cantidad: 1,
-    fechaIngreso: "2023-05-10",
-    ubicacion: "Oficina Principal - Piso 2",
-    proveedor: "Compudel",
-    costo: 1800,
-    fechaAdquisicion: "2023-05-01",
+    name: "Laptop para Viajes",
+    brand: "Lenovo",
+    model: "ThinkPad X1 Carbon",
+    serialNumber: "LTPX1-004",
+    category: "Laptops",
+    status: "Prestado",
+    lentTo: "Ana Gómez",
+    loanDate: "2024-06-15",
+    returnDate: "2024-06-30",
+    quantity: 1,
+    entryDate: "2023-05-10",
+    location: "Oficina Principal - Piso 2",
+    provider: "Compudel",
+    cost: 1800,
+    purchaseDate: "2023-05-01",
     isSerialized: true,
-    fechaVencimientoGarantia: null, // Sin garantía
+    warrantyExpirationDate: null,
   },
-  { id: 20, nombre: "Laptop de Desarrollo Avanzado", marca: "Dell", modelo: "XPS 15", numeroSerie: "DXPS15-002", categoria: "Laptops", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 2200, fechaAdquisicion: "2023-01-10", isSerialized: true, fechaVencimientoGarantia: new Date().toISOString().split('T')[0] },
+  { id: 20, name: "Laptop de Desarrollo Avanzado", brand: "Dell", model: "XPS 15", serialNumber: "DXPS15-002", category: "Laptops", status: "Disponible", quantity: 1, entryDate: "2023-01-15", location: "Almacén Central", provider: "Compudel", cost: 2200, purchaseDate: "2023-01-10", isSerialized: true, warrantyExpirationDate: new Date().toISOString().split('T')[0] },
 
   // Monitores
-  { id: 5, nombre: "Monitor Curvo UltraWide", marca: "LG", modelo: "34WN780-B", numeroSerie: "LG34-005", categoria: "Monitores", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-02-01", ubicacion: "Oficina Principal - Piso 1", proveedor: "TecnoMundo", costo: 750, fechaAdquisicion: "2023-01-25", isSerialized: true },
-  { id: 6, nombre: "Monitor para Diseño Gráfico 4K", marca: "Dell", modelo: "UltraSharp U2721Q", numeroSerie: "DU27-006", categoria: "Monitores", estado: "Asignado", cantidad: 1, fechaIngreso: "2022-09-15", ubicacion: "Área de Diseño", proveedor: "Compudel", costo: 850, fechaAdquisicion: "2022-09-10", isSerialized: true },
-  { id: 7, nombre: "Monitor de Alta Tasa de Refresco", marca: "ASUS", modelo: "ROG Swift PG279Q", numeroSerie: "ASUSROG-007", categoria: "Monitores", estado: "Prestado", prestadoA: "Sofía Castillo", fechaPrestamo: new Date().toISOString().split('T')[0], fechaDevolucion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], cantidad: 1, fechaIngreso: "2023-06-01", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 650, fechaAdquisicion: "2023-05-28", isSerialized: true },
+  { id: 5, name: "Monitor Curvo UltraWide", brand: "LG", model: "34WN780-B", serialNumber: "LG34-005", category: "Monitores", status: "Disponible", quantity: 1, entryDate: "2023-02-01", location: "Oficina Principal - Piso 1", provider: "TecnoMundo", cost: 750, purchaseDate: "2023-01-25", isSerialized: true },
+  { id: 6, name: "Monitor para Diseño Gráfico 4K", brand: "Dell", model: "UltraSharp U2721Q", serialNumber: "DU27-006", category: "Monitores", status: "Asignado", quantity: 1, entryDate: "2022-09-15", location: "Área de Diseño", provider: "Compudel", cost: 850, purchaseDate: "2022-09-10", isSerialized: true },
+  { id: 7, name: "Monitor de Alta Tasa de Refresco", brand: "ASUS", model: "ROG Swift PG279Q", serialNumber: "ASUSROG-007", category: "Monitores", status: "Prestado", lentTo: "Sofía Castillo", loanDate: new Date().toISOString().split('T')[0], returnDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-06-01", location: "Almacén Central", provider: "TecnoMundo", cost: 650, purchaseDate: "2023-05-28", isSerialized: true },
 
   // Periféricos
-  { id: 8, nombre: "Teclado Mecánico Inalámbrico", marca: "Logitech", modelo: "MX Mechanical", numeroSerie: null, categoria: "Periféricos", estado: "Disponible", cantidad: 10, fechaIngreso: "2023-04-10", ubicacion: "Almacén Central", proveedor: "OfficeDepot", costo: 170, fechaAdquisicion: "2023-04-05", isSerialized: false },
-  { id: 9, nombre: "Mouse Ergonómico Vertical", marca: "Logitech", modelo: "MX Vertical", numeroSerie: "LOGIMXV-009", categoria: "Periféricos", estado: "Asignado", cantidad: 1, fechaIngreso: "2023-02-20", ubicacion: "Oficina Principal - Piso 2", proveedor: "OfficeDepot", costo: 100, fechaAdquisicion: "2023-02-15", isSerialized: true },
-  { id: 10, nombre: "Webcam 4K", marca: "Logitech", modelo: "Brio 4K", numeroSerie: null, categoria: "Periféricos", estado: "Disponible", cantidad: 5, fechaIngreso: "2023-05-30", ubicacion: "Almacén Central", proveedor: "TecnoMundo", costo: 200, fechaAdquisicion: "2023-05-25", isSerialized: false },
+  { id: 8, name: "Teclado Mecánico Inalámbrico", brand: "Logitech", model: "MX Mechanical", serialNumber: null, category: "Periféricos", status: "Disponible", quantity: 10, entryDate: "2023-04-10", location: "Almacén Central", provider: "OfficeDepot", cost: 170, purchaseDate: "2023-04-05", isSerialized: false },
+  { id: 9, name: "Mouse Ergonómico Vertical", brand: "Logitech", model: "MX Vertical", serialNumber: "LOGIMXV-009", category: "Periféricos", status: "Asignado", quantity: 1, entryDate: "2023-02-20", location: "Oficina Principal - Piso 2", provider: "OfficeDepot", cost: 100, purchaseDate: "2023-02-15", isSerialized: true },
+  { id: 10, name: "Webcam 4K", brand: "Logitech", model: "Brio 4K", serialNumber: null, category: "Periféricos", status: "Disponible", quantity: 5, entryDate: "2023-05-30", location: "Almacén Central", provider: "TecnoMundo", cost: 200, purchaseDate: "2023-05-25", isSerialized: false },
 
   // Servidores y Redes
-  { id: 11, nombre: "Servidor de Rack 2U", marca: "Dell", modelo: "PowerEdge R740", numeroSerie: "DPER740-011", categoria: "Servidores", estado: "Retirado", cantidad: 1, fechaIngreso: "2020-05-15", ubicacion: "Data Center A", proveedor: "HP Directo", costo: 5000, fechaAdquisicion: "2020-05-01", isSerialized: true },
-  { id: 12, nombre: "Switch Gestionable 48 Puertos", marca: "Cisco", modelo: "Catalyst 2960", numeroSerie: "CISCO2960-012", categoria: "Redes", estado: "Disponible", cantidad: 1, fechaIngreso: "2021-08-10", ubicacion: "Data Center A", proveedor: "TecnoMundo", costo: 1200, fechaAdquisicion: "2021-08-01", isSerialized: true },
-  { id: 13, nombre: "Firewall de Próxima Generación", marca: "Palo Alto", modelo: "PA-220", numeroSerie: "PALO-220-013", categoria: "Seguridad", estado: "Disponible", cantidad: 1, fechaIngreso: "2023-07-01", ubicacion: "Data Center B", proveedor: "HP Directo", costo: 900, fechaAdquisicion: "2023-06-20", isSerialized: true },
+  { id: 11, name: "Servidor de Rack 2U", brand: "Dell", model: "PowerEdge R740", serialNumber: "DPER740-011", category: "Servidores", status: "Retirado", quantity: 1, entryDate: "2020-05-15", location: "Data Center A", provider: "HP Directo", cost: 5000, purchaseDate: "2020-05-01", isSerialized: true },
+  { id: 12, name: "Switch Gestionable 48 Puertos", brand: "Cisco", model: "Catalyst 2960", serialNumber: "CISCO2960-012", category: "Redes", status: "Disponible", quantity: 1, entryDate: "2021-08-10", location: "Data Center A", provider: "TecnoMundo", cost: 1200, purchaseDate: "2021-08-01", isSerialized: true },
+  { id: 13, name: "Firewall de Próxima Generación", brand: "Palo Alto", model: "PA-220", serialNumber: "PALO-220-013", category: "Seguridad", status: "Disponible", quantity: 1, entryDate: "2023-07-01", location: "Data Center B", provider: "HP Directo", cost: 900, purchaseDate: "2023-06-20", isSerialized: true },
 
   // Otros
-  { id: 14, nombre: "Proyector Full HD para Sala de Juntas", marca: "Epson", modelo: "PowerLite 1080", numeroSerie: "EPSONPL-014", categoria: "Audiovisual", estado: "Disponible", cantidad: 1, fechaIngreso: "2022-06-10", ubicacion: "Sala de Juntas 1", proveedor: "OfficeDepot", costo: 800, fechaAdquisicion: "2022-06-01", isSerialized: true },
-  { id: 15, nombre: "Impresora Multifuncional Láser", marca: "HP", modelo: "LaserJet Pro M428fdw", numeroSerie: "HPLJM-015", categoria: "Impresoras", estado: "PENDIENTE_DE_RETIRO", cantidad: 1, fechaIngreso: "2021-01-20", ubicacion: "Área de Copiado", proveedor: "HP Directo", costo: 450, fechaAdquisicion: "2021-01-15", isSerialized: true },
-  { id: 16, nombre: "Tableta Gráfica Profesional", marca: "Wacom", modelo: "Intuos Pro M", numeroSerie: "WIPM-016", categoria: "Periféricos", estado: "Prestado", prestadoA: "Luis Fernández", fechaPrestamo: "2024-07-01", fechaDevolucion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], cantidad: 1, fechaIngreso: "2023-08-01", ubicacion: "Área de Diseño", proveedor: "TecnoMundo", costo: 380, fechaAdquisicion: "2023-07-25", isSerialized: true },
-  { id: 17, nombre: "Docking Station USB-C", marca: "Dell", modelo: "WD19S", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 20, fechaIngreso: "2023-01-15", ubicacion: "Almacén Central", proveedor: "Compudel", costo: 250, fechaAdquisicion: "2023-01-10", isSerialized: false },
-  { id: 18, nombre: "Router Wi-Fi Mesh (Pack de 3)", marca: "Google", modelo: "Nest Wifi", numeroSerie: null, categoria: "Redes", estado: "Disponible", cantidad: 2, fechaIngreso: "2023-09-01", ubicacion: "Almacén Central", proveedor: "iShop", costo: 300, fechaAdquisicion: "2023-08-20", isSerialized: false },
-  { id: 19, nombre: "Lector de Código de Barras", marca: "Zebra", modelo: "DS2208", numeroSerie: null, categoria: "Accesorios", estado: "Disponible", cantidad: 8, fechaIngreso: "2022-12-10", ubicacion: "Almacén de Activos", proveedor: "Compudel", costo: 150, fechaAdquisicion: "2022-12-01", isSerialized: false }
+  { id: 14, name: "Proyector Full HD para Sala de Juntas", brand: "Epson", model: "PowerLite 1080", serialNumber: "EPSONPL-014", category: "Audiovisual", status: "Disponible", quantity: 1, entryDate: "2022-06-10", location: "Sala de Juntas 1", provider: "OfficeDepot", cost: 800, purchaseDate: "2022-06-01", isSerialized: true },
+  { id: 15, name: "Impresora Multifuncional Láser", brand: "HP", model: "LaserJet Pro M428fdw", serialNumber: "HPLJM-015", category: "Impresoras", status: "PENDIENTE_DE_RETIRO", quantity: 1, entryDate: "2021-01-20", location: "Área de Copiado", provider: "HP Directo", cost: 450, purchaseDate: "2021-01-15", isSerialized: true },
+  { id: 16, name: "Tableta Gráfica Profesional", brand: "Wacom", model: "Intuos Pro M", serialNumber: "WIPM-016", category: "Periféricos", status: "Prestado", lentTo: "Luis Fernández", loanDate: "2024-07-01", returnDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-08-01", location: "Área de Diseño", provider: "TecnoMundo", cost: 380, purchaseDate: "2023-07-25", isSerialized: true },
+  { id: 17, name: "Docking Station USB-C", brand: "Dell", model: "WD19S", serialNumber: null, category: "Accesorios", status: "Disponible", quantity: 20, entryDate: "2023-01-15", location: "Almacén Central", provider: "Compudel", cost: 250, purchaseDate: "2023-01-10", isSerialized: false },
+  { id: 18, name: "Router Wi-Fi Mesh (Pack de 3)", brand: "Google", model: "Nest Wifi", serialNumber: null, category: "Redes", status: "Disponible", quantity: 2, entryDate: "2023-09-01", location: "Almacén Central", provider: "iShop", cost: 300, purchaseDate: "2023-08-20", isSerialized: false },
+  { id: 19, name: "Lector de Código de Barras", brand: "Zebra", model: "DS2208", serialNumber: null, category: "Accesorios", status: "Disponible", quantity: 8, entryDate: "2022-12-10", location: "Almacén de Activos", provider: "Compudel", cost: 150, purchaseDate: "2022-12-01", isSerialized: false }
 ];
 
-const defaultAsignadosData: AsignadoItem[] = [
+const defaultAssignmentsData: AssignmentItem[] = [
   {
     id: 1,
-    articuloId: 3,
-    nombre: "Teclado Mecánico HyperX",
-    numeroSerie: "HX-KB7RD2-US/RD",
-    asignadoA: "Juan Pérez",
-    fechaAsignacion: "2023-03-10",
-    estado: "Activo",
-    notas: "Asignado para puesto de desarrollo.",
-    registradoPor: "Carlos Vera",
+    inventoryItemId: 3,
+    name: "Teclado Mecánico HyperX",
+    serialNumber: "HX-KB7RD2-US/RD",
+    assignedTo: "Juan Pérez",
+    assignmentDate: "2023-03-10",
+    status: "Activo",
+    notes: "Asignado para puesto de desarrollo.",
+    registeredBy: "Carlos Vera",
   },
   {
     id: 2,
-    articuloId: 11,
-    nombre: "Laptop Dell XPS 15",
-    numeroSerie: "SN-XPS15-002",
-    asignadoA: "María García",
-    fechaAsignacion: "2023-01-20",
-    estado: "Activo",
-    notas: "Laptop principal para gerente de proyectos.",
-    registradoPor: "Carlos Vera",
+    inventoryItemId: 11,
+    name: "Laptop Dell XPS 15",
+    serialNumber: "SN-XPS15-002",
+    assignedTo: "María García",
+    assignmentDate: "2023-01-20",
+    status: "Activo",
+    notes: "Laptop principal para gerente de proyectos.",
+    registeredBy: "Carlos Vera",
   },
 ]
 
-const defaultPrestamosData: PrestamoItem[] = [
+const defaultLoansData: LoanItem[] = [
   {
     id: 1,
-    articuloId: 4,
-    nombre: "Mouse Logitech MX Master 3",
-    numeroSerie: "910-005647",
-    prestadoA: "Laura Torres",
-    fechaPrestamo: "2023-04-05",
-    fechaDevolucion: "2024-07-15",
-    estado: "Activo",
-    diasRestantes: 20,
-    notas: "Préstamo temporal para trabajo remoto.",
-    registradoPor: "Ana López",
+    inventoryItemId: 4,
+    name: "Mouse Logitech MX Master 3",
+    serialNumber: "910-005647",
+    lentTo: "Laura Torres",
+    loanDate: "2023-04-05",
+    returnDate: "2024-07-15",
+    status: "Activo",
+    remainingDays: 20,
+    notes: "Préstamo temporal para trabajo remoto.",
+    registeredBy: "Ana López",
   },
   {
     id: 2,
-    articuloId: 12,
-    nombre: "Laptop Dell XPS 15",
-    numeroSerie: "SN-XPS15-003",
-    prestadoA: "Roberto Fernández",
-    fechaPrestamo: "2024-06-01",
-    fechaDevolucion: "2024-06-30",
-    estado: "Activo",
-    diasRestantes: 5,
-    notas: "Para capacitación externa.",
-    registradoPor: "Ana López",
+    inventoryItemId: 12,
+    name: "Laptop Dell XPS 15",
+    serialNumber: "SN-XPS15-003",
+    lentTo: "Roberto Fernández",
+    loanDate: "2024-06-01",
+    returnDate: "2024-06-30",
+    status: "Activo",
+    remainingDays: 5,
+    notes: "Para capacitación externa.",
+    registeredBy: "Ana López",
   },
 ]
 
@@ -369,7 +369,7 @@ const defaultPendingTasksData: PendingTask[] = [
     createdBy: "Usuario IP Confiable 2",
     status: "Pendiente",
     details: {
-      itemsImplicados: [
+      involvedItems: [
         {
           id: 13,
           name: "Laptop Dell XPS 15",
@@ -379,7 +379,7 @@ const defaultPendingTasksData: PendingTask[] = [
           category: "Laptops",
           quantity: 1,
           originalId: 13,
-          fechaIngreso: "2023-01-15",
+          entryDate: "2023-01-15",
           description: "Laptop de alto rendimiento para uso profesional.",
         },
       ],
@@ -443,13 +443,13 @@ const defaultPendingTasksData: PendingTask[] = [
 
 const defaultInitialState: AppState = {
   inventoryData: defaultInventoryData,
-  asignadosData: defaultAsignadosData,
-  prestamosData: defaultPrestamosData,
-  solicitudesAcceso: [],
+  assignmentsData: defaultAssignmentsData,
+  loansData: defaultLoansData,
+  accessRequests: [],
   pendingActionRequests: [],
   recentActivities: [],
   tasks: defaultPendingTasksData,
-  categorias: [
+  categories: [
     "Laptops",
     "Monitores",
     "Periféricos",
@@ -459,9 +459,9 @@ const defaultInitialState: AppState = {
     "Almacenamiento",
     "Proyectores",
   ],
-  marcas: [],
-  proveedores: [],
-  ubicaciones: [],
+  brands: [],
+  providers: [],
+  locations: [],
   retirementReasons: ["Fin de vida útil", "Dañado sin reparación"],
   userColumnPreferences: [],
   error: null,
@@ -481,9 +481,9 @@ type AppAction =
   | { type: 'UPDATE_PENDING_TASK'; payload: { id: number; updates: Partial<PendingTask> } }
   | { type: 'UPDATE_USER_COLUMN_PREFERENCES'; payload: { userId: number; pageId: string; columns: string[]; itemsPerPage?: number } }
   | { type: 'UPDATE_USER_THEME'; payload: string }
-  | { type: 'SET_MARCAS'; payload: string[] }
-  | { type: 'SET_PROVEEDORES'; payload: string[] }
-  | { type: 'SET_UBICACIONES'; payload: string[] }
+  | { type: 'SET_BRANDS'; payload: string[] }
+  | { type: 'SET_PROVIDERS'; payload: string[] }
+  | { type: 'SET_LOCATIONS'; payload: string[] }
   | { type: 'ADD_PENDING_REQUEST'; payload: PendingActionRequest }
   | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }
   | { type: 'ADD_HISTORY_EVENT'; payload: { itemId: number; event: HistoryEvent } };
@@ -495,20 +495,20 @@ interface AppContextType {
   updateInventory: (inventory: InventoryItem[]) => void
   addInventoryItem: (item: InventoryItem) => void
   updateInventoryItem: (id: number, updates: Partial<InventoryItem>) => void
-  liberarAsignacion: (itemId: number, currentUser: User | null) => void
+  releaseAssignment: (itemId: number, currentUser: User | null) => void
   updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => void
   removeInventoryItem: (id: number) => void
-  updateAsignados: (asignados: AsignadoItem[]) => void
-  addAssignment: (assignment: AsignadoItem) => void
+  updateAssignments: (assignments: AssignmentItem[]) => void
+  addAssignment: (assignment: AssignmentItem) => void
   removeAssignment: (id: number) => void
-  updateAssignmentStatus: (id: number, status: AsignadoItem["estado"]) => void
-  updatePrestamos: (prestamos: PrestamoItem[]) => void
-  addLoan: (loan: PrestamoItem) => void
+  updateAssignmentStatus: (id: number, status: AssignmentItem["status"]) => void
+  updateLoans: (loans: LoanItem[]) => void
+  addLoan: (loan: LoanItem) => void
   removeLoan: (id: number) => void
-  updateLoanStatus: (id: number, status: PrestamoItem["estado"]) => void
-  updateSolicitudes: (solicitud: SolicitudAcceso[]) => void
-  addSolicitudAcceso: (solicitud: SolicitudAcceso) => void
-  updateSolicitudStatus: (id: number, status: SolicitudAcceso["estado"]) => void
+  updateLoanStatus: (id: number, status: LoanItem["status"]) => void
+  updateAccessRequests: (accessRequests: AccessRequest[]) => void
+  addAccessRequest: (accessRequest: AccessRequest) => void
+  updateAccessRequestStatus: (id: number, status: AccessRequest["status"]) => void
   updatePendingActionRequests: (requests: PendingActionRequest[]) => void
   addPendingRequest: (request: PendingActionRequest) => void
   addRecentActivity: (activity: RecentActivity) => void
@@ -516,11 +516,11 @@ interface AppContextType {
   updatePendingTask: (taskId: number, updates: Partial<PendingTask>) => void
   updateUserColumnPreferences: (userId: number, pageId: string, columns: string[], itemsPerPage?: number) => void
   updateUserTheme: (theme: string) => void
-  updateMarcas: (marcas: string[]) => void
-  updateProveedores: (proveedores: string[]) => void;
-  updateUbicaciones: (ubicaciones: string[]) => void;
+  updateBrands: (brands: string[]) => void
+  updateProviders: (providers: string[]) => void;
+  updateLocations: (locations: string[]) => void;
   addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
-  devolverPrestamo: (itemId: number, currentUser: User | null) => void;
+  returnLoan: (itemId: number, currentUser: User | null) => void;
   getEffectiveLowStockThreshold: (product: InventoryItem) => number;
   // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
   /**
@@ -554,19 +554,19 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [state, setState] = useState<AppState>(() => {
     if (typeof window !== "undefined") {
       const savedState = localStorage.getItem("gati-c-app-state");
-      // Si existe un estado guardado, úsalo. Punto.
+      // If a saved state exists, use it. Period.
       if (savedState) {
         try {
           return JSON.parse(savedState);
         } catch (e) {
           console.error("Error parsing saved state, falling back to default.", e);
-          // Si el estado guardado está corrupto, volvemos al por defecto.
+          // If the saved state is corrupted, fall back to default.
           localStorage.removeItem("gati-c-app-state");
           return defaultInitialState;
         }
       }
     }
-    // Si no hay estado guardado, usa el estado por defecto.
+    // If no saved state, use the default state.
     return defaultInitialState;
   })
 
@@ -585,9 +585,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setState(prev => ({
           ...prev,
           inventoryData: prev.inventoryData.map(item =>
-            item.id === action.payload.id
-              ? { ...item, estado: action.payload.status as any }
-              : item
+            item.id === action.payload.id ?
+              { ...item, status: action.payload.status as any } :
+              item
           ),
         }));
         break;
@@ -641,22 +641,22 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
           userTheme: action.payload
         }));
         break;
-      case 'SET_MARCAS':
+      case 'SET_BRANDS':
         setState(prev => ({
           ...prev,
-          marcas: action.payload
+          brands: action.payload
         }));
         break;
-      case 'SET_PROVEEDORES':
+      case 'SET_PROVIDERS':
         setState(prev => ({
           ...prev,
-          proveedores: action.payload
+          providers: action.payload
         }));
         break;
-      case 'SET_UBICACIONES':
+      case 'SET_LOCATIONS':
         setState(prev => ({
           ...prev,
-          ubicaciones: action.payload
+          locations: action.payload
         }));
         break;
       case 'ADD_PENDING_REQUEST':
@@ -672,7 +672,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             item.id === action.payload.itemId
               ? {
                 ...item,
-                historial: [...(item.historial || []), action.payload.event]
+                history: [...(item.history || []), action.payload.event]
               }
               : item
           ),
@@ -688,18 +688,18 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, [])
 
   const addInventoryItem = useCallback((item: InventoryItem) => {
-    // Prepara el evento de historial inicial
+    // Prepare the initial history event
     const creationEvent: HistoryEvent = {
-      fecha: new Date().toISOString(),
-      usuario: 'Sistema',
-      accion: 'Creación',
-      detalles: `El activo fue creado en el sistema.`
+      date: new Date().toISOString(),
+      user: 'Sistema',
+      action: 'Creación',
+      details: `El activo fue creado en el sistema.`
     };
 
-    // Añade el evento al historial del nuevo ítem
+    // Add the event to the new item's history
     const itemWithHistory = {
       ...item,
-      historial: [creationEvent]
+      history: [creationEvent]
     };
 
     dispatch({ type: 'ADD_INVENTORY_ITEM', payload: itemWithHistory });
@@ -719,64 +719,64 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }))
   }, [])
 
-  const updateAsignados = useCallback((asignados: AsignadoItem[]) => {
-    setState((prevState) => ({ ...prevState, asignadosData: asignados }))
+  const updateAssignments = useCallback((assignments: AssignmentItem[]) => {
+    setState((prevState) => ({ ...prevState, assignmentsData: assignments }))
   }, [])
 
-  const addAssignment = useCallback((assignment: AsignadoItem) => {
-    setState((prevState) => ({ ...prevState, asignadosData: [...prevState.asignadosData, assignment] }))
+  const addAssignment = useCallback((assignment: AssignmentItem) => {
+    setState((prevState) => ({ ...prevState, assignmentsData: [...prevState.assignmentsData, assignment] }))
   }, [])
 
   const removeAssignment = useCallback((id: number) => {
     setState((prevState) => ({
       ...prevState,
-      asignadosData: prevState.asignadosData.filter((item) => item.id !== id),
+      assignmentsData: prevState.assignmentsData.filter((item) => item.id !== id),
     }))
   }, [])
 
-  const updateAssignmentStatus = useCallback((id: number, status: AsignadoItem["estado"]) => {
+  const updateAssignmentStatus = useCallback((id: number, status: AssignmentItem["status"]) => {
     setState((prevState) => ({
       ...prevState,
-      asignadosData: prevState.asignadosData.map((item) => (item.id === id ? { ...item, estado: status } : item)),
+      assignmentsData: prevState.assignmentsData.map((item) => (item.id === id ? { ...item, status: status } : item)),
     }))
   }, [])
 
-  const updatePrestamos = useCallback((prestamos: PrestamoItem[]) => {
-    setState((prevState) => ({ ...prevState, prestamosData: prestamos }))
+  const updateLoans = useCallback((loans: LoanItem[]) => {
+    setState((prevState) => ({ ...prevState, loansData: loans }))
   }, [])
 
-  const addLoan = useCallback((loan: PrestamoItem) => {
-    setState((prevState) => ({ ...prevState, prestamosData: [...prevState.prestamosData, loan] }))
+  const addLoan = useCallback((loan: LoanItem) => {
+    setState((prevState) => ({ ...prevState, loansData: [...prevState.loansData, loan] }))
   }, [])
 
   const removeLoan = useCallback((id: number) => {
     setState((prevState) => ({
       ...prevState,
-      prestamosData: prevState.prestamosData.filter((item) => item.id !== id),
+      loansData: prevState.loansData.filter((item) => item.id !== id),
     }))
   }, [])
 
-  const updateLoanStatus = useCallback((id: number, status: PrestamoItem["estado"]) => {
+  const updateLoanStatus = useCallback((id: number, status: LoanItem["status"]) => {
     setState((prevState) => ({
       ...prevState,
-      prestamosData: prevState.prestamosData.map((item) => (item.id === id ? { ...item, estado: status } : item)),
+      loansData: prevState.loansData.map((item) => (item.id === id ? { ...item, status: status } : item)),
     }))
   }, [])
 
-  const updateSolicitudes = useCallback((solicitudes: SolicitudAcceso[]) => {
-    setState((prevState) => ({ ...prevState, solicitudesAcceso: solicitudes }))
+  const updateAccessRequests = useCallback((accessRequests: AccessRequest[]) => {
+    setState((prevState) => ({ ...prevState, accessRequests: accessRequests }))
   }, [])
 
-  const addSolicitudAcceso = useCallback((solicitud: SolicitudAcceso) => {
-    setState((prevState) => ({ ...prevState, solicitudesAcceso: [...prevState.solicitudesAcceso, solicitud] }))
+  const addAccessRequest = useCallback((accessRequest: AccessRequest) => {
+    setState((prevState) => ({ ...prevState, accessRequests: [...prevState.accessRequests, accessRequest] }))
   }, [])
 
-  const updateSolicitudStatus = useCallback((id: number, status: SolicitudAcceso["estado"]) => {
+  const updateAccessRequestStatus = useCallback((id: number, status: AccessRequest["status"]) => {
     setState((prevState) => ({
       ...prevState,
-      solicitudesAcceso: prevState.solicitudesAcceso.map((solicitud) =>
-        solicitud.id === id ? { ...solicitud, estado: status } : solicitud
-      ),
+      accessRequests: prevState.accessRequests.map(request =>
+        request.id === id ? { ...request, status: status } : request
+      )
     }))
   }, [])
 
@@ -809,11 +809,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const updateUserColumnPreferences = useCallback(
     (userId: number, pageId: string, columns: string[], itemsPerPage?: number) => {
       setState((prevState) => {
-        // Verificar si ya existe una preferencia para esta página
+        // Check if a preference already exists for this page
         const existingPrefIndex = prevState.userColumnPreferences.findIndex(pref => pref.page === pageId);
 
         if (existingPrefIndex !== -1) {
-          // Actualizar preferencia existente
+          // Update existing preference
           const updatedPreferences = [...prevState.userColumnPreferences];
           updatedPreferences[existingPrefIndex] = {
             ...updatedPreferences[existingPrefIndex],
@@ -829,20 +829,20 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             userColumnPreferences: updatedPreferences
           };
         } else {
-          // Crear nueva preferencia
+          // Create new preference
           const allColumnsForPage = pageId === "inventario"
             ? [
-              { id: "nombre", label: "Nombre", visible: true },
-              { id: "marca", label: "Marca", visible: true },
-              { id: "modelo", label: "Modelo", visible: true },
-              { id: "numeroSerie", label: "N/S", visible: true },
-              { id: "categoria", label: "Categoría", visible: true },
-              { id: "estado", label: "Estado", visible: true },
-              { id: "proveedor", label: "Proveedor", visible: false },
-              { id: "fechaAdquisicion", label: "Fecha Adquisición", visible: false },
-              { id: "contratoId", label: "Contrato ID", visible: false },
-              { id: "asignadoA", label: "Asignado A", visible: false },
-              { id: "fechaAsignacion", label: "Fecha Asignación", visible: false }
+              { id: "name", label: "Nombre", visible: true },
+              { id: "brand", label: "Marca", visible: true },
+              { id: "model", label: "Modelo", visible: true },
+              { id: "serialNumber", label: "N/S", visible: true },
+              { id: "category", label: "Categoría", visible: true },
+              { id: "status", label: "Estado", visible: true },
+              { id: "provider", label: "Proveedor", visible: false },
+              { id: "purchaseDate", label: "Fecha Adquisición", visible: false },
+              { id: "contractId", label: "Contrato ID", visible: false },
+              { id: "assignedTo", label: "Asignado A", visible: false },
+              { id: "assignmentDate", label: "Fecha Asignación", visible: false }
             ].map(col => ({
               ...col,
               visible: columns.includes(col.id)
@@ -873,59 +873,59 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     }));
   }, []);
 
-  const updateMarcas = useCallback((marcas: string[]) => {
-    dispatch({ type: 'SET_MARCAS', payload: marcas });
+  const updateBrands = useCallback((brands: string[]) => {
+    dispatch({ type: 'SET_BRANDS', payload: brands });
   }, [dispatch]);
 
-  const updateProveedores = useCallback((proveedores: string[]) => {
-    dispatch({ type: 'SET_PROVEEDORES', payload: proveedores });
+  const updateProviders = useCallback((providers: string[]) => {
+    dispatch({ type: 'SET_PROVIDERS', payload: providers });
   }, [dispatch]);
 
-  const updateUbicaciones = useCallback((ubicaciones: string[]) => {
-    dispatch({ type: 'SET_UBICACIONES', payload: ubicaciones });
+  const updateLocations = useCallback((locations: string[]) => {
+    dispatch({ type: 'SET_LOCATIONS', payload: locations });
   }, [dispatch]);
 
   const addHistoryEvent = useCallback((itemId: number, event: HistoryEvent) => {
     dispatch({ type: 'ADD_HISTORY_EVENT', payload: { itemId, event } });
   }, [dispatch]);
 
-  const liberarAsignacion = useCallback((itemId: number, currentUser: User | null) => {
+  const releaseAssignment = useCallback((itemId: number, currentUser: User | null) => {
     dispatch({
       type: 'UPDATE_INVENTORY_ITEM_STATUS',
       payload: { id: itemId, status: 'Disponible' }
     });
 
     addHistoryEvent(itemId, {
-      fecha: new Date().toISOString(),
-      usuario: currentUser?.nombre || 'Sistema',
-      accion: 'Liberación',
-      detalles: 'El activo ha sido devuelto al stock.'
+      date: new Date().toISOString(),
+      user: currentUser?.name || 'Sistema',
+      action: 'Liberación',
+      details: 'El activo ha sido devuelto al stock.'
     });
   }, [dispatch, addHistoryEvent])
 
-  const devolverPrestamo = useCallback((itemId: number, currentUser: User | null) => {
-    // 1. Actualizar el estado en la lista principal de inventario
+  const returnLoan = useCallback((itemId: number, currentUser: User | null) => {
+    // 1. Update the status in the main inventory list
     updateInventoryItem(itemId, {
-      estado: "Disponible",
-      prestadoA: null,
-      fechaPrestamo: null,
-      fechaDevolucion: null
+      status: "Disponible",
+      lentTo: null,
+      loanDate: null,
+      returnDate: null
     });
 
-    // 2. Actualizar el estado en la lista separada de préstamos
-    const activeLoan = state.prestamosData.find(loan => loan.articuloId === itemId && loan.estado === "Activo");
+    // 2. Update the status in the separate loans list
+    const activeLoan = state.loansData.find(loan => loan.inventoryItemId === itemId && loan.status === "Activo");
     if (activeLoan) {
       updateLoanStatus(activeLoan.id, "Devuelto");
     }
 
-    // 3. Registrar el evento en el historial
+    // 3. Register the event in the history
     addHistoryEvent(itemId, {
-      fecha: new Date().toISOString(),
-      usuario: currentUser?.nombre || 'Sistema',
-      accion: 'Devolución de Préstamo',
-      detalles: 'El activo ha sido devuelto al stock.'
+      date: new Date().toISOString(),
+      user: currentUser?.name || 'Sistema',
+      action: 'Devolución de Préstamo',
+      details: 'El activo ha sido devuelto al stock.'
     });
-  }, [state.prestamosData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
+  }, [state.loansData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
 
   /**
    * getEffectiveLowStockThreshold: Returns the low stock threshold for a product.
@@ -936,17 +936,17 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     if (state.lowStockThresholds.productThresholds[product.id] !== undefined) {
       return state.lowStockThresholds.productThresholds[product.id];
     }
-    if (product.categoria && state.lowStockThresholds.categoryThresholds[product.categoria] !== undefined) {
-      return state.lowStockThresholds.categoryThresholds[product.categoria];
+    if (product.category && state.lowStockThresholds.categoryThresholds[product.category] !== undefined) {
+      return state.lowStockThresholds.categoryThresholds[product.category];
     }
     return state.lowStockThresholds.globalThreshold;
   }, [state.lowStockThresholds]);
 
-  // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+  // --- Enterprise: Functions to edit low inventory thresholds ---
   /**
-   * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
-   * Si value es null, elimina el umbral del producto.
-   * Valida que el valor sea positivo.
+   * setProductLowStockThreshold: Define or update the low inventory threshold for a product.
+   * If value is null, remove the product threshold.
+   * Validates that the value is positive.
    */
   const setProductLowStockThreshold = useCallback((productId: number, value: number | null) => {
     setState(prev => {
@@ -967,9 +967,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   /**
-   * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
-   * Si value es null, elimina el umbral de la categoría.
-   * Valida que el valor sea positivo.
+   * setCategoryLowStockThreshold: Define or update the low inventory threshold for a category.
+   * If value is null, remove the category threshold.
+   * Validates that the value is positive.
    */
   const setCategoryLowStockThreshold = useCallback((category: string, value: number | null) => {
     setState(prev => {
@@ -990,8 +990,8 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   /**
-   * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
-   * Valida que el valor sea positivo.
+   * setGlobalLowStockThreshold: Define the global low inventory threshold.
+   * Validates that the value is positive.
    */
   const setGlobalLowStockThreshold = useCallback((value: number) => {
     if (value > 0) {
@@ -1006,13 +1006,13 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   /**
-   * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
-   * Se recomienda llamar tras eliminar productos/categorías.
+   * cleanOrphanThresholds: Remove thresholds for products/categories that no longer exist.
+   * Recommended to call after deleting products/categories.
    */
   const cleanOrphanThresholds = useCallback(() => {
     setState(prev => {
       const validProductIds = new Set(prev.inventoryData.map(item => item.id));
-      const validCategories = new Set(prev.categorias);
+      const validCategories = new Set(prev.categories);
       const cleanedProductThresholds = Object.fromEntries(
         Object.entries(prev.lowStockThresholds.productThresholds).filter(([id]) => validProductIds.has(Number(id)))
       );
@@ -1029,20 +1029,20 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       };
     });
   }, []);
-  // TODO: Agregar persistencia, historial de cambios y validación de roles en el futuro.
+  // TODO: Add persistence, change history and role validation in the future.
 
-  // Efecto para inicializar marcas y proveedores desde los datos de inventario
+  // Effect to initialize brands and providers from inventory data
   useEffect(() => {
-    const allMarcas = [...new Set(state.inventoryData.map(item => item.marca))];
-    updateMarcas(allMarcas);
+    const allBrands = [...new Set(state.inventoryData.map(item => item.brand))];
+    updateBrands(allBrands);
 
-    const allProveedores = [...new Set(state.inventoryData.map(item => item.proveedor).filter(Boolean) as string[])];
-    updateProveedores(allProveedores);
+    const allProviders = [...new Set(state.inventoryData.map(item => item.provider).filter(Boolean) as string[])];
+    updateProviders(allProviders);
 
-    const allUbicaciones = [...new Set(state.inventoryData.map(item => item.ubicacion).filter(Boolean) as string[])];
-    updateUbicaciones(allUbicaciones);
+    const allLocations = [...new Set(state.inventoryData.map(item => item.location).filter(Boolean) as string[])];
+    updateLocations(allLocations);
 
-  }, [state.inventoryData, updateMarcas, updateProveedores, updateUbicaciones]);
+  }, [state.inventoryData, updateBrands, updateProviders, updateLocations]);
 
   const value = {
     state,
@@ -1050,25 +1050,25 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updateInventory,
     addInventoryItem,
     updateInventoryItem,
-    liberarAsignacion,
+    releaseAssignment,
     updateInventoryItemStatus: (id: number, status: "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO") => {
       const item = state.inventoryData.find(i => i.id === id)
       if (item) {
-        updateInventoryItem(id, { estado: status })
+        updateInventoryItem(id, { status: status })
       }
     },
     removeInventoryItem,
-    updateAsignados,
+    updateAssignments,
     addAssignment,
     removeAssignment,
     updateAssignmentStatus,
-    updatePrestamos,
+    updateLoans,
     addLoan,
     removeLoan,
     updateLoanStatus,
-    updateSolicitudes,
-    addSolicitudAcceso,
-    updateSolicitudStatus,
+    updateAccessRequests,
+    addAccessRequest,
+    updateAccessRequestStatus,
     updatePendingActionRequests,
     addPendingRequest,
     addRecentActivity,
@@ -1076,33 +1076,33 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     updatePendingTask,
     updateUserColumnPreferences,
     updateUserTheme,
-    updateMarcas,
-    updateProveedores,
-    updateUbicaciones,
+    updateBrands,
+    updateProviders,
+    updateLocations,
     addHistoryEvent,
-    devolverPrestamo,
+    returnLoan,
     getEffectiveLowStockThreshold,
-    // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+    // --- Enterprise: Functions to edit low inventory thresholds ---
     /**
-     * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
-     * Si value es null, elimina el umbral del producto.
-     * Valida que el valor sea positivo.
+     * setProductLowStockThreshold: Define or update the low inventory threshold for a product.
+     * If value is null, remove the product threshold.
+     * Validates that the value is positive.
      */
     setProductLowStockThreshold,
     /**
-     * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
-     * Si value es null, elimina el umbral de la categoría.
-     * Valida que el valor sea positivo.
+     * setCategoryLowStockThreshold: Define or update the low inventory threshold for a category.
+     * If value is null, remove the category threshold.
+     * Validates that the value is positive.
      */
     setCategoryLowStockThreshold,
     /**
-     * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
-     * Valida que el valor sea positivo.
+     * setGlobalLowStockThreshold: Define the global low inventory threshold.
+     * Validates that the value is positive.
      */
     setGlobalLowStockThreshold,
     /**
-     * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
-     * Se recomienda llamar tras eliminar productos/categorías.
+     * cleanOrphanThresholds: Remove thresholds for products/categories that no longer exist.
+     * Recommended to call after deleting products/categories.
      */
     cleanOrphanThresholds,
   }
