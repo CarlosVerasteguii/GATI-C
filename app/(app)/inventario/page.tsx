@@ -101,10 +101,10 @@ import { createProductAPI, updateProductAPI, deleteProductAPI, type CreateProduc
 // El tipo InventoryItem ahora se importa desde @/types/inventory
 
 interface AssignmentItem {
-  numeroSerie: string
-  estado: string
-  asignadoA: string
-  fechaAsignacion: string
+  serialNumber: string
+  status: string
+  assignedTo: string
+  assignmentDate: string
 }
 
 interface AssignmentDetails {
@@ -142,19 +142,19 @@ interface ColumnDefinition {
 
 // Define all possible columns and their properties
 const allColumns: ColumnDefinition[] = [
-  { id: "nombre", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start", type: 'string' },
-  { id: "marca", label: "Marca", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "modelo", label: "Modelo", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "numeroSerie", label: "N/S", defaultVisible: true, sortable: false },
-  { id: "categoria", label: "Categoría", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "ubicacion", label: "Ubicación", defaultVisible: false, sortable: true, type: 'string' },
-  { id: "estado", label: "Estado", defaultVisible: true, sortable: true, type: 'status' },
-  { id: "proveedor", label: "Proveedor", defaultVisible: false, sortable: true, type: 'string' },
-  { id: "fechaAdquisicion", label: "Fecha Adquisición", defaultVisible: false, sortable: true, type: 'date' },
-  { id: "contratoId", label: "Contrato ID", defaultVisible: false, sortable: false }, // New
-  { id: "asignadoA", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' }, // New (derived)
-  { id: "fechaAsignacion", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' }, // New (derived)
-  { id: "costo", label: "Costo", defaultVisible: false, sortable: true, type: "number" },
+  { id: "name", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start", type: 'string' },
+  { id: "brand", label: "Marca", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "model", label: "Modelo", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "serialNumber", label: "N/S", defaultVisible: true, sortable: false },
+  { id: "category", label: "Categoría", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "location", label: "Ubicación", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "status", label: "Estado", defaultVisible: true, sortable: true, type: 'status' },
+  { id: "provider", label: "Proveedor", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "purchaseDate", label: "Fecha Adquisición", defaultVisible: false, sortable: true, type: 'date' },
+  { id: "contractId", label: "Contrato ID", defaultVisible: false, sortable: false },
+  { id: "assignedTo", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "assignmentDate", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' },
+  { id: "cost", label: "Costo", defaultVisible: false, sortable: true, type: "number" },
 ]
 
 export default function InventarioPage() {
@@ -256,17 +256,17 @@ export default function InventarioPage() {
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [attachedDocuments, setAttachedDocuments] = useState<{ id: string, name: string, url: string, uploadDate: string }[]>([]);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
-    fechaInicio: null,
-    fechaFin: null,
-    proveedor: '',
-    contratoId: '',
-    costoMin: null,
-    costoMax: null,
+    startDate: null,
+    endDate: null,
+    provider: '',
+    contractId: '',
+    minCost: null,
+    maxCost: null,
   });
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   const proveedoresUnicos = React.useMemo(() => {
-    const proveedores = new Set(inventoryData.map(item => item.proveedor).filter(Boolean));
+    const proveedores = new Set(inventoryData.map(item => item.provider).filter(Boolean));
     return Array.from(proveedores) as string[];
   }, [inventoryData]);
 
@@ -330,14 +330,14 @@ export default function InventarioPage() {
       if (task) {
         const productData: Partial<InventoryItem> = {
           id: 0, // Este ID será reemplazado al guardar
-          nombre: task.details.productName || "",
-          cantidad: task.details.quantity || 1,
-          numeroSerie: task.details.serialNumbers ? task.details.serialNumbers.join("\n") : null,
-          marca: task.details.brand || "",
-          modelo: task.details.model || "",
-          categoria: task.details.category || "",
-          descripcion: task.details.description || "",
-          estado: "Disponible"
+          name: task.details.productName || "",
+          quantity: task.details.quantity || 1,
+          serialNumber: task.details.serialNumbers ? task.details.serialNumbers.join("\n") : null,
+          brand: task.details.brand || "",
+          model: task.details.model || "",
+          category: task.details.category || "",
+          description: task.details.description || "",
+          status: "Disponible"
         };
         setSelectedProduct(productData as InventoryItem);
         setTempMarca(task.details.brand || "")
@@ -372,12 +372,12 @@ export default function InventarioPage() {
     setFilterMarca(null);
     setFilterEstado(null);
     setAdvancedFilters({
-      fechaInicio: null,
-      fechaFin: null,
-      proveedor: '',
-      contratoId: '',
-      costoMin: null,
-      costoMax: null,
+      startDate: null,
+      endDate: null,
+      provider: '',
+      contractId: '',
+      minCost: null,
+      maxCost: null,
     });
   };
 
@@ -421,9 +421,9 @@ export default function InventarioPage() {
 
   // Helper to get current assignee/assignment date for a serialized item
   const getAssignmentDetails = (item: InventoryItem): AssignmentDetails => {
-    if (item.numeroSerie) {
+    if (item.serialNumber) {
       const activeAssignment = state.asignadosData.find(
-        (a) => a.numeroSerie === item.numeroSerie && a.estado === "Activo",
+        (a) => a.numeroSerie === item.serialNumber && a.estado === "Activo",
       )
       if (activeAssignment) {
         return {
@@ -438,34 +438,34 @@ export default function InventarioPage() {
   // Función segura para obtener valores de columnas
   const getColumnValue = (item: InventoryItem, columnId: string): string | number | null => {
     switch (columnId) {
-      case "nombre":
-        return item.nombre;
-      case "marca":
-        return item.marca;
-      case "modelo":
-        return item.modelo;
-      case "numeroSerie":
-        return item.numeroSerie || "";
-      case "categoria":
-        return item.categoria;
-      case "ubicacion":
-        return item.ubicacion || null;
-      case "estado":
-        return item.estado;
-      case "proveedor":
-        return item.proveedor || null;
-      case "fechaAdquisicion":
-        return item.fechaAdquisicion || null;
-      case "contratoId":
+      case "name":
+        return item.name;
+      case "brand":
+        return item.brand;
+      case "model":
+        return item.model;
+      case "serialNumber":
+        return item.serialNumber || "";
+      case "category":
+        return item.category;
+      case "location":
+        return item.location || null;
+      case "status":
+        return item.status;
+      case "provider":
+        return item.provider || null;
+      case "purchaseDate":
+        return item.purchaseDate || null;
+      case "contractId":
         return ""; // Not sortable yet
-      case "fechaIngreso":
-        return item.fechaIngreso || null;
-      case "asignadoA":
+      case "entryDate":
+        return item.entryDate || null;
+      case "assignedTo":
         return getAssignmentDetails(item).asignadoA;
-      case "fechaAsignacion":
+      case "assignmentDate":
         return getAssignmentDetails(item).fechaAsignacion;
-      case "costo":
-        return item.costo ?? null;
+      case "cost":
+        return item.cost ?? null;
       default:
         return null;
     }
@@ -474,14 +474,14 @@ export default function InventarioPage() {
   // Hooks de Procesamiento de Datos - Cadena de Transformación
   const expandedInventory = React.useMemo(() => {
     return inventoryData.flatMap(item => {
-      if (item.isSerialized === false && item.cantidad > 1) {
+      if (item.isSerialized === false && item.quantity > 1) {
         // Para stacks, expandir en items virtuales
-        return Array.from({ length: item.cantidad }, (_, index) => ({
+        return Array.from({ length: item.quantity }, (_, index) => ({
           ...item,
-          reactKey: `${item.id}-${item.estado}-${index}`, // Key única para React
+          reactKey: `${item.id}-${item.status}-${index}`, // Key única para React
           isVirtual: true,
           originalId: item.id, // Guardar referencia al ID original
-          cantidad: 1,
+          quantity: 1,
         }));
       }
       // Para items normales, solo añadir la reactKey
@@ -492,34 +492,34 @@ export default function InventarioPage() {
   const filteredData = React.useMemo(() => {
     const results = expandedInventory.filter((item: InventoryItem) => {
       // --- INICIO DE BLOQUE DE DIAGNÓSTICO DE PROPIEDADES NULAS ---
-      if (item.nombre === null || item.marca === null || item.modelo === null) {
+      if (item.name === null || item.brand === null || item.model === null) {
         console.warn("¡ALERTA DE DATO NULO! Ítem con propiedad nula encontrado:", item);
       }
       // --- FIN DE BLOQUE DE DIAGNÓSTICO ---
 
       const lowercasedQuery = searchTerm?.toLowerCase() || "";
       const matchesSearch = searchTerm === "" ||
-        (item.nombre && item.nombre.toLowerCase().includes(lowercasedQuery)) ||
-        (item.marca && item.marca.toLowerCase().includes(lowercasedQuery)) ||
-        (item.modelo && item.modelo.toLowerCase().includes(lowercasedQuery)) ||
-        (item.numeroSerie && item.numeroSerie.toLowerCase().includes(lowercasedQuery)) ||
-        (item.categoria && item.categoria.toLowerCase().includes(lowercasedQuery)) ||
-        (item.estado && item.estado.toLowerCase().includes(lowercasedQuery)) ||
-        (item.asignadoA && item.asignadoA.toLowerCase().includes(lowercasedQuery));
+        (item.name && item.name.toLowerCase().includes(lowercasedQuery)) ||
+        (item.brand && item.brand.toLowerCase().includes(lowercasedQuery)) ||
+        (item.model && item.model.toLowerCase().includes(lowercasedQuery)) ||
+        (item.serialNumber && item.serialNumber.toLowerCase().includes(lowercasedQuery)) ||
+        (item.category && item.category.toLowerCase().includes(lowercasedQuery)) ||
+        (item.status && item.status.toLowerCase().includes(lowercasedQuery)) ||
+        (item.assignedTo && item.assignedTo.toLowerCase().includes(lowercasedQuery));
 
-      const matchesCategoria = !filterCategoria || item.categoria === filterCategoria;
-      const matchesMarca = !filterMarca || item.marca === filterMarca;
-      const matchesEstado = !filterEstado || item.estado === filterEstado;
-      const matchesSerialNumber = hasSerialNumber ? !!item.numeroSerie : true;
+      const matchesCategoria = !filterCategoria || item.category === filterCategoria;
+      const matchesMarca = !filterMarca || item.brand === filterMarca;
+      const matchesEstado = !filterEstado || item.status === filterEstado;
+      const matchesSerialNumber = hasSerialNumber ? !!item.serialNumber : true;
 
       // Lógica para Filtros Avanzados
       const matchesAdvancedFilters = () => {
         // Filtro por Rango de Fechas
-        if (advancedFilters.fechaInicio && advancedFilters.fechaFin && item.fechaAdquisicion) {
-          const itemDate = new Date(item.fechaAdquisicion);
+        if (advancedFilters.startDate && advancedFilters.endDate && item.purchaseDate) {
+          const itemDate = new Date(item.purchaseDate);
           // Normalizamos las fechas para ignorar la hora
-          const startDate = new Date(advancedFilters.fechaInicio.setHours(0, 0, 0, 0));
-          const endDate = new Date(advancedFilters.fechaFin.setHours(23, 59, 59, 999));
+          const startDate = new Date(advancedFilters.startDate.setHours(0, 0, 0, 0));
+          const endDate = new Date(advancedFilters.endDate.setHours(23, 59, 59, 999));
 
           if (itemDate < startDate || itemDate > endDate) {
             return false;
@@ -527,30 +527,30 @@ export default function InventarioPage() {
         }
 
         // Filtro por Proveedor
-        if (advancedFilters.proveedor) {
-          if (item.proveedor !== advancedFilters.proveedor) {
+        if (advancedFilters.provider) {
+          if (item.provider !== advancedFilters.provider) {
             return false;
           }
         }
 
         // Filtro por ID de Contrato
-        if (advancedFilters.contratoId) {
-          if (!item.contratoId || !item.contratoId.toLowerCase().includes(advancedFilters.contratoId.toLowerCase())) {
+        if (advancedFilters.contractId) {
+          if (!item.contractId || !item.contractId.toLowerCase().includes(advancedFilters.contractId.toLowerCase())) {
             return false;
           }
         }
 
         // Filtro por Rango de Costo
-        if (item.costo !== null && item.costo !== undefined) {
-          if (advancedFilters.costoMin !== null && item.costo < advancedFilters.costoMin) {
+        if (item.cost !== null && item.cost !== undefined) {
+          if (advancedFilters.minCost !== null && item.cost < advancedFilters.minCost) {
             return false;
           }
-          if (advancedFilters.costoMax !== null && item.costo > advancedFilters.costoMax) {
+          if (advancedFilters.maxCost !== null && item.cost > advancedFilters.maxCost) {
             return false;
           }
         } else {
           // Si el ítem no tiene costo, no coincide si se especifica un rango
-          if (advancedFilters.costoMin !== null || advancedFilters.costoMax !== null) {
+          if (advancedFilters.minCost !== null || advancedFilters.maxCost !== null) {
             return false;
           }
         }
@@ -585,20 +585,20 @@ export default function InventarioPage() {
     const productGroups: { [key: string]: any } = {};
 
     filteredData.forEach((item: any) => {
-      const groupKey = `${item.marca}-${item.modelo}-${item.categoria}`;
+      const groupKey = `${item.brand}-${item.model}-${item.category}`;
 
       if (!productGroups[groupKey]) {
         productGroups[groupKey] = {
           isParent: true,
           product: {
             id: groupKey,
-            nombre: item.nombre,
-            marca: item.marca,
-            modelo: item.modelo,
-            categoria: item.categoria,
-            isSerialized: !!item.numeroSerie
+            name: item.name,
+            brand: item.brand,
+            model: item.model,
+            category: item.category,
+            isSerialized: !!item.serialNumber
           },
-          summary: { total: 0, disponible: 0, estados: {} },
+          summary: { total: 0, available: 0, states: {} },
           children: [],
         };
       }
@@ -606,12 +606,12 @@ export default function InventarioPage() {
       productGroups[groupKey].children.push(item);
       productGroups[groupKey].summary.total++;
 
-      if (item.estado === 'Disponible') {
-        productGroups[groupKey].summary.disponible++;
+      if (item.status === 'Disponible') {
+        productGroups[groupKey].summary.available++;
       }
 
-      productGroups[groupKey].summary.estados[item.estado] =
-        (productGroups[groupKey].summary.estados[item.estado] || 0) + 1;
+      productGroups[groupKey].summary.states[item.status] =
+        (productGroups[groupKey].summary.states[item.status] || 0) + 1;
     });
 
     const groupedResults = Object.values(productGroups);
@@ -624,7 +624,7 @@ export default function InventarioPage() {
 
     if (sortColumn) {
       const getGroupStatus = (group: any) => {
-        const statuses = new Set(group.children.map((item: any) => item.estado));
+        const statuses = new Set(group.children.map((item: any) => item.status));
         if (statuses.has('Disponible')) return 'Disponible';
         if (statuses.has('PENDIENTE_DE_RETIRO')) return 'Pendiente';
         if (statuses.has('Asignado')) return 'Asignado';
@@ -633,7 +633,7 @@ export default function InventarioPage() {
       };
 
       const getGroupValue = (group: any, column: string) => {
-        if (column === 'estado') {
+        if (column === 'status') {
           return getGroupStatus(group);
         }
         // Para otras columnas, obtenemos el valor del 'product' del grupo
@@ -793,7 +793,7 @@ export default function InventarioPage() {
     try {
       await deleteProductAPI(String(asset.id))
       await mutate()
-      showSuccess({ title: "Producto eliminado", description: `Se eliminó "${asset.nombre}".` })
+      showSuccess({ title: "Producto eliminado", description: `Se eliminó "${asset.name}".` })
     } catch (error) {
       console.error('Error deleting product:', error)
       showError({ title: "Error al eliminar", description: "No se pudo eliminar el producto." })
@@ -888,7 +888,7 @@ export default function InventarioPage() {
 
   // Function to calculate available and unavailable quantities for non-serialized items
   const getNonSerializedQtyBreakdown = (item: InventoryItem): QtyBreakdown | null => {
-    if (item.numeroSerie !== null) return null
+    if (item.serialNumber !== null) return null
 
     let totalAvailable = 0
     let totalUnavailable = 0
@@ -898,25 +898,25 @@ export default function InventarioPage() {
     let totalInInventory = 0
 
     const allInstances = inventoryData.filter(
-      (invItem) => invItem.nombre === item.nombre && invItem.modelo === item.modelo && invItem.numeroSerie === null,
+      (invItem) => invItem.name === item.name && invItem.model === item.model && invItem.serialNumber === null,
     )
 
     allInstances.forEach((instance: InventoryItem) => {
-      if (instance.estado !== "Retirado") {
-        totalInInventory += instance.cantidad
+      if (instance.status !== "Retirado") {
+        totalInInventory += instance.quantity
       }
 
-      if (instance.estado === "Disponible") {
-        totalAvailable += instance.cantidad
-      } else if (instance.estado === "Asignado") {
-        assignedCount += instance.cantidad
-        totalUnavailable += instance.cantidad
-      } else if (instance.estado === "Prestado") {
-        lentCount += instance.cantidad
-        totalUnavailable += instance.cantidad
-      } else if (instance.estado === "PENDIENTE_DE_RETIRO") {
-        pendingRetireCount += instance.cantidad
-        totalUnavailable += instance.cantidad
+      if (instance.status === "Disponible") {
+        totalAvailable += instance.quantity
+      } else if (instance.status === "Asignado") {
+        assignedCount += instance.quantity
+        totalUnavailable += instance.quantity
+      } else if (instance.status === "Prestado") {
+        lentCount += instance.quantity
+        totalUnavailable += instance.quantity
+      } else if (instance.status === "PENDIENTE_DE_RETIRO") {
+        pendingRetireCount += instance.quantity
+        totalUnavailable += instance.quantity
       }
     })
 
@@ -989,24 +989,24 @@ export default function InventarioPage() {
   }, [localState.lastRefresh]);
 
   const allCategories = useMemo(() => {
-    const categories = new Set((inventoryData || []).map((p) => p.categoria).filter(Boolean))
+    const categories = new Set((inventoryData || []).map((p) => p.category).filter(Boolean))
     return [...Array.from(categories).sort()]
   }, [inventoryData])
 
   const allBrands = useMemo(() => {
-    const brands = new Set((inventoryData || []).map((p) => p.marca).filter(Boolean))
+    const brands = new Set((inventoryData || []).map((p) => p.brand).filter(Boolean))
     return [...Array.from(brands).sort()]
   }, [inventoryData])
 
   const allStatuses = useMemo(() => {
-    const statuses = new Set((inventoryData || []).map((p) => p.estado).filter(Boolean))
+    const statuses = new Set((inventoryData || []).map((p) => p.status).filter(Boolean))
     return [...Array.from(statuses).sort()]
   }, [inventoryData])
 
   // Verificar si hay filtros avanzados activos
-  const hasAdvancedFilters = advancedFilters.fechaInicio || advancedFilters.fechaFin ||
-    advancedFilters.proveedor || advancedFilters.contratoId ||
-    advancedFilters.costoMin !== null || advancedFilters.costoMax !== null;
+  const hasAdvancedFilters = advancedFilters.startDate || advancedFilters.endDate ||
+    advancedFilters.provider || advancedFilters.contractId ||
+    advancedFilters.minCost !== null || advancedFilters.maxCost !== null;
 
   if (inventoryLoading) {
     return (
@@ -1078,7 +1078,7 @@ export default function InventarioPage() {
     // --- LÓGICA DE DECISIÓN MEJORADA ---
     if (isGroup) {
       // En modo lectura, para ver detalles de un grupo tomamos el primer hijo disponible
-      targetItem = data.children.find((child: InventoryItem) => child.estado === 'Disponible')
+      targetItem = data.children.find((child: InventoryItem) => child.status === 'Disponible')
         || data.children[0];
       if (!targetItem) {
         console.error("No hay unidades en el grupo para ver detalles.");
@@ -1162,16 +1162,16 @@ export default function InventarioPage() {
     return (state.inventoryData || []).filter((product: InventoryItem) => {
       const lowercasedQuery = searchTerm?.toLowerCase() || "";
       const matchesSearch = searchTerm === "" ||
-        (product.nombre && product.nombre.toLowerCase().includes(lowercasedQuery)) ||
-        (product.marca && product.marca.toLowerCase().includes(lowercasedQuery)) ||
-        (product.modelo && product.modelo.toLowerCase().includes(lowercasedQuery)) ||
-        (product.numeroSerie && product.numeroSerie.toLowerCase().includes(lowercasedQuery)) ||
-        (product.proveedor && product.proveedor.toLowerCase().includes(lowercasedQuery)) ||
-        (product.contratoId && product.contratoId.toLowerCase().includes(lowercasedQuery));
+        (product.name && product.name.toLowerCase().includes(lowercasedQuery)) ||
+        (product.brand && product.brand.toLowerCase().includes(lowercasedQuery)) ||
+        (product.model && product.model.toLowerCase().includes(lowercasedQuery)) ||
+        (product.serialNumber && product.serialNumber.toLowerCase().includes(lowercasedQuery)) ||
+        (product.provider && product.provider.toLowerCase().includes(lowercasedQuery)) ||
+        (product.contractId && product.contractId.toLowerCase().includes(lowercasedQuery));
 
-      const matchesCategoria = !filterCategoria || product.categoria === filterCategoria;
-      const matchesMarca = !filterMarca || product.marca === filterMarca;
-      const matchesEstado = !filterEstado || product.estado === filterEstado;
+      const matchesCategoria = !filterCategoria || product.category === filterCategoria;
+      const matchesMarca = !filterMarca || product.brand === filterMarca;
+      const matchesEstado = !filterEstado || product.status === filterEstado;
 
       return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
     });
@@ -1236,7 +1236,7 @@ export default function InventarioPage() {
               />
               <FilterPopover
                 title="Estado"
-                options={[...new Set(state.inventoryData.map(item => item.estado))]}
+                options={[...new Set(state.inventoryData.map(item => item.status))]}
                 selectedValue={filterEstado || null}
                 onSelect={(value) => handleFilterChange('estado', value)}
               />
@@ -1261,7 +1261,7 @@ export default function InventarioPage() {
 
           {/* Sección de Filtros Activos */}
           {(() => {
-            const hasActiveFilters = filterCategoria || filterMarca || filterEstado || advancedFilters.fechaInicio || advancedFilters.proveedor || advancedFilters.contratoId || advancedFilters.costoMin !== null || advancedFilters.costoMax !== null;
+            const hasActiveFilters = filterCategoria || filterMarca || filterEstado || advancedFilters.startDate || advancedFilters.provider || advancedFilters.contractId || advancedFilters.minCost !== null || advancedFilters.maxCost !== null;
             if (hasActiveFilters) {
               return (
                 <div className="flex items-center flex-wrap gap-2 mb-4">
@@ -1281,24 +1281,24 @@ export default function InventarioPage() {
                       Estado: {filterEstado}
                     </FilterBadge>
                   )}
-                  {advancedFilters.fechaInicio && advancedFilters.fechaFin && (
-                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, fechaInicio: null, fechaFin: null }))}>
-                      Fecha: {advancedFilters.fechaInicio.toLocaleDateString()} - {advancedFilters.fechaFin.toLocaleDateString()}
+                  {advancedFilters.startDate && advancedFilters.endDate && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, startDate: null, endDate: null }))}>
+                      Fecha: {advancedFilters.startDate.toLocaleDateString()} - {advancedFilters.endDate.toLocaleDateString()}
                     </FilterBadge>
                   )}
-                  {advancedFilters.proveedor && (
-                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, proveedor: '' }))}>
-                      Proveedor: {advancedFilters.proveedor}
+                  {advancedFilters.provider && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, provider: '' }))}>
+                      Proveedor: {advancedFilters.provider}
                     </FilterBadge>
                   )}
-                  {advancedFilters.contratoId && (
-                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, contratoId: '' }))}>
-                      Contrato: {advancedFilters.contratoId}
+                  {advancedFilters.contractId && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, contractId: '' }))}>
+                      Contrato: {advancedFilters.contractId}
                     </FilterBadge>
                   )}
-                  {(advancedFilters.costoMin !== null || advancedFilters.costoMax !== null) && (
-                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, costoMin: null, costoMax: null }))}>
-                      Costo: {advancedFilters.costoMin ?? 'Min'} - {advancedFilters.costoMax ?? 'Max'}
+                  {(advancedFilters.minCost !== null || advancedFilters.maxCost !== null) && (
+                    <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, minCost: null, maxCost: null }))}>
+                      Costo: {advancedFilters.minCost ?? 'Min'} - {advancedFilters.maxCost ?? 'Max'}
                     </FilterBadge>
                   )}
                   <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-red-500 hover:text-red-600">
@@ -1418,12 +1418,12 @@ export default function InventarioPage() {
             }}
             onClearFilters={() => {
               setAdvancedFilters({
-                fechaInicio: null,
-                fechaFin: null,
-                proveedor: '',
-                contratoId: '',
-                costoMin: null,
-                costoMax: null
+                startDate: null,
+                endDate: null,
+                provider: '',
+                contractId: '',
+                minCost: null,
+                maxCost: null
               });
             }}
             hasSerialNumber={hasSerialNumber}

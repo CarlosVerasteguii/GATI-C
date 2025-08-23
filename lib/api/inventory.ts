@@ -1,38 +1,46 @@
 import { apiClient } from './client';
 
-// Contract aligned to backend createProductSchema
-// backend/src/modules/inventory/inventory.types.ts
-// Fields: name, serial_number, description, cost, purchase_date, condition, brandId, categoryId, locationId
+// Unified frontend contract (camelCase) matching domain language
 export interface CreateProductData {
     name: string;
-    serial_number?: string | null;
+    serialNumber?: string | null;
     description?: string | null;
     cost?: number | null;
-    purchase_date?: string | null;
+    purchaseDate?: string | null;
     condition?: string | null;
     brandId?: string | null;
     categoryId?: string | null;
     locationId?: string | null;
 }
 
-// Contract aligned to backend updateProductSchema (all fields optional)
+// All fields optional for update
 export interface UpdateProductData {
     name?: string;
-    serial_number?: string | null;
+    serialNumber?: string | null;
     description?: string | null;
     cost?: number | null;
-    purchase_date?: string | null;
+    purchaseDate?: string | null;
     condition?: string | null;
     brandId?: string | null;
     categoryId?: string | null;
     locationId?: string | null;
+}
+
+// Internal helper to adapt camelCase to backend schema
+function adaptToBackend(payload: CreateProductData | UpdateProductData) {
+    const { purchaseDate, serialNumber, ...rest } = payload as any;
+    return {
+        ...rest,
+        ...(serialNumber !== undefined ? { serial_number: serialNumber } : {}),
+        ...(purchaseDate !== undefined ? { purchase_date: purchaseDate } : {}),
+    };
 }
 
 // Create
 export async function createProductAPI(payload: CreateProductData) {
     const response = await apiClient('/api/v1/inventory', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(adaptToBackend(payload)),
     });
     return response.json();
 }
@@ -41,7 +49,7 @@ export async function createProductAPI(payload: CreateProductData) {
 export async function updateProductAPI(productId: string, payload: UpdateProductData) {
     const response = await apiClient(`/api/v1/inventory/${productId}`, {
         method: 'PUT',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(adaptToBackend(payload)),
     });
     return response.json();
 }
@@ -51,6 +59,5 @@ export async function deleteProductAPI(productId: string) {
     const response = await apiClient(`/api/v1/inventory/${productId}`, {
         method: 'DELETE',
     });
-    // DELETE returns 204 No Content in backend; no JSON body expected
     return response.ok;
 }

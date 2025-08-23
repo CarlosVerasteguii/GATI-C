@@ -53,8 +53,8 @@ export function ParentRow({
     const renderEstadoTooltip = () => (
         <div className="flex flex-col gap-1 p-1 text-xs">
             <h4 className="font-bold text-sm mb-1">Desglose de Stock</h4>
-            {summary.estados.asignado > 0 && <div>Asignado: <strong>{summary.estados.asignado}</strong></div>}
-            {summary.estados.prestado > 0 && <div>Prestado: <strong>{summary.estados.prestado}</strong></div>}
+            {summary.states.Asignado > 0 && <div>Asignado: <strong>{summary.states.Asignado}</strong></div>}
+            {summary.states.Prestado > 0 && <div>Prestado: <strong>{summary.states.Prestado}</strong></div>}
         </div>
     );
 
@@ -89,39 +89,39 @@ export function ParentRow({
                             className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
                         />
                     </Button>
-                    <span className="font-semibold">{product.nombre}</span>
+                    <span className="font-semibold">{product.name}</span>
                 </div>
             </TableCell>
-            {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+            {columns.filter(c => c.id !== 'name' && c.visible).map(col => {
                 let content: React.ReactNode = null;
                 if (col.id === 'costo') {
                     const totalCosto = parentProduct.children.reduce(
-                        (sum, child) => sum + (typeof child.costo === 'number' ? child.costo : 0),
+                        (sum, child) => sum + (typeof child.cost === 'number' ? child.cost : 0),
                         0
                     );
                     content = totalCosto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
                 } else {
                     switch (col.id) {
-                        case 'marca':
-                            content = product.marca;
+                        case 'brand':
+                            content = product.brand;
                             break;
-                        case 'modelo':
-                            content = product.modelo;
+                        case 'model':
+                            content = product.model;
                             break;
-                        case 'numeroSerie':
+                        case 'serialNumber':
                             content = null;
                             break;
-                        case 'categoria':
-                            content = product.categoria;
+                        case 'category':
+                            content = product.category;
                             break;
-                        case 'estado':
+                        case 'status':
                             content = (
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex flex-col cursor-pointer">
                                                 <span>{`${summary.total} en Total`}</span>
-                                                <span className="text-xs text-green-600">{`${summary.disponible} Disp.`}</span>
+                                                <span className="text-xs text-green-600">{`${summary.available} Disp.`}</span>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -142,11 +142,11 @@ export function ParentRow({
             <TableCell colSpan={2} className="py-2">
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                     <div>Total: <strong>{summary.total}</strong></div>
-                    {summary.estados.disponible > 0 && <div>Disponible: <strong>{summary.estados.disponible}</strong></div>}
-                    {summary.estados.asignado > 0 && <div>Asignado: <strong>{summary.estados.asignado}</strong></div>}
-                    {summary.estados.prestado > 0 && <div>Prestado: <strong>{summary.estados.prestado}</strong></div>}
-                    {summary.estados.pendienteRetiro > 0 && <div>Pendiente Retiro: <strong>{summary.estados.pendienteRetiro}</strong></div>}
-                    {summary.estados.retirado > 0 && <div>Retirado: <strong>{summary.estados.retirado}</strong></div>}
+                    {summary.states.Disponible > 0 && <div>Disponible: <strong>{summary.states.Disponible}</strong></div>}
+                    {summary.states.Asignado > 0 && <div>Asignado: <strong>{summary.states.Asignado}</strong></div>}
+                    {summary.states.Prestado > 0 && <div>Prestado: <strong>{summary.states.Prestado}</strong></div>}
+                    {summary.states['PENDIENTE_DE_RETIRO'] > 0 && <div>Pendiente Retiro: <strong>{summary.states['PENDIENTE_DE_RETIRO']}</strong></div>}
+                    {summary.states.Retirado > 0 && <div>Retirado: <strong>{summary.states.Retirado}</strong></div>}
                 </div>
             </TableCell>
             <TableCell colSpan={2} className="text-right py-2">

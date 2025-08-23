@@ -48,23 +48,23 @@ export function EditProductModal({
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [formData, setFormData] = useState({
-    productName: product?.nombre || "",
-    brand: product?.marca || "",
-    model: product?.modelo || "",
-    category: product?.categoria || "",
-    description: product?.descripcion || "",
-    proveedor: product?.proveedor || "",
-    ubicacion: product?.ubicacion || "",
-    fechaIngreso: product?.fechaIngreso || new Date().toISOString().split('T')[0],
-    fechaAdquisicion: product?.fechaAdquisicion || "",
-    contratoId: product?.contratoId || "",
+    productName: product?.name || "",
+    brand: product?.brand || "",
+    model: product?.model || "",
+    category: product?.category || "",
+    description: product?.description || "",
+    provider: product?.provider || "",
+    location: product?.location || "",
+    entryDate: product?.entryDate || new Date().toISOString().split('T')[0],
+    purchaseDate: product?.purchaseDate || "",
+    contractId: product?.contractId || "",
     // For serialized items, quantity is always 1, serial number is direct
     // For non-serialized, quantity is editable, serial number is null
-    quantity: product?.cantidad?.toString() || "1",
-    serialNumber: product?.numeroSerie || "",
-    costo: product?.costo?.toString() || "",
-    fechaVencimientoGarantia: product?.fechaVencimientoGarantia || "",
-    vidaUtil: product?.vidaUtil || "",
+    quantity: product?.quantity?.toString() || "1",
+    serialNumber: product?.serialNumber || "",
+    cost: product?.cost?.toString() || "",
+    warrantyExpirationDate: product?.warrantyExpirationDate || "",
+    usefulLife: product?.usefulLife || "",
   })
 
   // Add local state for serialization
@@ -73,7 +73,7 @@ export function EditProductModal({
 
   // Documentos adjuntos (simulados)
   const [attachedDocuments, setAttachedDocuments] = useState<{ id: string, name: string, url: string, uploadDate: string }[]>(
-    product?.documentosAdjuntos?.map((doc: any, index: number) => ({
+    product?.attachedDocuments?.map((doc: any, index: number) => ({
       id: `doc-${index}`,
       name: doc.name,
       url: doc.url,
@@ -85,28 +85,28 @@ export function EditProductModal({
   useEffect(() => {
     if (product) {
       setFormData({
-        productName: product.nombre || "",
-        brand: product.marca || "",
-        model: product.modelo || "",
-        category: product.categoria || "",
-        description: product.descripcion || "",
-        proveedor: product.proveedor || "",
-        ubicacion: product.ubicacion || "",
-        fechaIngreso: product.fechaIngreso || new Date().toISOString().split('T')[0],
-        fechaAdquisicion: product.fechaAdquisicion || "",
-        contratoId: product.contratoId || "",
-        quantity: product.cantidad?.toString() || "1",
-        serialNumber: product.numeroSerie || "",
-        costo: product.costo?.toString() || "",
-        fechaVencimientoGarantia: product.fechaVencimientoGarantia || "",
-        vidaUtil: product.vidaUtil || "",
+        productName: product.name || "",
+        brand: product.brand || "",
+        model: product.model || "",
+        category: product.category || "",
+        description: product.description || "",
+        provider: product.provider || "",
+        location: product.location || "",
+        entryDate: product.entryDate || new Date().toISOString().split('T')[0],
+        purchaseDate: product.purchaseDate || "",
+        contractId: product.contractId || "",
+        quantity: product.quantity?.toString() || "1",
+        serialNumber: product.serialNumber || "",
+        cost: product.cost?.toString() || "",
+        warrantyExpirationDate: product.warrantyExpirationDate || "",
+        usefulLife: product.usefulLife || "",
       })
       // Set local state based on product's serial number
-      setModalHasSerial(!!product.numeroSerie);
+      setModalHasSerial(!!product.serialNumber);
 
       // Actualizar documentos adjuntos
       setAttachedDocuments(
-        product?.documentosAdjuntos?.map((doc: any, index: number) => ({
+        product?.attachedDocuments?.map((doc: any, index: number) => ({
           id: `doc-${index}`,
           name: doc.name,
           url: doc.url,
@@ -122,16 +122,16 @@ export function EditProductModal({
         model: "",
         category: "",
         description: "",
-        proveedor: "",
-        ubicacion: "",
-        fechaIngreso: new Date().toISOString().split('T')[0],
-        fechaAdquisicion: "",
-        contratoId: "",
+        provider: "",
+        location: "",
+        entryDate: new Date().toISOString().split('T')[0],
+        purchaseDate: "",
+        contractId: "",
         quantity: "1",
         serialNumber: "",
-        costo: "",
-        fechaVencimientoGarantia: "",
-        vidaUtil: "",
+        cost: "",
+        warrantyExpirationDate: "",
+        usefulLife: "",
       });
       // For new products, default to non-serialized
       setModalHasSerial(false);
@@ -147,18 +147,18 @@ export function EditProductModal({
     if (field === "serialNumber" && value.trim() && modalHasSerial) {
       // Verificar si el número de serie ya existe (excluyendo el producto actual)
       const existingProduct = state.inventoryData.find(
-        (item) => item.numeroSerie === value.trim() && item.id !== product?.id
+        (item) => item.serialNumber === value.trim() && item.id !== product?.id
       )
 
       if (existingProduct) {
         showWarning({
           title: "Número de serie duplicado",
-          description: `Este número ya pertenece a "${existingProduct.nombre}"`
+          description: `Este número ya pertenece a "${existingProduct.name}"`
         })
       }
     }
 
-    if (field === "costo" && value) {
+    if (field === "cost" && value) {
       const cost = parseFloat(value)
       if (isNaN(cost) || cost < 0) {
         showWarning({
@@ -169,7 +169,7 @@ export function EditProductModal({
     }
 
     // Validación para fecha de garantía
-    if (field === "fechaVencimientoGarantia" && value) {
+    if (field === "warrantyExpirationDate" && value) {
       const today = new Date().toISOString().split('T')[0];
       if (value < today) {
         showWarning({
@@ -214,14 +214,14 @@ export function EditProductModal({
   // Modify handleSubmit to use local state
   const handleSubmit = async () => {
     // Verificar campos obligatorios independientemente de la pestaña activa
-    if (!formData.productName || !formData.brand || !formData.model || !formData.category || !formData.fechaIngreso) {
+    if (!formData.productName || !formData.brand || !formData.model || !formData.category || !formData.entryDate) {
       // Determinar qué campos están faltando para mostrar un mensaje más específico
       const missingFields = [];
       if (!formData.productName) missingFields.push("Nombre del Producto");
       if (!formData.brand) missingFields.push("Marca");
       if (!formData.model) missingFields.push("Modelo");
       if (!formData.category) missingFields.push("Categoría");
-      if (!formData.fechaIngreso) missingFields.push("Fecha de Ingreso");
+      if (!formData.entryDate) missingFields.push("Fecha de Ingreso");
 
       showError({
         title: "Campos requeridos",
@@ -249,13 +249,13 @@ export function EditProductModal({
 
     const mode = product ? 'edit' : 'add';
 
-    // Build backend-aligned payload
+    // Build unified camelCase payload
     const common = {
       name: formData.productName,
-      serial_number: modalHasSerial ? (formData.serialNumber || null) : null,
+      serialNumber: modalHasSerial ? (formData.serialNumber || null) : null,
       description: formData.description || null,
-      cost: formData.costo ? parseFloat(formData.costo) : null,
-      purchase_date: formData.fechaAdquisicion || null,
+      cost: formData.cost ? parseFloat(formData.cost) : null,
+      purchaseDate: formData.purchaseDate || null,
       condition: null as string | null,
       brandId: null as string | null,
       categoryId: null as string | null,
@@ -290,7 +290,7 @@ export function EditProductModal({
             </DialogTitle>
             <DialogDescription>
               {product
-                ? `Modifica la información del producto "${product.nombre}".`
+                ? `Modifica la información del producto "${product.name}".`
                 : "Añade un nuevo producto al inventario."
               }
             </DialogDescription>
@@ -350,8 +350,8 @@ export function EditProductModal({
                 <div className="space-y-2">
                   <Label htmlFor="location">Ubicación</Label>
                   <LocationCombobox
-                    value={formData.ubicacion || ''}
-                    onValueChange={(val) => handleInputChange("ubicacion", val)}
+                    value={formData.location || ''}
+                    onValueChange={(val) => handleInputChange("location", val)}
                     placeholder="Selecciona o escribe una ubicación"
                   />
                 </div>
@@ -371,7 +371,7 @@ export function EditProductModal({
                       id="hasSerial"
                       checked={modalHasSerial}
                       onCheckedChange={setModalHasSerial}
-                      disabled={product?.numeroSerie !== null && product?.cantidad === 1} // Disable if it's a serialized item that cannot be changed to non-serialized
+                      disabled={product?.serialNumber !== null && product?.quantity === 1} // Disable if it's a serialized item that cannot be changed to non-serialized
                     />
                     <Label htmlFor="hasSerial" className="flex items-center gap-1">
                       Este artículo tiene número de serie
@@ -396,7 +396,7 @@ export function EditProductModal({
                         id="serialNumber"
                         value={formData.serialNumber}
                         onChange={(e) => handleInputChange("serialNumber", e.target.value)}
-                        disabled={product?.numeroSerie !== null} // Disable if it's an existing serialized item
+                        disabled={product?.serialNumber !== null} // Disable if it's an existing serialized item
                       />
                     </div>
                   ) : (
@@ -419,30 +419,30 @@ export function EditProductModal({
             <TabsContent value="details" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fechaIngreso">Fecha de Ingreso <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="entryDate">Fecha de Ingreso <span className="text-red-500">*</span></Label>
                   <Input
-                    id="fechaIngreso"
+                    id="entryDate"
                     type="date"
-                    value={formData.fechaIngreso}
-                    onChange={(e) => handleInputChange("fechaIngreso", e.target.value)}
+                    value={formData.entryDate}
+                    onChange={(e) => handleInputChange("entryDate", e.target.value)}
                     disabled={user?.rol !== "Administrador"}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fechaAdquisicion">Fecha de Adquisición</Label>
+                  <Label htmlFor="purchaseDate">Fecha de Adquisición</Label>
                   <Input
-                    id="fechaAdquisicion"
+                    id="purchaseDate"
                     type="date"
-                    value={formData.fechaAdquisicion}
-                    onChange={(e) => handleInputChange("fechaAdquisicion", e.target.value)}
+                    value={formData.purchaseDate}
+                    onChange={(e) => handleInputChange("purchaseDate", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="provider">Proveedor</Label>
                   <ProviderCombobox
-                    value={formData.proveedor || ''}
-                    onValueChange={(val) => handleInputChange("proveedor", val)}
+                    value={formData.provider || ''}
+                    onValueChange={(val) => handleInputChange("provider", val)}
                     placeholder="Selecciona o escribe un proveedor"
                   />
                 </div>
@@ -450,40 +450,40 @@ export function EditProductModal({
                   <Label htmlFor="contratoId">ID de Contrato</Label>
                   <Input
                     id="contratoId"
-                    value={formData.contratoId || ''}
-                    onChange={(e) => handleInputChange("contratoId", e.target.value)}
+                    value={formData.contractId || ''}
+                    onChange={(e) => handleInputChange("contractId", e.target.value)}
                     placeholder="Ej: CFE-2024-001"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="costo">Costo de Adquisición</Label>
+                  <Label htmlFor="cost">Costo de Adquisición</Label>
                   <Input
-                    id="costo"
+                    id="cost"
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    value={formData.costo}
-                    onChange={(e) => handleInputChange("costo", e.target.value)}
+                    value={formData.cost}
+                    onChange={(e) => handleInputChange("cost", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fechaVencimientoGarantia">Fecha de Vencimiento de Garantía</Label>
+                  <Label htmlFor="warrantyExpirationDate">Fecha de Vencimiento de Garantía</Label>
                   <Input
-                    id="fechaVencimientoGarantia"
+                    id="warrantyExpirationDate"
                     type="date"
-                    value={formData.fechaVencimientoGarantia}
-                    onChange={(e) => handleInputChange("fechaVencimientoGarantia", e.target.value)}
+                    value={formData.warrantyExpirationDate}
+                    onChange={(e) => handleInputChange("warrantyExpirationDate", e.target.value)}
                     placeholder="YYYY-MM-DD"
                   />
                   <span className="text-xs text-muted-foreground">Deja vacío si el producto no tiene garantía.</span>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="vidaUtil">Vida Útil (hasta)</Label>
+                  <Label htmlFor="usefulLife">Vida Útil (hasta)</Label>
                   <Input
-                    id="vidaUtil"
+                    id="usefulLife"
                     type="date"
-                    value={formData.vidaUtil}
-                    onChange={(e) => handleInputChange("vidaUtil", e.target.value)}
+                    value={formData.usefulLife}
+                    onChange={(e) => handleInputChange("usefulLife", e.target.value)}
                   />
                 </div>
               </div>

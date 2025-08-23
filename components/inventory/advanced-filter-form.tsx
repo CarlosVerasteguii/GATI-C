@@ -39,19 +39,19 @@ export function AdvancedFilterForm({
   const handleDateChange = (dateRange: DateRange | undefined) => {
     setLocalFilters(prev => ({
       ...prev,
-      fechaInicio: dateRange?.from || null,
-      fechaFin: dateRange?.to || null,
+      startDate: dateRange?.from || null,
+      endDate: dateRange?.to || null,
     }));
   };
 
   const handleReset = () => {
     const emptyFilters: AdvancedFilterState = {
-      fechaInicio: null,
-      fechaFin: null,
-      proveedor: '',
-      contratoId: '',
-      costoMin: null,
-      costoMax: null,
+      startDate: null,
+      endDate: null,
+      provider: '',
+      contractId: '',
+      minCost: null,
+      maxCost: null,
     };
     setLocalFilters(emptyFilters);
     onClearFilters();
@@ -68,7 +68,7 @@ export function AdvancedFilterForm({
         <DatePickerWithRange
           id="date-range"
           className="w-full"
-          date={{ from: localFilters.fechaInicio ?? undefined, to: localFilters.fechaFin ?? undefined }}
+          date={{ from: localFilters.startDate ?? undefined, to: localFilters.endDate ?? undefined }}
           onDateChange={handleDateChange}
         />
       </div>
@@ -77,9 +77,9 @@ export function AdvancedFilterForm({
       <div className="flex flex-col space-y-2">
         <Label htmlFor="provider-filter">Proveedor</Label>
         <ProviderCombobox
-          value={localFilters.proveedor}
+          value={localFilters.provider}
           onValueChange={(provider) => {
-            setLocalFilters(prev => ({ ...prev, proveedor: provider }));
+            setLocalFilters(prev => ({ ...prev, provider: provider }));
           }}
           placeholder="Selecciona un proveedor"
         />
@@ -90,8 +90,8 @@ export function AdvancedFilterForm({
         <Input
           id="contrato-filter"
           placeholder="Ej: CFE-2024-001"
-          value={localFilters.contratoId || ''}
-          onChange={(e) => setLocalFilters(prev => ({ ...prev, contratoId: e.target.value }))}
+          value={localFilters.contractId || ''}
+          onChange={(e) => setLocalFilters(prev => ({ ...prev, contractId: e.target.value }))}
         />
       </div>
 
@@ -102,8 +102,8 @@ export function AdvancedFilterForm({
             id="costo-min"
             type="number"
             placeholder="0.00"
-            value={localFilters.costoMin ?? ''}
-            onChange={(e) => setLocalFilters(prev => ({ ...prev, costoMin: e.target.value ? parseFloat(e.target.value) : null }))}
+            value={localFilters.minCost ?? ''}
+            onChange={(e) => setLocalFilters(prev => ({ ...prev, minCost: e.target.value ? parseFloat(e.target.value) : null }))}
           />
         </div>
         <div className="flex flex-col space-y-2">
@@ -112,8 +112,8 @@ export function AdvancedFilterForm({
             id="costo-max"
             type="number"
             placeholder="9999.99"
-            value={localFilters.costoMax ?? ''}
-            onChange={(e) => setLocalFilters(prev => ({ ...prev, costoMax: e.target.value ? parseFloat(e.target.value) : null }))}
+            value={localFilters.maxCost ?? ''}
+            onChange={(e) => setLocalFilters(prev => ({ ...prev, maxCost: e.target.value ? parseFloat(e.target.value) : null }))}
           />
         </div>
       </div>

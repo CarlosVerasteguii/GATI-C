@@ -95,14 +95,14 @@ export function GroupedInventoryTable({
         return data
             .map(parent => {
                 const parentMatches =
-                    (parent.product.nombre?.toLowerCase().includes(lowercasedQuery)) ||
-                    (parent.product.marca?.toLowerCase().includes(lowercasedQuery)) ||
-                    (parent.product.modelo?.toLowerCase().includes(lowercasedQuery));
+                    (parent.product.name?.toLowerCase().includes(lowercasedQuery)) ||
+                    (parent.product.brand?.toLowerCase().includes(lowercasedQuery)) ||
+                    (parent.product.model?.toLowerCase().includes(lowercasedQuery));
 
                 // --- LÓGICA DE RESALTADO ---
                 let highlightedChildId: string | null = null;
                 const matchingChildren = parent.children.filter(child =>
-                    child.numeroSerie && child.numeroSerie.toLowerCase().includes(lowercasedQuery)
+                    child.serialNumber && child.serialNumber.toLowerCase().includes(lowercasedQuery)
                 );
 
                 if (matchingChildren.length === 1 && !parentMatches) {

@@ -16,7 +16,7 @@ import {
 import { InventoryItem, ColumnDefinition } from '@/types/inventory';
 import { cn } from "@/lib/utils";
 
-const getStatusVariant = (status: InventoryItem['estado']): 'default' | 'destructive' | 'outline' | 'secondary' => {
+const getStatusVariant = (status: InventoryItem['status']): 'default' | 'destructive' | 'outline' | 'secondary' => {
     switch (status) {
         case 'Disponible': return 'default';
         case 'Asignado':
@@ -65,23 +65,23 @@ export function ChildRow({
                 )}
             </TableCell>
             <TableCell />
-            {columns.filter(c => c.id !== 'nombre' && c.visible).map(col => {
+            {columns.filter(c => c.id !== 'name' && c.visible).map(col => {
                 const value = asset[col.id as keyof InventoryItem];
 
                 // Si la columna es 'marca' o 'modelo', renderiza una celda vacía para mantener la alineación.
-                if (col.id === 'marca' || col.id === 'modelo') {
+                if (col.id === 'brand' || col.id === 'model') {
                     return <TableCell key={col.id} />;
                 }
 
-                if (col.id === 'estado') {
+                if (col.id === 'status') {
                     return (
                         <TableCell key={col.id}>
-                            <Badge variant={getStatusVariant(asset.estado)}>{asset.estado}</Badge>
+                            <Badge variant={getStatusVariant(asset.status)}>{asset.status}</Badge>
                         </TableCell>
                     );
                 }
 
-                if (col.id === 'costo') {
+                if (col.id === 'cost') {
                     return (
                         <TableCell key={col.id}>
                             {typeof value === 'number'
@@ -134,7 +134,7 @@ export function ChildRow({
                         <DropdownMenuSeparator />
 
                         {/* --- LÓGICA CONTEXTUAL --- */}
-                        {asset.estado === 'Disponible' && (
+                        {asset.status === 'Disponible' && (
                             <>
                                 <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
                                     Asignar
@@ -145,7 +145,7 @@ export function ChildRow({
                             </>
                         )}
 
-                        {asset.estado === 'Asignado' && (
+                        {asset.status === 'Asignado' && (
                             <>
                                 <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('liberar', asset)}>
                                     Liberar Asignación
@@ -156,7 +156,7 @@ export function ChildRow({
                             </>
                         )}
 
-                        {(asset.estado === 'Prestado') && (
+                        {(asset.status === 'Prestado') && (
                             <>
                                 <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('devolver', asset)}>
                                     <Undo2 className="mr-2 h-4 w-4" />
@@ -168,7 +168,7 @@ export function ChildRow({
                             </>
                         )}
 
-                        {asset.estado === 'Retirado' && (
+                        {asset.status === 'Retirado' && (
                             <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Reactivar', asset)}>
                                 Reactivar Activo
                             </DropdownMenuItem>

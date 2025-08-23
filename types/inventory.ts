@@ -1,38 +1,38 @@
 // Nuevo tipo para eventos de historial
 export interface HistoryEvent {
-    fecha: string;
-    usuario: string;
-    accion: string;
-    detalles: string;
+    date: string;
+    user: string;
+    action: string;
+    details: string;
 }
 
 // Este tipo representa un item individual en la base de datos o el contexto.
 export interface InventoryItem {
     id: number;
-    nombre: string;
-    marca: string;
-    modelo: string;
-    numeroSerie: string | null;
-    categoria: string;
-    descripcion?: string;
-    estado: InventoryStatus;
-    cantidad: number;
-    fechaIngreso: string;
-    ubicacion?: string;
-    proveedor?: string;
-    costo?: number;
-    fechaAdquisicion?: string;
-    fechaVencimientoGarantia?: string | null; // Formato YYYY-MM-DD
-    vidaUtil?: string;
-    historial?: HistoryEvent[];
-    documentosAdjuntos?: { name: string; url: string }[];
+    name: string;
+    brand: string;
+    model: string;
+    serialNumber: string | null;
+    category: string;
+    description?: string;
+    status: InventoryStatus;
+    quantity: number;
+    entryDate: string;
+    location?: string;
+    provider?: string;
+    cost?: number;
+    purchaseDate?: string;
+    warrantyExpirationDate?: string | null; // YYYY-MM-DD
+    usefulLife?: string;
+    history?: HistoryEvent[];
+    attachedDocuments?: { name: string; url: string }[];
     isSerialized?: boolean;
-    contratoId?: string | null;
-    asignadoA?: string | null;
-    fechaAsignacion?: string | null;
-    prestadoA?: string | null;
-    fechaPrestamo?: string | null;
-    fechaDevolucion?: string | null;
+    contractId?: string | null;
+    assignedTo?: string | null;
+    assignmentDate?: string | null;
+    lentTo?: string | null;
+    loanDate?: string | null;
+    returnDate?: string | null;
     reactKey?: string;
     isVirtual?: boolean;
     originalId?: number;
@@ -56,16 +56,16 @@ export interface GroupedProduct {
     isParent: true;
     product: {
         id: string;
-        nombre: string;
-        marca: string;
-        modelo: string;
-        categoria: string;
+        name: string;
+        brand: string;
+        model: string;
+        category: string;
         isSerialized: boolean;
     };
     summary: {
         total: number;
-        disponible: number;
-        estados: {
+        available: number;
+        states: {
             [key: string]: number;
         };
     };
@@ -74,12 +74,12 @@ export interface GroupedProduct {
 }
 
 export interface AdvancedFilterState {
-    fechaInicio: Date | null;
-    fechaFin: Date | null;
-    proveedor: string;
-    contratoId: string;
-    costoMin: number | null;
-    costoMax: number | null;
+    startDate: Date | null;
+    endDate: Date | null;
+    provider: string;
+    contractId: string;
+    minCost: number | null;
+    maxCost: number | null;
 }
 
 // Definición de una columna en la tabla de inventario
