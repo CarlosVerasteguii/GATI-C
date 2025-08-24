@@ -4,11 +4,11 @@
 - [ ] .eslintrc.json
 - [ ] .cursorignore
 - [ ] .cursorules
-- [ ] AGENTS.md
-- [ ] GEMINI.md
-- [ ] CHANGELOG.md
-- [ ] CONTRIBUTING.md
-- [ ] docs-setup.md
+- [x] AGENTS.md
+- [x] GEMINI.md
+- [x] CHANGELOG.md
+- [x] CONTRIBUTING.md
+- [x] docs-setup.md
 - [ ] components.json
 - [ ] docker-compose.yml
 - [ ] next.config.mjs

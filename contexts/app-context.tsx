@@ -5,7 +5,7 @@ import type { InventoryItem, User, HistoryEvent } from "@/types/inventory"
 
 // It's likely this type should live in `types/inventory.ts` alongside InventoryItem,
 // but for now we can define it here to resolve type errors.
-export type InventoryStatus = "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
+export type InventoryStatus = "AVAILABLE" | "ASSIGNED" | "LENT" | "RETIRED" | "PENDING_RETIREMENT";
 
 // Application state type definitions
 interface AssignmentItem {
@@ -15,7 +15,7 @@ interface AssignmentItem {
   serialNumber: string | null
   assignedTo: string
   assignmentDate: string // YYYY-MM-DD
-  status: "Activo" | "Devuelto"
+  status: "ACTIVE" | "RETURNED"
   notes?: string
   registeredBy?: string
 }
@@ -28,7 +28,7 @@ interface LoanItem {
   lentTo: string
   loanDate: string // YYYY-MM-DD
   returnDate: string // YYYY-MM-DD
-  status: "Activo" | "Devuelto" | "Vencido"
+  status: "ACTIVE" | "RETURNED" | "EXPIRED"
   remainingDays: number
   notes?: string
   registeredBy?: string
@@ -40,27 +40,27 @@ interface AccessRequest {
   email: string
   justification: string
   date: string
-  status: "Pendiente" | "Aprobada" | "Rechazada"
+  status: "PENDING" | "APPROVED" | "REJECTED"
   password?: string // Temporary password storage for approved access requests
 }
 
 interface PendingActionRequest {
   id: number
   type:
-  | "Creación de Producto"
-  | "Edición de Producto"
-  | "Duplicación de Producto"
-  | "Asignación"
-  | "Préstamo"
-  | "Retiro de Producto"
-  | "Reactivación"
-  | "Edición Masiva"
-  | "Asignación Masiva"
-  | "Préstamo Masivo"
-  | "Retiro Masivo"
+  | "PRODUCT_CREATION"
+  | "PRODUCT_EDIT"
+  | "PRODUCT_DUPLICATION"
+  | "ASSIGNMENT"
+  | "LOAN"
+  | "PRODUCT_RETIREMENT"
+  | "REACTIVATION"
+  | "BULK_EDIT"
+  | "BULK_ASSIGNMENT"
+  | "BULK_LOAN"
+  | "BULK_RETIREMENT"
   requestedBy: string
   date: string
-  status: "Pendiente" | "Aprobada" | "Rechazada"
+  status: "PENDING" | "APPROVED" | "REJECTED"
   details: any // Flexible for different action types
   auditLog?: { event: string; user: string; dateTime: string; description: string }[]
 }
@@ -75,17 +75,17 @@ interface RecentActivity {
 interface PendingTask {
   id: number
   type:
-  | "CARGA"
-  | "RETIRO"
-  | "ASIGNACION"
-  | "PRESTAMO"
-  | "Reactivación"
-  | "Creación de Producto"
-  | "Edición de Producto"
-  | "Duplicación de Producto"
+  | "LOAD"
+  | "RETIREMENT"
+  | "ASSIGNMENT"
+  | "LOAN"
+  | "REACTIVATION"
+  | "PRODUCT_CREATION"
+  | "PRODUCT_EDIT"
+  | "PRODUCT_DUPLICATION"
   creationDate: string
   createdBy: string
-  status: "Pendiente" | "Finalizada" | "Cancelada"
+  status: "PENDING" | "COMPLETED" | "CANCELLED"
   details: any
   auditLog?: { event: string; user: string; dateTime: string; description: string }[]
 }
@@ -114,14 +114,14 @@ export interface InventoryLowStockThresholds {
 // --- Default thresholds (mock, for demo/testing) ---
 const defaultLowStockThresholds: InventoryLowStockThresholds = {
   productThresholds: {
-    1: 2, // Laptop de Desarrollo Avanzado
-    3: 1, // Monitor UltraSharp
-    // ...otros productos
+    1: 2, // Advanced Development Laptop
+    3: 1, // UltraSharp Monitor
+    // ...other products
   },
   categoryThresholds: {
     'Laptops': 3,
-    'Monitores': 2,
-    // ...otras categorías
+    'Monitors': 2,
+    // ...other categories
   },
   globalThreshold: 3,
 };
@@ -140,7 +140,7 @@ interface AppState {
   locations: string[];
   retirementReasons: string[]
   userColumnPreferences: UserColumnPreference[]
-  userTheme?: string // Añadimos el tema del usuario al estado
+  userTheme?: string // We add the user theme to the state
   error: string | null
   isDragOver: boolean
   isNavigating: boolean
@@ -156,15 +156,15 @@ const defaultInventoryData: InventoryItem[] = [
   // Laptops
   {
     id: 1,
-    name: "Laptop de Desarrollo Avanzado",
+    name: "Advanced Development Laptop",
     brand: "Dell",
     model: "XPS 15",
     serialNumber: "DXPS15-001",
     category: "Laptops",
-    status: "Disponible", // Mantengo el valor literal en español
+    status: "AVAILABLE", // Keep the literal value in English
     quantity: 1,
     entryDate: "2023-01-15",
-    location: "Oficina Principal - Piso 2",
+    location: "Main Office - Floor 2",
     provider: "Compudel",
     cost: 2200,
     purchaseDate: "2023-01-10",
@@ -174,28 +174,28 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2023-01-15",
         user: "Carlos Vera",
-        action: "Ingreso de Producto",
-        details: "Nuevo producto agregado al inventario"
+        action: "Product Entry",
+        details: "New product added to inventory"
       },
       {
         date: "2023-03-20",
         user: "Ana López",
-        action: "Asignación",
-        details: "Asignado al departamento de Desarrollo"
+        action: "Assignment",
+        details: "Assigned to Development department"
       }
     ]
   },
   {
     id: 2,
-    name: "Laptop de Gerencia",
+    name: "Management Laptop",
     brand: "Apple",
     model: "MacBook Pro 16",
     serialNumber: "AMBP16-002",
     category: "Laptops",
-    status: "Disponible",
+    status: "AVAILABLE",
     quantity: 1,
     entryDate: "2023-03-20",
-    location: "Almacén Central",
+    location: "Central Warehouse",
     provider: "iShop",
     cost: 2500,
     purchaseDate: "2023-03-15",
@@ -205,28 +205,28 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2023-03-20",
         user: "Carlos Vera",
-        action: "Ingreso de Producto",
-        details: "Nuevo MacBook Pro ingresado al inventario"
+        action: "Product Entry",
+        details: "New MacBook Pro added to inventory"
       },
       {
         date: "2023-05-10",
         user: "Ana López",
-        action: "Actualización de Estado",
-        details: "Movido a estado Disponible después de configuración inicial"
+        action: "Status Update",
+        details: "Moved to Available status after initial configuration"
       }
     ]
   },
   {
     id: 3,
-    name: "Estación de Trabajo Móvil",
+    name: "Mobile Workstation",
     brand: "HP",
     model: "ZBook Fury G8",
     serialNumber: "HPZF-003",
     category: "Laptops",
-    status: "Disponible",
+    status: "AVAILABLE",
     quantity: 1,
     entryDate: "2022-11-05",
-    location: "Soporte Técnico",
+    location: "Technical Support",
     provider: "HP Directo",
     cost: 3100,
     purchaseDate: "2022-10-25",
@@ -236,67 +236,67 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2022-11-05",
         user: "Carlos Vera",
-        action: "Ingreso de Producto",
-        details: "Nuevo ZBook Fury G8 ingresado al inventario"
+        action: "Product Entry",
+        details: "New ZBook Fury G8 added to inventory"
       }
     ]
   },
   {
     id: 4,
-    name: "Laptop para Viajes",
+    name: "Travel Laptop",
     brand: "Lenovo",
     model: "ThinkPad X1 Carbon",
     serialNumber: "LTPX1-004",
     category: "Laptops",
-    status: "Prestado",
+    status: "LENT",
     lentTo: "Ana Gómez",
     loanDate: "2024-06-15",
     returnDate: "2024-06-30",
     quantity: 1,
     entryDate: "2023-05-10",
-    location: "Oficina Principal - Piso 2",
+    location: "Main Office - Floor 2",
     provider: "Compudel",
     cost: 1800,
     purchaseDate: "2023-05-01",
     isSerialized: true,
     warrantyExpirationDate: null,
   },
-  { id: 20, name: "Laptop de Desarrollo Avanzado", brand: "Dell", model: "XPS 15", serialNumber: "DXPS15-002", category: "Laptops", status: "Disponible", quantity: 1, entryDate: "2023-01-15", location: "Almacén Central", provider: "Compudel", cost: 2200, purchaseDate: "2023-01-10", isSerialized: true, warrantyExpirationDate: new Date().toISOString().split('T')[0] },
+  { id: 20, name: "Advanced Development Laptop", brand: "Dell", model: "XPS 15", serialNumber: "DXPS15-002", category: "Laptops", status: "AVAILABLE", quantity: 1, entryDate: "2023-01-15", location: "Central Warehouse", provider: "Compudel", cost: 2200, purchaseDate: "2023-01-10", isSerialized: true, warrantyExpirationDate: new Date().toISOString().split('T')[0] },
 
-  // Monitores
-  { id: 5, name: "Monitor Curvo UltraWide", brand: "LG", model: "34WN780-B", serialNumber: "LG34-005", category: "Monitores", status: "Disponible", quantity: 1, entryDate: "2023-02-01", location: "Oficina Principal - Piso 1", provider: "TecnoMundo", cost: 750, purchaseDate: "2023-01-25", isSerialized: true },
-  { id: 6, name: "Monitor para Diseño Gráfico 4K", brand: "Dell", model: "UltraSharp U2721Q", serialNumber: "DU27-006", category: "Monitores", status: "Asignado", quantity: 1, entryDate: "2022-09-15", location: "Área de Diseño", provider: "Compudel", cost: 850, purchaseDate: "2022-09-10", isSerialized: true },
-  { id: 7, name: "Monitor de Alta Tasa de Refresco", brand: "ASUS", model: "ROG Swift PG279Q", serialNumber: "ASUSROG-007", category: "Monitores", status: "Prestado", lentTo: "Sofía Castillo", loanDate: new Date().toISOString().split('T')[0], returnDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-06-01", location: "Almacén Central", provider: "TecnoMundo", cost: 650, purchaseDate: "2023-05-28", isSerialized: true },
+  // Monitors
+  { id: 5, name: "Curved UltraWide Monitor", brand: "LG", model: "34WN780-B", serialNumber: "LG34-005", category: "Monitors", status: "AVAILABLE", quantity: 1, entryDate: "2023-02-01", location: "Main Office - Floor 1", provider: "TecnoMundo", cost: 750, purchaseDate: "2023-01-25", isSerialized: true },
+  { id: 6, name: "4K Graphic Design Monitor", brand: "Dell", model: "UltraSharp U2721Q", serialNumber: "DU27-006", category: "Monitors", status: "ASSIGNED", quantity: 1, entryDate: "2022-09-15", location: "Design Area", provider: "Compudel", cost: 850, purchaseDate: "2022-09-10", isSerialized: true },
+  { id: 7, name: "High Refresh Rate Monitor", brand: "ASUS", model: "ROG Swift PG279Q", serialNumber: "ASUSROG-007", category: "Monitors", status: "LENT", lentTo: "Sofía Castillo", loanDate: new Date().toISOString().split('T')[0], returnDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-06-01", location: "Central Warehouse", provider: "TecnoMundo", cost: 650, purchaseDate: "2023-05-28", isSerialized: true },
 
-  // Periféricos
-  { id: 8, name: "Teclado Mecánico Inalámbrico", brand: "Logitech", model: "MX Mechanical", serialNumber: null, category: "Periféricos", status: "Disponible", quantity: 10, entryDate: "2023-04-10", location: "Almacén Central", provider: "OfficeDepot", cost: 170, purchaseDate: "2023-04-05", isSerialized: false },
-  { id: 9, name: "Mouse Ergonómico Vertical", brand: "Logitech", model: "MX Vertical", serialNumber: "LOGIMXV-009", category: "Periféricos", status: "Asignado", quantity: 1, entryDate: "2023-02-20", location: "Oficina Principal - Piso 2", provider: "OfficeDepot", cost: 100, purchaseDate: "2023-02-15", isSerialized: true },
-  { id: 10, name: "Webcam 4K", brand: "Logitech", model: "Brio 4K", serialNumber: null, category: "Periféricos", status: "Disponible", quantity: 5, entryDate: "2023-05-30", location: "Almacén Central", provider: "TecnoMundo", cost: 200, purchaseDate: "2023-05-25", isSerialized: false },
+  // Peripherals
+  { id: 8, name: "Wireless Mechanical Keyboard", brand: "Logitech", model: "MX Mechanical", serialNumber: null, category: "Peripherals", status: "AVAILABLE", quantity: 10, entryDate: "2023-04-10", location: "Central Warehouse", provider: "OfficeDepot", cost: 170, purchaseDate: "2023-04-05", isSerialized: false },
+  { id: 9, name: "Vertical Ergonomic Mouse", brand: "Logitech", model: "MX Vertical", serialNumber: "LOGIMXV-009", category: "Peripherals", status: "ASSIGNED", quantity: 1, entryDate: "2023-02-20", location: "Main Office - Floor 2", provider: "OfficeDepot", cost: 100, purchaseDate: "2023-02-15", isSerialized: true },
+  { id: 10, name: "4K Webcam", brand: "Logitech", model: "Brio 4K", serialNumber: null, category: "Peripherals", status: "AVAILABLE", quantity: 5, entryDate: "2023-05-30", location: "Central Warehouse", provider: "TecnoMundo", cost: 200, purchaseDate: "2023-05-25", isSerialized: false },
 
-  // Servidores y Redes
-  { id: 11, name: "Servidor de Rack 2U", brand: "Dell", model: "PowerEdge R740", serialNumber: "DPER740-011", category: "Servidores", status: "Retirado", quantity: 1, entryDate: "2020-05-15", location: "Data Center A", provider: "HP Directo", cost: 5000, purchaseDate: "2020-05-01", isSerialized: true },
-  { id: 12, name: "Switch Gestionable 48 Puertos", brand: "Cisco", model: "Catalyst 2960", serialNumber: "CISCO2960-012", category: "Redes", status: "Disponible", quantity: 1, entryDate: "2021-08-10", location: "Data Center A", provider: "TecnoMundo", cost: 1200, purchaseDate: "2021-08-01", isSerialized: true },
-  { id: 13, name: "Firewall de Próxima Generación", brand: "Palo Alto", model: "PA-220", serialNumber: "PALO-220-013", category: "Seguridad", status: "Disponible", quantity: 1, entryDate: "2023-07-01", location: "Data Center B", provider: "HP Directo", cost: 900, purchaseDate: "2023-06-20", isSerialized: true },
+  // Servers and Networks
+  { id: 11, name: "2U Rack Server", brand: "Dell", model: "PowerEdge R740", serialNumber: "DPER740-011", category: "Servers", status: "RETIRED", quantity: 1, entryDate: "2020-05-15", location: "Data Center A", provider: "HP Directo", cost: 5000, purchaseDate: "2020-05-01", isSerialized: true },
+  { id: 12, name: "48-Port Managed Switch", brand: "Cisco", model: "Catalyst 2960", serialNumber: "CISCO2960-012", category: "Networks", status: "AVAILABLE", quantity: 1, entryDate: "2021-08-10", location: "Data Center A", provider: "TecnoMundo", cost: 1200, purchaseDate: "2021-08-01", isSerialized: true },
+  { id: 13, name: "Next-Generation Firewall", brand: "Palo Alto", model: "PA-220", serialNumber: "PALO-220-013", category: "Security", status: "AVAILABLE", quantity: 1, entryDate: "2023-07-01", location: "Data Center B", provider: "HP Directo", cost: 900, purchaseDate: "2023-06-20", isSerialized: true },
 
-  // Otros
-  { id: 14, name: "Proyector Full HD para Sala de Juntas", brand: "Epson", model: "PowerLite 1080", serialNumber: "EPSONPL-014", category: "Audiovisual", status: "Disponible", quantity: 1, entryDate: "2022-06-10", location: "Sala de Juntas 1", provider: "OfficeDepot", cost: 800, purchaseDate: "2022-06-01", isSerialized: true },
-  { id: 15, name: "Impresora Multifuncional Láser", brand: "HP", model: "LaserJet Pro M428fdw", serialNumber: "HPLJM-015", category: "Impresoras", status: "PENDIENTE_DE_RETIRO", quantity: 1, entryDate: "2021-01-20", location: "Área de Copiado", provider: "HP Directo", cost: 450, purchaseDate: "2021-01-15", isSerialized: true },
-  { id: 16, name: "Tableta Gráfica Profesional", brand: "Wacom", model: "Intuos Pro M", serialNumber: "WIPM-016", category: "Periféricos", status: "Prestado", lentTo: "Luis Fernández", loanDate: "2024-07-01", returnDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-08-01", location: "Área de Diseño", provider: "TecnoMundo", cost: 380, purchaseDate: "2023-07-25", isSerialized: true },
-  { id: 17, name: "Docking Station USB-C", brand: "Dell", model: "WD19S", serialNumber: null, category: "Accesorios", status: "Disponible", quantity: 20, entryDate: "2023-01-15", location: "Almacén Central", provider: "Compudel", cost: 250, purchaseDate: "2023-01-10", isSerialized: false },
-  { id: 18, name: "Router Wi-Fi Mesh (Pack de 3)", brand: "Google", model: "Nest Wifi", serialNumber: null, category: "Redes", status: "Disponible", quantity: 2, entryDate: "2023-09-01", location: "Almacén Central", provider: "iShop", cost: 300, purchaseDate: "2023-08-20", isSerialized: false },
-  { id: 19, name: "Lector de Código de Barras", brand: "Zebra", model: "DS2208", serialNumber: null, category: "Accesorios", status: "Disponible", quantity: 8, entryDate: "2022-12-10", location: "Almacén de Activos", provider: "Compudel", cost: 150, purchaseDate: "2022-12-01", isSerialized: false }
+  // Others
+  { id: 14, name: "Full HD Meeting Room Projector", brand: "Epson", model: "PowerLite 1080", serialNumber: "EPSONPL-014", category: "Audio Visual", status: "AVAILABLE", quantity: 1, entryDate: "2022-06-10", location: "Meeting Room 1", provider: "OfficeDepot", cost: 800, purchaseDate: "2022-06-01", isSerialized: true },
+  { id: 15, name: "Laser Multifunction Printer", brand: "HP", model: "LaserJet Pro M428fdw", serialNumber: "HPLJM-015", category: "Printers", status: "PENDING_RETIREMENT", quantity: 1, entryDate: "2021-01-20", location: "Copying Area", provider: "HP Directo", cost: 450, purchaseDate: "2021-01-15", isSerialized: true },
+  { id: 16, name: "Professional Graphics Tablet", brand: "Wacom", model: "Intuos Pro M", serialNumber: "WIPM-016", category: "Peripherals", status: "LENT", lentTo: "Luis Fernández", loanDate: "2024-07-01", returnDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], quantity: 1, entryDate: "2023-08-01", location: "Design Area", provider: "TecnoMundo", cost: 380, purchaseDate: "2023-07-25", isSerialized: true },
+  { id: 17, name: "USB-C Docking Station", brand: "Dell", model: "WD19S", serialNumber: null, category: "Accessories", status: "AVAILABLE", quantity: 20, entryDate: "2023-01-15", location: "Central Warehouse", provider: "Compudel", cost: 250, purchaseDate: "2023-01-10", isSerialized: false },
+  { id: 18, name: "Wi-Fi Mesh Router (Pack of 3)", brand: "Google", model: "Nest Wifi", serialNumber: null, category: "Networks", status: "AVAILABLE", quantity: 2, entryDate: "2023-09-01", location: "Central Warehouse", provider: "iShop", cost: 300, purchaseDate: "2023-08-20", isSerialized: false },
+  { id: 19, name: "Barcode Scanner", brand: "Zebra", model: "DS2208", serialNumber: null, category: "Accessories", status: "AVAILABLE", quantity: 8, entryDate: "2022-12-10", location: "Asset Inventory", provider: "Compudel", cost: 150, purchaseDate: "2022-12-01", isSerialized: false }
 ];
 
 const defaultAssignmentsData: AssignmentItem[] = [
   {
     id: 1,
     inventoryItemId: 3,
-    name: "Teclado Mecánico HyperX",
+    name: "HyperX Mechanical Keyboard",
     serialNumber: "HX-KB7RD2-US/RD",
     assignedTo: "Juan Pérez",
     assignmentDate: "2023-03-10",
-    status: "Activo",
-    notes: "Asignado para puesto de desarrollo.",
+    status: "ACTIVE",
+    notes: "Assigned for development position.",
     registeredBy: "Carlos Vera",
   },
   {
@@ -306,8 +306,8 @@ const defaultAssignmentsData: AssignmentItem[] = [
     serialNumber: "SN-XPS15-002",
     assignedTo: "María García",
     assignmentDate: "2023-01-20",
-    status: "Activo",
-    notes: "Laptop principal para gerente de proyectos.",
+    status: "ACTIVE",
+    notes: "Main laptop for project manager.",
     registeredBy: "Carlos Vera",
   },
 ]
@@ -321,9 +321,9 @@ const defaultLoansData: LoanItem[] = [
     lentTo: "Laura Torres",
     loanDate: "2023-04-05",
     returnDate: "2024-07-15",
-    status: "Activo",
+    status: "ACTIVE",
     remainingDays: 20,
-    notes: "Préstamo temporal para trabajo remoto.",
+    notes: "Temporary loan for remote work.",
     registeredBy: "Ana López",
   },
   {
@@ -334,9 +334,9 @@ const defaultLoansData: LoanItem[] = [
     lentTo: "Roberto Fernández",
     loanDate: "2024-06-01",
     returnDate: "2024-06-30",
-    status: "Activo",
+    status: "ACTIVE",
     remainingDays: 5,
-    notes: "Para capacitación externa.",
+    notes: "For external training.",
     registeredBy: "Ana López",
   },
 ]
@@ -344,34 +344,34 @@ const defaultLoansData: LoanItem[] = [
 const defaultPendingTasksData: PendingTask[] = [
   {
     id: 1,
-    type: "CARGA",
+    type: "LOAD",
     creationDate: "2024-06-15T10:00:00Z",
-    createdBy: "Usuario IP Confiable 1",
-    status: "Pendiente",
+    createdBy: "Trusted IP User 1",
+    status: "PENDING",
     details: {
-      productName: "Teclado Inalámbrico",
+      productName: "Wireless Mechanical Keyboard",
       brand: "Logitech",
-      model: "K380",
-      category: "Periféricos",
-      description: "Teclado compacto multidispositivo.",
+      model: "MX Mechanical",
+      category: "Peripherals",
+      description: "Compact multi-device keyboard.",
       quantity: 5,
       serialNumbers: [],
     },
     auditLog: [
       {
-        event: "CREACIÓN",
-        user: "Usuario IP Confiable 1",
+        event: "CREATION",
+        user: "Trusted IP User 1",
         dateTime: "2024-06-15T10:00:00Z",
-        description: "Tarea de carga creada desde IP de confianza.",
+        description: "Load task created from trusted IP.",
       },
     ],
   },
   {
     id: 2,
-    type: "RETIRO",
+    type: "RETIREMENT",
     creationDate: "2024-06-16T14:30:00Z",
-    createdBy: "Usuario IP Confiable 2",
-    status: "Pendiente",
+    createdBy: "Trusted IP User 2",
+    status: "PENDING",
     details: {
       involvedItems: [
         {
@@ -384,62 +384,62 @@ const defaultPendingTasksData: PendingTask[] = [
           quantity: 1,
           originalId: 13,
           entryDate: "2023-01-15",
-          description: "Laptop de alto rendimiento para uso profesional.",
+          description: "High-performance laptop for professional use.",
         },
       ],
-      reason: "Fin de vida útil",
+      reason: "End of useful life",
     },
     auditLog: [
       {
-        event: "CREACIÓN",
-        user: "Usuario IP Confiable 2",
+        event: "CREATION",
+        user: "Trusted IP User 2",
         dateTime: "2024-06-16T14:30:00Z",
-        description: "Tarea de retiro creada desde IP de confianza.",
+        description: "Retirement task created from trusted IP.",
       },
     ],
   },
   {
     id: 3,
-    type: "ASIGNACION",
+    type: "ASSIGNMENT",
     creationDate: "2024-06-17T09:15:00Z",
     createdBy: "Ana López",
-    status: "Pendiente",
+    status: "PENDING",
     details: {
       productId: 8,
-      productName: "Cámara Web Logitech C920",
+      productName: "Logitech C920 Webcam",
       productSerialNumber: null,
-      assignedTo: "Nuevo Empleado",
-      notes: "Para estación de trabajo de nuevo ingreso.",
+      assignedTo: "New Employee",
+      notes: "For new employee workstation.",
     },
     auditLog: [
       {
-        event: "CREACIÓN",
+        event: "CREATION",
         user: "Ana López",
         dateTime: "2024-06-17T09:15:00Z",
-        description: "Solicitud de asignación creada por Editor.",
+        description: "Assignment request created by Editor.",
       },
     ],
   },
   {
     id: 4,
-    type: "PRESTAMO",
+    type: "LOAN",
     creationDate: "2024-06-18T11:00:00Z",
     createdBy: "Pedro García",
-    status: "Pendiente",
+    status: "PENDING",
     details: {
       productId: 10,
-      productName: "Proyector Epson PowerLite",
+      productName: "Epson PowerLite Projector",
       productSerialNumber: null,
-      lentToName: "Sala de Conferencias A",
+      lentToName: "Meeting Room A",
       returnDate: "2024-06-25",
-      notes: "Para presentación semanal.",
+      notes: "For weekly presentation.",
     },
     auditLog: [
       {
-        event: "CREACIÓN",
+        event: "CREATION",
         user: "Pedro García",
         dateTime: "2024-06-18T11:00:00Z",
-        description: "Solicitud de préstamo creada por Lector.",
+        description: "Loan request created by Reader.",
       },
     ],
   },
@@ -455,18 +455,18 @@ const defaultInitialState: AppState = {
   tasks: defaultPendingTasksData,
   categories: [
     "Laptops",
-    "Monitores",
-    "Periféricos",
-    "Servidores",
-    "Redes",
-    "Impresoras",
-    "Almacenamiento",
-    "Proyectores",
+    "Monitors",
+    "Peripherals",
+    "Servers",
+    "Networks",
+    "Printers",
+    "Storage",
+    "Projectors",
   ],
   brands: [],
   providers: [],
   locations: [],
-  retirementReasons: ["Fin de vida útil", "Dañado sin reparación"],
+  retirementReasons: ["End of useful life", "Damaged beyond repair"],
   userColumnPreferences: [],
   error: null,
   isDragOver: false,
@@ -477,10 +477,10 @@ const defaultInitialState: AppState = {
   lowStockThresholds: defaultLowStockThresholds,
 }
 
-// Definición de tipos para las acciones
+// Definition of types for actions
 type AppAction =
   | { type: 'UPDATE_INVENTORY'; payload: InventoryItem[] }
-  | { type: 'UPDATE_INVENTORY_ITEM_STATUS'; payload: { id: number; status: string } }
+  | { type: 'UPDATE_INVENTORY_ITEM_STATUS'; payload: { id: number; status: InventoryStatus } }
   | { type: 'ADD_RECENT_ACTIVITY'; payload: RecentActivity }
   | { type: 'UPDATE_PENDING_TASK'; payload: { id: number; updates: Partial<PendingTask> } }
   | { type: 'UPDATE_USER_COLUMN_PREFERENCES'; payload: { userId: number; pageId: string; columns: string[]; itemsPerPage?: number } }
@@ -492,7 +492,7 @@ type AppAction =
   | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }
   | { type: 'ADD_HISTORY_EVENT'; payload: { itemId: number; event: HistoryEvent } };
 
-// Definición de la interfaz para el valor del contexto
+// Definition of the interface for the context value
 interface AppContextType {
   state: AppState
   dispatch: (action: AppAction) => void
@@ -526,32 +526,32 @@ interface AppContextType {
   addHistoryEvent: (itemId: number, event: HistoryEvent) => void;
   returnLoan: (itemId: number, currentUser: User | null) => void;
   getEffectiveLowStockThreshold: (product: InventoryItem) => number;
-  // --- Enterprise: Funciones para editar umbrales de inventario bajo ---
+  // --- Enterprise: Functions to edit low inventory thresholds ---
   /**
-   * setProductLowStockThreshold: Define o actualiza el umbral de inventario bajo para un producto.
-   * Si value es null, elimina el umbral del producto.
-   * Valida que el valor sea positivo.
+   * setProductLowStockThreshold: Define or update the low inventory threshold for a product.
+   * If value is null, remove the product threshold.
+   * Validates that the value is positive.
    */
   setProductLowStockThreshold: (productId: number, value: number | null) => void;
   /**
-   * setCategoryLowStockThreshold: Define o actualiza el umbral de inventario bajo para una categoría.
-   * Si value es null, elimina el umbral de la categoría.
-   * Valida que el valor sea positivo.
+   * setCategoryLowStockThreshold: Define or update the low inventory threshold for a category.
+   * If value is null, remove the category threshold.
+   * Validates that the value is positive.
    */
   setCategoryLowStockThreshold: (category: string, value: number | null) => void;
   /**
-   * setGlobalLowStockThreshold: Define el umbral global de inventario bajo.
-   * Valida que el valor sea positivo.
+   * setGlobalLowStockThreshold: Define the global low inventory threshold.
+   * Validates that the value is positive.
    */
   setGlobalLowStockThreshold: (value: number) => void;
   /**
-   * cleanOrphanThresholds: Elimina umbrales de productos/categorías que ya no existen.
-   * Se recomienda llamar tras eliminar productos/categorías.
+   * cleanOrphanThresholds: Remove thresholds for products/categories that no longer exist.
+   * Recommended to call after deleting products/categories.
    */
   cleanOrphanThresholds: () => void;
 }
 
-// Creación del contexto
+// Context creation
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
@@ -695,9 +695,9 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     // Prepare the initial history event
     const creationEvent: HistoryEvent = {
       date: new Date().toISOString(),
-      user: 'Sistema',
-      action: 'Creación',
-      details: `El activo fue creado en el sistema.`
+      user: 'System',
+      action: 'Creation',
+      details: `The asset was created in the system.`
     };
 
     // Add the event to the new item's history
@@ -836,17 +836,17 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
           // Create new preference
           const allColumnsForPage = pageId === "inventory"
             ? [
-              { id: "name", label: "Nombre", visible: true },
-              { id: "brand", label: "Marca", visible: true },
-              { id: "model", label: "Modelo", visible: true },
-              { id: "serialNumber", label: "N/S", visible: true },
-              { id: "category", label: "Categoría", visible: true },
-              { id: "status", label: "Estado", visible: true },
-              { id: "provider", label: "Proveedor", visible: false },
-              { id: "purchaseDate", label: "Fecha Adquisición", visible: false },
-              { id: "contractId", label: "Contrato ID", visible: false },
-              { id: "assignedTo", label: "Asignado A", visible: false },
-              { id: "assignmentDate", label: "Fecha Asignación", visible: false }
+              { id: "name", label: "Name", visible: true },
+              { id: "brand", label: "Brand", visible: true },
+              { id: "model", label: "Model", visible: true },
+              { id: "serialNumber", label: "Serial Number", visible: true },
+              { id: "category", label: "Category", visible: true },
+              { id: "status", label: "Status", visible: true },
+              { id: "provider", label: "Provider", visible: false },
+              { id: "purchaseDate", label: "Purchase Date", visible: false },
+              { id: "contractId", label: "Contract ID", visible: false },
+              { id: "assignedTo", label: "Assigned To", visible: false },
+              { id: "assignmentDate", label: "Assignment Date", visible: false }
             ].map(col => ({
               ...col,
               visible: columns.includes(col.id)
@@ -896,38 +896,38 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const releaseAssignment = useCallback((itemId: number, currentUser: User | null) => {
     dispatch({
       type: 'UPDATE_INVENTORY_ITEM_STATUS',
-      payload: { id: itemId, status: 'Disponible' }
+      payload: { id: itemId, status: 'AVAILABLE' as InventoryStatus }
     });
 
     addHistoryEvent(itemId, {
       date: new Date().toISOString(),
-      user: currentUser?.name || 'Sistema',
-      action: 'Liberación',
-      details: 'El activo ha sido devuelto al stock.'
+      user: currentUser?.name || 'System',
+      action: 'Release',
+      details: 'The asset has been returned to stock.'
     });
   }, [dispatch, addHistoryEvent])
 
   const returnLoan = useCallback((itemId: number, currentUser: User | null) => {
     // 1. Update the status in the main inventory list
     updateInventoryItem(itemId, {
-      status: "Disponible",
+      status: "AVAILABLE" as InventoryStatus,
       lentTo: null,
       loanDate: null,
       returnDate: null
     });
 
     // 2. Update the status in the separate loans list
-    const activeLoan = state.loansData.find(loan => loan.inventoryItemId === itemId && loan.status === "Activo");
+    const activeLoan = state.loansData.find(loan => loan.inventoryItemId === itemId && loan.status === "ACTIVE");
     if (activeLoan) {
-      updateLoanStatus(activeLoan.id, "Devuelto");
+      updateLoanStatus(activeLoan.id, "RETURNED");
     }
 
     // 3. Register the event in the history
     addHistoryEvent(itemId, {
       date: new Date().toISOString(),
-      user: currentUser?.name || 'Sistema',
-      action: 'Devolución de Préstamo',
-      details: 'El activo ha sido devuelto al stock.'
+      user: currentUser?.name || 'System',
+      action: 'Loan Return',
+      details: 'The asset has been returned to stock.'
     });
   }, [state.loansData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);
 

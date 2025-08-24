@@ -1,4 +1,4 @@
-// Nuevo tipo para eventos de historial
+// New type for history events
 export interface HistoryEvent {
     date: string;
     user: string;
@@ -6,7 +6,7 @@ export interface HistoryEvent {
     details: string;
 }
 
-// Este tipo representa un item individual en la base de datos o el contexto.
+// This type represents an individual item in the database or context.
 export interface InventoryItem {
     id: number;
     name: string;
@@ -38,20 +38,18 @@ export interface InventoryItem {
     originalId?: number;
 }
 
-
-
-// Este tipo representa un usuario.
+// This type represents a user.
 export interface User {
     id: number;
     name: string;
     email: string;
     password?: string;
-    role: "Administrador" | "Editor" | "Lector";
+    role: "ADMINISTRATOR" | "EDITOR" | "READER";
     department?: string;
 }
 
-// Este es el tipo para nuestra estructura de datos AGRUPADA que usa la tabla.
-// Combina la información del producto padre con sus hijos.
+// This is the type for our GROUPED data structure used by the table.
+// Combines parent product information with its children.
 export interface GroupedProduct {
     isParent: true;
     product: {
@@ -82,7 +80,7 @@ export interface AdvancedFilterState {
     maxCost: number | null;
 }
 
-// Definición de una columna en la tabla de inventario
+// Definition of a column in the inventory table
 export interface ColumnDefinition {
     id: string;
     label: string;
@@ -93,23 +91,23 @@ export interface ColumnDefinition {
     visible?: boolean;
 }
 
-// Tipo para estados de inventario
-export type InventoryStatus = "Disponible" | "Asignado" | "Prestado" | "Retirado" | "PENDIENTE_DE_RETIRO";
+// Type for inventory statuses
+export type InventoryStatus = "AVAILABLE" | "ASSIGNED" | "LENT" | "RETIRED" | "PENDING_RETIREMENT";
 
-// Tipo para estados de préstamos
-export type LoanStatus = "Activo" | "Devuelto" | "Vencido";
+// Type for loan statuses
+export type LoanStatus = "ACTIVE" | "RETURNED" | "EXPIRED";
 
-// Tipo para estados de asignaciones
-export type AssignmentStatus = "Activo" | "Devuelto";
+// Type for assignment statuses
+export type AssignmentStatus = "ACTIVE" | "RETURNED";
 
-// Tipo para estados de tareas
+// Type for task statuses
 export type TaskStatus =
-    | "Pendiente"
-    | "Aprobado"
-    | "Rechazado"
-    | "Carga Rápida"
-    | "Retiro Rápido"
-    | "Edición Masiva"
-    | "Asignación Masiva"
-    | "Préstamo Masivo"
-    | "Retiro Masivo"; 
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "QUICK_LOAD"
+    | "QUICK_RETIREMENT"
+    | "BULK_EDIT"
+    | "BULK_ASSIGNMENT"
+    | "BULK_LOAN"
+    | "BULK_RETIREMENT"; 
