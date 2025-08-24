@@ -59,7 +59,7 @@ export function usePendingTasks() {
 
         } catch (error) {
             console.error("Error fetching pending tasks count:", error)
-            // En caso de error, mantener el último valor conocido
+            // In case of error, keep the last known value
         } finally {
             setIsLoading(false)
         }

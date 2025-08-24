@@ -28,7 +28,7 @@
 - [x] app/page.tsx
 
 ### app/login
-- [ ] app/login/page.tsx
+- [x] app/login/page.tsx
 
 ### app/(app)
 - [ ] app/(app)/layout.tsx
@@ -60,7 +60,7 @@
 - [ ] app/(app)/inventario/loading.tsx
 
 #### app/(app)/perfil
-- [ ] app/(app)/perfil/page.tsx
+- [x] app/(app)/perfil/page.tsx
 - [ ] app/(app)/perfil/loading.tsx
 
 #### app/(app)/papelera-documentos
@@ -97,6 +97,7 @@
 - [ ] components/lend-modal.tsx
 - [ ] components/location-combobox.tsx
 - [ ] components/navigation-demo.tsx
+- [ ] components/product-search-combobox.tsx
 - [ ] components/product-search-combobox.tsx
 - [ ] components/provider-combobox.tsx
 - [ ] components/quick-load-modal.tsx
@@ -163,12 +164,12 @@
 - [ ] components/ui/user-combobox.tsx
 
 ### components/inventory
-- [ ] components/inventory/advanced-filter-form.tsx
+- [x] components/inventory/advanced-filter-form.tsx
 - [ ] components/inventory/child-row.tsx
-- [ ] components/inventory/column-toggle-menu.tsx
+- [x] components/inventory/column-toggle-menu.tsx
 - [ ] components/inventory/grouped-inventory-table.tsx
 - [ ] components/inventory/parent-row.tsx
-- [ ] components/inventory/search-bar.tsx
+- [x] components/inventory/search-bar.tsx
 
 #### components/inventory/modals
 - [ ] components/inventory/modals/assign-modal.tsx
@@ -192,12 +193,12 @@
 - [ ] lib/utils.ts
 
 ### lib/api
-- [ ] lib/api/auth.ts
+- [x] lib/api/auth.ts
 - [ ] lib/api/client.ts
 - [ ] lib/api/inventory.ts
 
 ### lib/stores
-- [ ] lib/stores/useAuthStore.ts
+- [x] lib/stores/useAuthStore.ts
 
 ### lib/mocks
 - [ ] lib/mocks/inventory-mock-data.ts
@@ -299,4 +300,39 @@
 
 ### Frontend Files: 134
 ### Backend Files: 22
+
+---
+
+## 🎯 LOTE #2.2 COMPLETADO ✅
+
+**Archivos Refactorizados:**
+- [x] `app/(app)/dashboard/page.tsx` - Dashboard completamente en inglés y alineado con tipos
+- [x] `components/activity-detail-sheet.tsx` - Ya estaba en inglés y alineado
+- [x] `app/(app)/historial/page.tsx` - Historial completamente en inglés y alineado con tipos
+
+**Estado de la Refactorización:**
+- ✅ **Alineación con Contrato de Datos:** Todos los archivos ahora usan los tipos correctos de `types/inventory.ts`
+- ✅ **Traducción de Contenido:** Todo el texto visible de la UI está en inglés
+- ✅ **Refactorización de Dependencias:** Los archivos funcionan como un sistema cohesivo
+- ✅ **Actualización del Mapa de Conquista:** REFACTOR_TRACKING.md actualizado
+
+**Próximo Lote Sugerido:** Lote #2.3 - Componentes de Inventario y Modales
+
+---
+
+## 🎯 LOTE #2.4 COMPLETADO ✅
+
+**Archivos Refactorizados:**
+- [x] `app/login/page.tsx` - Login completamente en inglés y alineado con tipos
+- [x] `app/(app)/perfil/page.tsx` - Perfil completamente en inglés y alineado con tipos
+- [x] `lib/api/auth.ts` - API de autenticación alineada con tipos en inglés
+- [x] `lib/stores/useAuthStore.ts` - Store de autenticación alineado con tipos en inglés
+
+**Estado de la Refactorización:**
+- ✅ **Alineación con Contrato de Datos:** Todos los archivos ahora usan los tipos correctos de `types/inventory.ts`
+- ✅ **Traducción de Contenido:** Todo el texto visible de la UI está en inglés
+- ✅ **Refactorización de Dependencias:** Los archivos funcionan como un sistema cohesivo
+- ✅ **Actualización del Mapa de Conquista:** REFACTOR_TRACKING.md actualizado
+
+**Próximo Lote Sugerido:** Lote #2.5 - Componentes de Inventario y Modales
 

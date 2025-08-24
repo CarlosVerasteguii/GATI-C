@@ -31,6 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import type { InventoryItem } from "@/types/inventory"
 
 const ITEMS_PER_PAGE = 10
 
@@ -242,7 +243,7 @@ export default function HistoryPage() {
           <TableBody>
             {paginatedActivities.length === 0 ? (
               <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No activities found.
                 </TableCell>
               </TableRow>

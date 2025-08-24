@@ -20,9 +20,9 @@ interface AuthActions {
 
 // Mock users list (migrated from legacy context)
 const fakeUsers: User[] = [
-    { id: 1, nombre: 'Carlos Vera', email: 'carlos@example.com', password: 'password123', rol: 'Administrador' },
-    { id: 2, nombre: 'Ana López', email: 'ana@example.com', password: 'password123', rol: 'Editor' },
-    { id: 3, nombre: 'Pedro García', email: 'pedro@example.com', password: 'password123', rol: 'Lector' },
+    { id: 1, name: 'Carlos Vera', email: 'carlos@example.com', password: 'password123', role: 'ADMINISTRATOR' },
+    { id: 2, name: 'Ana López', email: 'ana@example.com', password: 'password123', role: 'EDITOR' },
+    { id: 3, name: 'Pedro García', email: 'pedro@example.com', password: 'password123', role: 'READER' },
 ];
 
 export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
@@ -78,10 +78,10 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         const nextId = Math.max(0, ...get().users.map(u => u.id)) + 1;
         const userToAdd: User = {
             id: newUser.id ?? nextId,
-            nombre: newUser.nombre || 'Nuevo Usuario',
+            name: newUser.name || 'New User',
             email: newUser.email || `${Date.now()}@example.com`,
-            rol: newUser.rol || 'Lector',
-            departamento: newUser.departamento,
+            role: newUser.role || 'READER',
+            department: newUser.department,
         };
         set({ users: [...get().users, userToAdd] });
     },

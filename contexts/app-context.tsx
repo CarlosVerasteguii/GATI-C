@@ -174,13 +174,13 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2023-01-15",
         user: "Carlos Vera",
-        action: "Product Entry",
+        action: "productEntry",
         details: "New product added to inventory"
       },
       {
         date: "2023-03-20",
         user: "Ana López",
-        action: "Assignment",
+        action: "assignment",
         details: "Assigned to Development department"
       }
     ]
@@ -205,13 +205,13 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2023-03-20",
         user: "Carlos Vera",
-        action: "Product Entry",
+        action: "productEntry",
         details: "New MacBook Pro added to inventory"
       },
       {
         date: "2023-05-10",
         user: "Ana López",
-        action: "Status Update",
+        action: "statusUpdate",
         details: "Moved to Available status after initial configuration"
       }
     ]
@@ -236,7 +236,7 @@ const defaultInventoryData: InventoryItem[] = [
       {
         date: "2022-11-05",
         user: "Carlos Vera",
-        action: "Product Entry",
+        action: "productEntry",
         details: "New ZBook Fury G8 added to inventory"
       }
     ]
@@ -696,7 +696,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     const creationEvent: HistoryEvent = {
       date: new Date().toISOString(),
       user: 'System',
-      action: 'Creation',
+      action: 'creation',
       details: `The asset was created in the system.`
     };
 
@@ -902,7 +902,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     addHistoryEvent(itemId, {
       date: new Date().toISOString(),
       user: currentUser?.name || 'System',
-      action: 'Release',
+      action: 'release',
       details: 'The asset has been returned to stock.'
     });
   }, [dispatch, addHistoryEvent])
@@ -926,7 +926,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     addHistoryEvent(itemId, {
       date: new Date().toISOString(),
       user: currentUser?.name || 'System',
-      action: 'Loan Return',
+      action: 'loanReturn',
       details: 'The asset has been returned to stock.'
     });
   }, [state.loansData, updateInventoryItem, updateLoanStatus, addHistoryEvent]);

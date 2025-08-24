@@ -13,10 +13,10 @@ export function ColumnToggleMenu({ columns, onColumnsChange }: ColumnToggleMenuP
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline">Columnas</Button>
+                <Button variant="outline">Columns</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Alternar Columnas</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {columns.map((column) => (
                     <DropdownMenuCheckboxItem

@@ -26,10 +26,10 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = React.useState(false)
 
   React.useEffect(() => {
-    // Pequeño retraso para dar tiempo al fondo a renderizarse primero
+    // Small delay to allow background to render first
     const timer = setTimeout(() => {
       setIsMounted(true)
-    }, 100) // 100ms es suficiente
+    }, 100) // 100ms is sufficient
 
     return () => clearTimeout(timer)
   }, [])
@@ -62,8 +62,8 @@ export default function LoginPage() {
           setUsername(savedUsername)
           setRememberMe(true)
           showInfo({
-            title: "Sesión recordada",
-            description: `Bienvenido de vuelta, ${savedUsername}. Solo ingresa tu contraseña.`,
+            title: "Session Remembered",
+            description: `Welcome back, ${savedUsername}. Just enter your password.`,
             duration: 3000
           })
         }
@@ -82,15 +82,15 @@ export default function LoginPage() {
 
       // Handle Remember Me functionality
       if (rememberMe) {
-        const rememberedName = (user?.nombre ?? username)
+        const rememberedName = (user?.name ?? username)
         localStorage.setItem("gati-c-remember-me", JSON.stringify({
           username: rememberedName,
           rememberMe: true,
           lastLogin: new Date().toISOString()
         }))
         showInfo({
-          title: "Credenciales guardadas",
-          description: "Tus credenciales han sido guardadas para próximos inicios de sesión.",
+          title: "Credentials Saved",
+          description: "Your credentials have been saved for future logins.",
           duration: 2000
         })
       } else {
@@ -98,14 +98,14 @@ export default function LoginPage() {
       }
 
       showSuccess({
-        title: "Inicio de sesión exitoso",
-        description: `Bienvenido, ${user?.nombre || username}!`
+        title: "Login Successful",
+        description: `Welcome, ${user?.name || username}!`
       })
       router.push("/dashboard")
     } catch (err) {
       showError({
-        title: "Error de inicio de sesión",
-        description: "Credenciales incorrectas. Por favor, inténtalo de nuevo."
+        title: "Login Error",
+        description: "Incorrect credentials. Please try again."
       })
     }
   }
@@ -116,12 +116,12 @@ export default function LoginPage() {
 
   return (
     <>
-      {/* Capa 1: Fondo de Partículas */}
+      {/* Layer 1: Particle Background */}
       <ParticleBackground
         isModalOpen={isAccessRequestModalOpen || isAboutOpen || isHelpOpen || isQuickLoadModalOpen || isQuickRetireModalOpen}
       />
 
-      {/* Capa 2: Contenido Principal (Formulario Centrado) */}
+      {/* Layer 2: Main Content (Centered Form) */}
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
         <div className="w-full max-w-2xl pointer-events-auto">
           <Card
@@ -141,21 +141,21 @@ export default function LoginPage() {
                       <ThemeToggle />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Cambiar tema</p>
+                      <p>Change theme</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
+              <CardDescription>Enter your credentials to access the system</CardDescription>
             </CardHeader>
             <CardContent className="p-8 pt-0">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Usuario</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Ingresa tu usuario"
+                    placeholder="Enter your username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="focus:ring-2 focus:ring-primary transition-colors duration-200"
@@ -163,11 +163,11 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Ingresa tu contraseña"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="focus:ring-2 focus:ring-primary transition-colors duration-200"
@@ -186,7 +186,7 @@ export default function LoginPage() {
                     htmlFor="remember-me"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
-                    Recordar mis credenciales
+                    Remember my credentials
                   </Label>
                 </div>
 
@@ -197,7 +197,7 @@ export default function LoginPage() {
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <LogIn className="mr-2 h-4 w-4" />
-                  Iniciar Sesión
+                  Sign In
                 </Button>
               </form>
             </CardContent>
@@ -210,7 +210,7 @@ export default function LoginPage() {
                   isMounted ? "opacity-100" : "opacity-0"
                 )}
               >
-                ¿No tienes cuenta? Solicitar Acceso
+                Don't have an account? Request Access
               </Button>
               <TooltipProvider>
                 <Tooltip>
@@ -228,7 +228,7 @@ export default function LoginPage() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Acerca de GATI-C</p>
+                    <p>About GATI-C</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -249,7 +249,7 @@ export default function LoginPage() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Ayuda</p>
+                    <p>Help</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -272,7 +272,7 @@ export default function LoginPage() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Carga Rápida</p>
+                        <p>Quick Load</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -293,7 +293,7 @@ export default function LoginPage() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Baja Rápida</p>
+                        <p>Quick Retirement</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -304,7 +304,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Capa 3: Modales (renderizados al nivel superior) */}
+      {/* Layer 3: Modals (rendered at top level) */}
       <AccessRequestModal
         open={isAccessRequestModalOpen}
         onOpenChange={setIsAccessRequestModalOpen}
@@ -330,29 +330,29 @@ export default function LoginPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
-              Acerca de GATI-C
+              About GATI-C
             </DialogTitle>
             <DialogDescription>
-              Sistema de Gestión de Activos y Tareas de Infraestructura de Cómputo (GATI-C)
+              Computing Infrastructure Asset and Task Management System (GATI-C)
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium">Versión:</p>
+              <p className="text-sm font-medium">Version:</p>
               <p className="text-sm text-muted-foreground">2.0.0 (Enterprise-Grade)</p>
             </div>
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium">Desarrollado por:</p>
-              <p className="text-sm text-muted-foreground">Equipo de Desarrollo de TI - CFE</p>
+              <p className="text-sm font-medium">Developed by:</p>
+              <p className="text-sm text-muted-foreground">IT Development Team - CFE</p>
             </div>
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium">Contacto:</p>
+              <p className="text-sm font-medium">Contact:</p>
               <p className="text-sm text-muted-foreground">soporte.gatic@cfe.mx</p>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={() => setIsAboutOpen(false)} className="bg-primary hover:bg-primary-hover">
-              Cerrar
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

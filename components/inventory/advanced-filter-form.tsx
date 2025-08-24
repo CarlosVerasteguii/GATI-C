@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
 import { AdvancedFilterState } from '@/types/inventory';
-import { ProviderCombobox } from '@/components/provider-combobox'; // Importar ComboBox
-import { Checkbox } from '@/components/ui/checkbox'; // Importar Checkbox
+import { ProviderCombobox } from '@/components/provider-combobox'; // Import ComboBox
+import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox
 
 interface AdvancedFilterFormProps {
   currentFilters: AdvancedFilterState;
-  proveedores: string[]; // Añadir prop para la lista de proveedores
+  providers: string[]; // Add prop for providers list
   onApplyFilters: (filters: AdvancedFilterState) => void;
   onClearFilters: () => void;
   // New props for serial number filter
@@ -22,7 +22,7 @@ interface AdvancedFilterFormProps {
 
 export function AdvancedFilterForm({
   currentFilters,
-  proveedores, // Recibir la prop
+  providers, // Receive the prop
   onApplyFilters,
   onClearFilters,
   // New props
@@ -31,7 +31,7 @@ export function AdvancedFilterForm({
 }: AdvancedFilterFormProps) {
   const [localFilters, setLocalFilters] = React.useState<AdvancedFilterState>(currentFilters);
 
-  // Sincroniza el estado local si los filtros principales cambian desde fuera
+  // Sync local state if main filters change from outside
   React.useEffect(() => {
     setLocalFilters(currentFilters);
   }, [currentFilters]);
@@ -64,7 +64,7 @@ export function AdvancedFilterForm({
   return (
     <div className="grid gap-6 py-4">
       <div className="flex flex-col space-y-2">
-        <Label htmlFor="date-range">Fecha de Adquisición</Label>
+        <Label htmlFor="date-range">Acquisition Date</Label>
         <DatePickerWithRange
           id="date-range"
           className="w-full"
@@ -73,23 +73,23 @@ export function AdvancedFilterForm({
         />
       </div>
 
-      {/* ComboBox de Proveedor */}
+      {/* Provider ComboBox */}
       <div className="flex flex-col space-y-2">
-        <Label htmlFor="provider-filter">Proveedor</Label>
+        <Label htmlFor="provider-filter">Provider</Label>
         <ProviderCombobox
           value={localFilters.provider}
           onValueChange={(provider) => {
             setLocalFilters(prev => ({ ...prev, provider: provider }));
           }}
-          placeholder="Selecciona un proveedor"
+          placeholder="Select a provider"
         />
       </div>
 
       <div className="flex flex-col space-y-2">
-        <Label htmlFor="contrato-filter">ID de Contrato</Label>
+        <Label htmlFor="contract-filter">Contract ID</Label>
         <Input
-          id="contrato-filter"
-          placeholder="Ej: CFE-2024-001"
+          id="contract-filter"
+          placeholder="Ex: CFE-2024-001"
           value={localFilters.contractId || ''}
           onChange={(e) => setLocalFilters(prev => ({ ...prev, contractId: e.target.value }))}
         />
@@ -97,9 +97,9 @@ export function AdvancedFilterForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
-          <Label htmlFor="costo-min">Costo Mínimo</Label>
+          <Label htmlFor="min-cost">Minimum Cost</Label>
           <Input
-            id="costo-min"
+            id="min-cost"
             type="number"
             placeholder="0.00"
             value={localFilters.minCost ?? ''}
@@ -107,9 +107,9 @@ export function AdvancedFilterForm({
           />
         </div>
         <div className="flex flex-col space-y-2">
-          <Label htmlFor="costo-max">Costo Máximo</Label>
+          <Label htmlFor="max-cost">Maximum Cost</Label>
           <Input
-            id="costo-max"
+            id="max-cost"
             type="number"
             placeholder="9999.99"
             value={localFilters.maxCost ?? ''}
@@ -133,13 +133,13 @@ export function AdvancedFilterForm({
           htmlFor="serial-number-filter"
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
-          Solo mostrar productos con Número de Serie
+          Only show products with Serial Number
         </Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button variant="ghost" onClick={handleReset}>Limpiar</Button>
-        <Button onClick={handleApply}>Aplicar Filtros</Button>
+        <Button variant="ghost" onClick={handleReset}>Clear</Button>
+        <Button onClick={handleApply}>Apply Filters</Button>
       </div>
     </div>
   );

@@ -12,21 +12,20 @@ import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { showError, showSuccess, showInfo, showWarning } from "@/hooks/use-toast"
 import { Lock, User, Mail, Shield, Wifi, Loader2 } from "lucide-react"
 
-// Extendemos el tipo User para incluir trustedIp
+// Extend the User type to include trustedIp
 interface ExtendedUser {
   id: number
-  nombre: string
+  name: string
   email: string
   password?: string
-  rol: "Administrador" | "Editor" | "Lector"
-  departamento?: string
+  role: "ADMINISTRATOR" | "EDITOR" | "READER"
+  department?: string
   trustedIp?: string
 }
 
 export default function ProfilePage() {
   const { state, addRecentActivity } = useApp()
   const { user, updateCurrentUser } = useAuthStore() as any
-
 
   const currentUser = user as ExtendedUser | null
 
@@ -47,8 +46,8 @@ export default function ProfilePage() {
 
     if (currentPassword !== currentUser.password) {
       showError({
-        title: "Error al cambiar contraseña",
-        description: "La contraseña actual es incorrecta."
+        title: "Password Change Error",
+        description: "Current password is incorrect."
       })
       setIsPasswordChangeLoading(false)
       return
@@ -56,8 +55,8 @@ export default function ProfilePage() {
 
     if (newPassword !== confirmNewPassword) {
       showError({
-        title: "Error al cambiar contraseña",
-        description: "La nueva contraseña y la confirmación no coinciden."
+        title: "Password Change Error",
+        description: "New password and confirmation do not match."
       })
       setIsPasswordChangeLoading(false)
       return
@@ -65,26 +64,26 @@ export default function ProfilePage() {
 
     if (newPassword.length < 6) {
       showError({
-        title: "Error al cambiar contraseña",
-        description: "La nueva contraseña debe tener al menos 6 caracteres."
+        title: "Password Change Error",
+        description: "New password must be at least 6 characters long."
       })
       setIsPasswordChangeLoading(false)
       return
     }
 
-    // Simular una demora para mejor UX
+    // Simulate a delay for better UX
     setTimeout(() => {
       updateCurrentUser({ password: newPassword })
 
       addRecentActivity({
-        type: "Cambio de Contraseña",
-        description: `Contraseña del usuario ${currentUser.nombre} (${currentUser.rol}) cambiada.`,
+        type: "Password Change",
+        description: `Password changed for user ${currentUser.name} (${currentUser.role}).`,
         date: new Date().toLocaleString(),
-        details: { userId: currentUser.id, userName: currentUser.nombre },
+        details: { userId: currentUser.id, userName: currentUser.name },
       })
       showSuccess({
-        title: "Contraseña Actualizada",
-        description: "Tu contraseña ha sido cambiada exitosamente."
+        title: "Password Updated",
+        description: "Your password has been changed successfully."
       })
 
       setCurrentPassword("")
@@ -104,27 +103,27 @@ export default function ProfilePage() {
     const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
     if (newIpAddress && !ipRegex.test(newIpAddress)) {
       showError({
-        title: "Error al actualizar IP",
-        description: "Formato de dirección IP inválido."
+        title: "IP Update Error",
+        description: "Invalid IP address format."
       })
       setIsIpUpdateLoading(false)
       return
     }
 
-    // Simular una demora para mejor UX
+    // Simulate a delay for better UX
     setTimeout(() => {
-      // Usamos any para evitar problemas de tipo con trustedIp
+      // Use any to avoid type issues with trustedIp
       updateCurrentUser({ trustedIp: newIpAddress } as any)
 
       addRecentActivity({
-        type: "Actualización de IP Confiable",
-        description: `IP confiable del usuario ${currentUser.nombre} (${currentUser.rol}) actualizada a ${newIpAddress || "N/A"}.`,
+        type: "Trusted IP Update",
+        description: `Trusted IP for user ${currentUser.name} (${currentUser.role}) updated to ${newIpAddress || "N/A"}.`,
         date: new Date().toLocaleString(),
-        details: { userId: currentUser.id, userName: currentUser.nombre, newIp: newIpAddress },
+        details: { userId: currentUser.id, userName: currentUser.name, newIp: newIpAddress },
       })
       showSuccess({
-        title: "IP Confiable Actualizada",
-        description: "La dirección IP confiable ha sido actualizada exitosamente."
+        title: "Trusted IP Updated",
+        description: "The trusted IP address has been updated successfully."
       })
 
       setIsIpUpdateLoading(false)
@@ -134,28 +133,28 @@ export default function ProfilePage() {
   const handleAutoDetectIp = () => {
     setAutoDetectingIp(true)
 
-    // Toast de progreso inmediato
+    // Immediate progress toast
     showInfo({
-      title: "Detectando IP...",
-      description: "Consultando dirección IP actual"
+      title: "Detecting IP...",
+      description: "Checking current IP address"
     })
 
-    // Simulación de detección automática de IP con validación
+    // Simulate automatic IP detection with validation
     setTimeout(() => {
       const simulatedIp = "192.168.1." + Math.floor(Math.random() * 255)
       setNewIpAddress(simulatedIp)
       setAutoDetectingIp(false)
 
-      // Validar que la IP detectada no sea la misma que la actual
+      // Validate that detected IP is not the same as current
       if (currentUser?.trustedIp === simulatedIp) {
         showWarning({
-          title: "IP sin cambios",
-          description: "La IP detectada es la misma que tienes configurada"
+          title: "No IP Changes",
+          description: "The detected IP is the same as your current configuration"
         })
       } else {
         showSuccess({
-          title: "IP detectada automáticamente",
-          description: `Nueva IP encontrada: ${simulatedIp}`
+          title: "IP Automatically Detected",
+          description: `New IP found: ${simulatedIp}`
         })
       }
     }, 1500)
@@ -165,7 +164,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-        Cargando información del usuario...
+        Loading user information...
       </div>
     )
   }
@@ -173,24 +172,24 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mi Perfil</h1>
-        <p className="text-muted-foreground">Gestiona la información de tu cuenta y preferencias.</p>
+        <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
+        <p className="text-muted-foreground">Manage your account information and preferences.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Información del Usuario */}
+        {/* User Information */}
         <Card className="overflow-hidden transition-all hover:shadow-md">
           <CardHeader className="bg-muted/40">
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              Información Personal
+              Personal Information
             </CardTitle>
-            <CardDescription>Detalles de tu cuenta.</CardDescription>
+            <CardDescription>Your account details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div>
-              <Label>Nombre</Label>
-              <p className="text-lg font-medium">{currentUser.nombre}</p>
+              <Label>Name</Label>
+              <p className="text-lg font-medium">{currentUser.name}</p>
             </div>
             <div>
               <Label>Email</Label>
@@ -200,38 +199,38 @@ export default function ProfilePage() {
               </p>
             </div>
             <div>
-              <Label>Rol</Label>
+              <Label>Role</Label>
               <p className="text-lg font-medium flex items-center gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
-                {currentUser.rol}
+                {currentUser.role}
               </p>
             </div>
-            {currentUser.departamento && (
+            {currentUser.department && (
               <div>
-                <Label>Departamento</Label>
-                <p className="text-lg font-medium">{currentUser.departamento}</p>
+                <Label>Department</Label>
+                <p className="text-lg font-medium">{currentUser.department}</p>
               </div>
             )}
             <div>
-              <Label>Estado</Label>
-              <p className="text-green-600 font-medium">Activo</p>
+              <Label>Status</Label>
+              <p className="text-green-600 font-medium">Active</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Cambiar Contraseña */}
+        {/* Change Password */}
         <Card className="overflow-hidden transition-all hover:shadow-md">
           <CardHeader className="bg-muted/40">
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5 text-primary" />
-              Cambiar Contraseña
+              Change Password
             </CardTitle>
-            <CardDescription>Actualiza tu contraseña para mantener tu cuenta segura.</CardDescription>
+            <CardDescription>Update your password to keep your account secure.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password">Contraseña Actual</Label>
+                <Label htmlFor="current-password">Current Password</Label>
                 <Input
                   id="current-password"
                   type="password"
@@ -242,7 +241,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-password">Nueva Contraseña</Label>
+                <Label htmlFor="new-password">New Password</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -253,7 +252,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-new-password">Confirmar Nueva Contraseña</Label>
+                <Label htmlFor="confirm-new-password">Confirm New Password</Label>
                 <Input
                   id="confirm-new-password"
                   type="password"
@@ -269,31 +268,31 @@ export default function ProfilePage() {
                 disabled={isPasswordChangeLoading}
               >
                 {isPasswordChangeLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isPasswordChangeLoading ? "Cambiando..." : "Cambiar Contraseña"}
+                {isPasswordChangeLoading ? "Changing..." : "Change Password"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Asignar IP Confiable (Solo para Administradores/Editores) */}
-        {(currentUser.rol === "Administrador" || currentUser.rol === "Editor") && (
+        {/* Assign Trusted IP (Only for Administrators/Editors) */}
+        {(currentUser.role === "ADMINISTRATOR" || currentUser.role === "EDITOR") && (
           <Card className="overflow-hidden transition-all hover:shadow-md">
             <CardHeader className="bg-muted/40">
               <CardTitle className="flex items-center gap-2">
                 <Wifi className="h-5 w-5 text-primary" />
-                IP Confiable
+                Trusted IP
               </CardTitle>
-              <CardDescription>Asigna una dirección IP para acceso rápido sin autenticación completa.</CardDescription>
+              <CardDescription>Assign an IP address for quick access without full authentication.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <form onSubmit={handleIpUpdate} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="trusted-ip">Dirección IP Confiable</Label>
+                  <Label htmlFor="trusted-ip">Trusted IP Address</Label>
                   <div className="flex gap-2">
                     <Input
                       id="trusted-ip"
                       type="text"
-                      placeholder="Ej. 192.168.1.100"
+                      placeholder="e.g. 192.168.1.100"
                       value={newIpAddress}
                       onChange={(e) => setNewIpAddress(e.target.value)}
                       className="focus:ring-2 focus:ring-primary transition-colors duration-200"
@@ -307,11 +306,11 @@ export default function ProfilePage() {
                       {autoDetectingIp ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "Detectar"
+                        "Detect"
                       )}
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">Deja vacío para deshabilitar la IP confiable.</p>
+                  <p className="text-sm text-muted-foreground">Leave empty to disable trusted IP.</p>
                 </div>
                 <Button
                   type="submit"
@@ -319,10 +318,10 @@ export default function ProfilePage() {
                   disabled={isIpUpdateLoading}
                 >
                   {isIpUpdateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isIpUpdateLoading ? "Actualizando..." : "Actualizar IP"}
+                  {isIpUpdateLoading ? "Updating..." : "Update IP"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  (Nota: En un entorno real, tu IP se detectaría automáticamente. Aquí es una simulación.)
+                  (Note: In a real environment, your IP would be detected automatically. This is a simulation.)
                 </p>
               </form>
             </CardContent>

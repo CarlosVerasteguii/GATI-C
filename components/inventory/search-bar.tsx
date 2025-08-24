@@ -13,24 +13,24 @@ interface SearchBarProps {
 
 export function SearchBar({ initialValue = '', onSearchChange, placeholder, className }: SearchBarProps) {
     const [value, setValue] = React.useState(initialValue);
-    const debouncedValue = useDebounce(value, 300); // 300ms de retraso
+    const debouncedValue = useDebounce(value, 300); // 300ms delay
     const isInitialMount = React.useRef(true);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
     };
 
-    // Este useEffect ahora notificará al padre solo cuando el valor "debounced" cambie
+    // This useEffect will now notify the parent only when the "debounced" value changes
     React.useEffect(() => {
         if (isInitialMount.current) {
-            // En el primer montaje, no hagas nada, solo cambia la bandera.
+            // On first mount, do nothing, just change the flag.
             isInitialMount.current = false;
             return;
         }
         onSearchChange(debouncedValue);
     }, [debouncedValue, onSearchChange]);
 
-    // El botón de limpiar ahora solo necesita setear el valor local
+    // The clear button now only needs to set the local value
     const handleClear = () => {
         setValue('');
     };
@@ -42,13 +42,13 @@ export function SearchBar({ initialValue = '', onSearchChange, placeholder, clas
                 placeholder={placeholder}
                 value={value}
                 onChange={handleChange}
-                className="pl-10 pr-10" // Añadimos padding para los iconos
+                className="pl-10 pr-10" // Add padding for icons
             />
             {value && (
                 <button
-                    onClick={handleClear} // Usar el nuevo handler
+                    onClick={handleClear} // Use the new handler
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
-                    aria-label="Limpiar búsqueda"
+                    aria-label="Clear search"
                 >
                     <X className="h-4 w-4 text-muted-foreground" />
                 </button>

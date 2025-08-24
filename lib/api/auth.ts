@@ -1,9 +1,9 @@
 export interface LoginResponseUser {
     id: number;
-    nombre: string;
+    name: string;
     email: string;
-    rol: "Administrador" | "Editor" | "Lector";
-    departamento?: string;
+    role: "ADMINISTRATOR" | "EDITOR" | "READER";
+    department?: string;
 }
 
 import { apiClient, ApiError } from "@/lib/api/client";

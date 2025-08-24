@@ -138,7 +138,7 @@ export default function DashboardPage() {
     return { expiringWarranties: expiring, expiredWarranties: expired }
   }, [state.inventoryData])
 
-  // --- Inventario Bajo (usando umbrales configurables) ---
+  // --- Low Inventory (using configurable thresholds) ---
   const { getEffectiveLowStockThreshold } = useApp();
   const lowInventory = React.useMemo(() => {
     return state.inventoryData.filter(item => {
@@ -163,11 +163,6 @@ export default function DashboardPage() {
   const inventoryMetrics = useMemo(() => {
     // Calculate value and activity metrics instead of only distribution
     const totalValue = state.inventoryData.reduce((sum, item) => sum + (item.cost || 0), 0);
-
-    // ⚠️ REMOVED: Items requiring attention - card removed from dashboard
-    // Removed code: const pendingRetirementItems = state.inventoryData.filter(item => item.estado === "PENDIENTE_DE_RETIRO");
-    // DO NOT REUSE: This functionality was intentionally removed. If you need to show items pending retirement,
-    // implement a new solution from scratch; do not copy code from previous versions.
 
     // Products by category (top 5)
     const categoryCounts = state.inventoryData.reduce((acc, item) => {
@@ -208,16 +203,15 @@ export default function DashboardPage() {
       totalItems: state.inventoryData.length,
       assignedItems: state.inventoryData.filter(item => item.status === "ASSIGNED").length,
       lentItems: state.inventoryData.filter(item => item.status === "LENT").length,
-      // ⚠️ REMOVED: pendingRetirementItems - DO NOT REUSE
       topCategories,
       topBrands,
       needsRenewal,
       // Keep basic counts for reference
       counts: {
-        disponibles: availableProducts,
-        asignados: assignedProducts,
-        prestados: lentProducts,
-        retirados: retiredProducts,
+        available: availableProducts,
+        assigned: assignedProducts,
+        lent: lentProducts,
+        retired: retiredProducts,
         total: totalProducts
       }
     };
@@ -282,11 +276,6 @@ export default function DashboardPage() {
     setIsLoanDetailSheetOpen(false)
   }
 
-  // ⚠️ REMOVED: handleViewInventoryDetails - "Items Requiring Attention" card deleted
-  // Removed code: const handleViewInventoryDetails = (filter: string) => { ... }
-  // DO NOT REUSE: This function was specific to the removed card. If you need inventory navigation,
-  // implement a new function from scratch; do not copy code from previous versions.
-
   return (
     <div className="space-y-6">
       <div className="text-muted-foreground mb-2">
@@ -295,19 +284,6 @@ export default function DashboardPage() {
 
       {/* Main cards (Total, Assigned, etc.) */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/*
-          NOTE on Dashboard Badges & Color Migration:
-          This dashboard intentionally uses the generic `ui/badge` for its metric
-          counters to allow for specific styling (e.g., larger text).
-
-          MIGRATION STATUS (as of Refactor July 30 2025):
-          This file contains a mix of new and legacy color classes.
-          - ✅ COMPLETED: "Tareas Pendientes" card now uses the new semantic color system.
-          - ⚠️ PENDING: Other cards (e.g., "Overdue Loans") still use @deprecated
-            legacy classes like `bg-status-retired`.
-          - TODO: Migrate all remaining legacy coep eidlor classes in this file to the new
-            semantic system (e.g., `bg-status-retired-bg text-status-retired-text`).
-        */}
         <Card className="transition-shadow hover:shadow-lg p-6">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="flex items-center gap-2">
@@ -364,7 +340,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Tarjetas de Alertas con Layout v5.0 */}
+      {/* Alert Cards with Layout v5.0 */}
       {/* Loans row */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Overdue Loans */}
@@ -464,7 +440,7 @@ export default function DashboardPage() {
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
-                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                    onClick={() => router.push(`/inventory?product=${item.id}`)}
                   >
                     <div className="flex-1">
                       <p className="font-medium text-base">{item.name}</p>
@@ -502,7 +478,7 @@ export default function DashboardPage() {
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
-                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                    onClick={() => router.push(`/inventory?product=${item.id}`)}
                   >
                     <div className="flex-1">
                       <p className="font-medium text-base">{item.name}</p>
@@ -543,7 +519,7 @@ export default function DashboardPage() {
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
-                    onClick={() => router.push(`/inventario?producto=${item.id}`)}
+                    onClick={() => router.push(`/inventory?product=${item.id}`)}
                   >
                     <div className="flex-1">
                       <p className="font-medium text-base">{item.name}</p>
@@ -606,20 +582,20 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-3">
-            {/* Valor total del inventario */}
+            {/* Total inventory value */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Valor total del inventario</h3>
+              <h3 className="text-sm font-medium">Total Inventory Value</h3>
               <div className="text-2xl font-bold">
-                ${inventoryMetrics.totalValue.toLocaleString('es-MX')}
+                ${inventoryMetrics.totalValue.toLocaleString('en-US')}
               </div>
               <p className="text-xs text-muted-foreground">
-                Basado en {state.inventoryData.filter(item => typeof item.cost === 'number').length} productos con costo registrado
+                Based on {state.inventoryData.filter(item => typeof item.cost === 'number').length} products with registered cost
               </p>
             </div>
 
-            {/* Top marcas */}
+            {/* Top brands */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Top 3 Marcas</h3>
+              <h3 className="text-sm font-medium">Top 3 Brands</h3>
               <div className="space-y-1">
                 {inventoryMetrics.topBrands.slice(0, 3).map(([brand, count], index) => (
                   <div key={brand} className="flex items-center justify-between">
@@ -630,7 +606,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Productos por renovar */}
+            {/* Products to renew */}
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Items to renew</h3>
               <div className="text-2xl font-bold text-status-lent">
@@ -644,14 +620,14 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Actividad Reciente */}
+      {/* Recent Activity */}
       <Card className="transition-shadow hover:shadow-lg p-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                Actividad Reciente
+                Recent Activity
               </CardTitle>
               <CardDescription>Latest operations performed in the system</CardDescription>
             </div>
@@ -663,7 +639,7 @@ export default function DashboardPage() {
               </DialogTrigger>
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>🎨 Sistema de Toast Mejorado</DialogTitle>
+                  <DialogTitle>🎨 Enhanced Toast System</DialogTitle>
                 </DialogHeader>
                 <ToastDemo />
               </DialogContent>
@@ -672,7 +648,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {state.recentActivities.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay actividad reciente.</p>
+            <p className="text-sm text-muted-foreground">No recent activity.</p>
           ) : (
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {state.recentActivities.map((activity, index) => (
@@ -689,7 +665,7 @@ export default function DashboardPage() {
                   </div>
                   <Button size="sm" variant="outline" className="flex gap-1 items-center">
                     <ExternalLink className="h-3 w-3" />
-                    <span>Ver</span>
+                    <span>View</span>
                   </Button>
                 </div>
               ))}
@@ -699,7 +675,6 @@ export default function DashboardPage() {
       </Card>
 
       {/* Loan detail modal */}
-      {/* This is a placeholder to illustrate the structure; create real components */}
       <Sheet open={isLoanDetailSheetOpen} onOpenChange={setIsLoanDetailSheetOpen}>
         <SheetContent>
           <SheetHeader>
@@ -715,11 +690,11 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Producto</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Product</h4>
                     <p>{selectedLoan.name}</p>
                   </div>
                   <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">S/N</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">S/N</h4>
                     <p>{selectedLoan.serialNumber || "N/A"}</p>
                   </div>
                 </div>
@@ -754,7 +729,7 @@ export default function DashboardPage() {
               </div>
               <div className="mt-6 flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsLoanDetailSheetOpen(false)}>
-                  Cerrar
+                  Close
                 </Button>
                 <Button
                   onClick={handleReturnLoan}
@@ -768,7 +743,7 @@ export default function DashboardPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Modal para detalle de actividad */}
+      {/* Activity detail modal */}
       <ActivityDetailSheet
         open={isActivityDetailSheetOpen}
         onOpenChange={setIsActivityDetailSheetOpen}
