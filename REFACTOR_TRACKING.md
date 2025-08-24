@@ -34,7 +34,7 @@
 - [ ] app/(app)/layout.tsx
 
 #### app/(app)/dashboard
-- [ ] app/(app)/dashboard/page.tsx
+- [x] app/(app)/dashboard/page.tsx
 
 #### app/(app)/prestamos
 - [ ] app/(app)/prestamos/page.tsx
@@ -68,13 +68,13 @@
 - [ ] app/(app)/papelera-documentos/loading.tsx
 
 #### app/(app)/historial
-- [ ] app/(app)/historial/page.tsx
+- [x] app/(app)/historial/page.tsx
 - [ ] app/(app)/historial/loading.tsx
 
 ## components
 - [ ] components/access-request-modal.tsx
 - [ ] components/action-menu.tsx
-- [ ] components/activity-detail-sheet.tsx
+- [x] components/activity-detail-sheet.tsx
 - [ ] components/app-layout.tsx
 - [ ] components/assign-modal.tsx
 - [ ] components/brand-combobox.tsx

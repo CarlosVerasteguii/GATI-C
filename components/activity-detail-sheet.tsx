@@ -1,22 +1,31 @@
 "use client"
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Info, History, FileText, Calendar, Package, User, Clock, Tag } from "lucide-react"
+import { Info, History, FileText, User } from "lucide-react"
 import { StatusBadge } from "@/components/status-badge"
 import { format } from "date-fns"
-import { es } from "date-fns/locale"
+import { enUS } from "date-fns/locale"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import type { InventoryItem } from "@/types/inventory"
+
+interface ActivityItem {
+  type: string
+  description: string
+  date: string
+  details?: Record<string, unknown>
+  requestedBy?: string
+  status?: string
+}
 
 interface ActivityDetailSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  activity: any
+  activity: ActivityItem | null
 }
 
-const renderDetail = (label: string, value: any, className?: string) => {
+const renderDetail = (label: string, value: React.ReactNode, className?: string) => {
   if (value === undefined || value === null || value === "") return null
   return (
     <div className={cn("flex justify-between items-center py-1", className)}>
@@ -26,13 +35,16 @@ const renderDetail = (label: string, value: any, className?: string) => {
   )
 }
 
-const renderDiff = (oldData: any, newData: any) => {
-  const keys = Array.from(new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]))
+const renderDiff = (
+  oldData: Record<string, unknown> = {},
+  newData: Record<string, unknown> = {}
+) => {
+  const keys = Array.from(new Set([...Object.keys(oldData), ...Object.keys(newData)]))
 
   return (
     <div className="grid grid-cols-2 gap-4 text-sm">
       <div className="space-y-2">
-        <h4 className="font-semibold text-muted-foreground">Antes:</h4>
+        <h4 className="font-semibold text-muted-foreground">Before:</h4>
         {keys.map((key) => {
           const oldValue = oldData?.[key]
           const newValue = newData?.[key]
@@ -48,7 +60,7 @@ const renderDiff = (oldData: any, newData: any) => {
         })}
       </div>
       <div className="space-y-2">
-        <h4 className="font-semibold text-muted-foreground">Después:</h4>
+        <h4 className="font-semibold text-muted-foreground">After:</h4>
         {keys.map((key) => {
           const oldValue = oldData?.[key]
           const newValue = newData?.[key]
@@ -67,186 +79,178 @@ const renderDiff = (oldData: any, newData: any) => {
   )
 }
 
-// Función para formatear fechas con manejo de errores
+// Date formatting helpers with error handling
 const formatDate = (dateString: string) => {
   try {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    // Verificar si la fecha es válida
-    if (isNaN(date.getTime())) return "Fecha inválida";
-    return format(date, "dd/MM/yyyy", { locale: es });
+    if (!dateString) return "N/A"
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Invalid date"
+    return format(date, "dd/MM/yyyy", { locale: enUS })
   } catch (error) {
-    console.error("Error al formatear fecha:", error);
-    return "Fecha inválida";
+    console.error("Error formatting date:", error)
+    return "Invalid date"
   }
-};
+}
 
-// Función para formatear fechas con hora con manejo de errores
 const formatDateTime = (dateString: string) => {
   try {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    // Verificar si la fecha es válida
-    if (isNaN(date.getTime())) return "Fecha inválida";
-    return format(date, "dd/MM/yyyy, HH:mm:ss", { locale: es });
+    if (!dateString) return "N/A"
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Invalid date"
+    return format(date, "dd/MM/yyyy, HH:mm:ss", { locale: enUS })
   } catch (error) {
-    console.error("Error al formatear fecha y hora:", error);
-    return "Fecha inválida";
+    console.error("Error formatting date and time:", error)
+    return "Invalid date"
   }
-};
+}
 
 export function ActivityDetailSheet({ open, onOpenChange, activity }: ActivityDetailSheetProps) {
   if (!activity) return null
 
   const renderActivityDetails = () => {
     switch (activity.type) {
-      case "Edición de Producto":
+      case "Product Edit":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Edición</h3>
-            {renderDiff(activity.details.oldData, activity.details.newData)}
-            {renderDetail("ID de Producto", activity.details.productId)}
-            {renderDetail("Editado Por", activity.details.editedBy || activity.requestedBy)}
-            {renderDetail("Notas de Edición", activity.details.notes)}
+            <h3 className="text-lg font-semibold mb-2">Edit Details</h3>
+            {renderDiff(activity.details?.oldData as Record<string, unknown>, activity.details?.newData as Record<string, unknown>)}
+            {renderDetail("Product ID", activity.details?.productId)}
+            {renderDetail("Edited By", activity.details?.editedBy || activity.requestedBy)}
+            {renderDetail("Edit Notes", activity.details?.notes)}
           </>
         )
-      case "Nuevo Producto":
-      case "Duplicación de Producto":
+      case "New Product":
+      case "Product Duplication":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Productos Añadidos/Duplicados</h3>
+            <h3 className="text-lg font-semibold mb-2">Added/Duplicated Products</h3>
             <ul className="list-disc pl-5 space-y-1">
-              {activity.details.newProducts?.map((product: any, index: number) => (
+              {(activity.details?.newProducts as InventoryItem[] | undefined)?.map((product, index) => (
                 <li key={index} className="text-sm">
-                  {product.nombre} ({product.numeroSerie || `QTY: ${product.cantidad}`}) - {product.marca} -{" "}
-                  {product.modelo} - {product.categoria} - Proveedor: {product.proveedor || "N/A"} - Fecha Adq:{" "}
-                  {product.fechaAdquisicion || "N/A"} - Contrato ID: {product.contratoId || "N/A"}
+                  {product.name} ({product.serialNumber || `QTY: ${product.quantity}`}) - {product.brand} - {product.model} - {product.category} - Provider: {product.provider || "N/A"} - Purchase Date: {product.purchaseDate || "N/A"} - Contract ID: {product.contractId || "N/A"}
                 </li>
               ))}
             </ul>
-            {renderDetail("Creado Por", activity.details.createdBy || activity.requestedBy)}
-            {renderDetail("Fecha de Ingreso", activity.details.fechaIngreso)}
+            {renderDetail("Created By", activity.details?.createdBy || activity.requestedBy)}
+            {renderDetail("Entry Date", activity.details?.entryDate)}
           </>
         )
-      case "Retiro de Producto":
-      case "Reactivación":
+      case "Product Retirement":
+      case "Reactivation":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Producto Involucrado</h3>
-            {renderDetail("Nombre", activity.details.product?.name)}
-            {renderDetail("Número de Serie", activity.details.product?.serial || "N/A")}
-            {renderDetail("ID de Producto", activity.details.product?.id)}
-            {renderDetail("Estado Anterior", activity.details.oldStatus)}
-            {renderDetail("Estado Nuevo", activity.details.newStatus)}
-            {renderDetail("Razón de Retiro", activity.details.reason)}
-            {renderDetail("Acción Realizada Por", activity.details.actionBy || activity.requestedBy)}
+            <h3 className="text-lg font-semibold mb-2">Involved Product</h3>
+            {renderDetail("Name", (activity.details?.product as InventoryItem | undefined)?.name)}
+            {renderDetail("Serial Number", (activity.details?.product as InventoryItem | undefined)?.serialNumber || "N/A")}
+            {renderDetail("Product ID", (activity.details?.product as InventoryItem | undefined)?.id)}
+            {renderDetail("Previous Status", activity.details?.oldStatus)}
+            {renderDetail("New Status", activity.details?.newStatus)}
+            {renderDetail("Retirement Reason", activity.details?.reason)}
+            {renderDetail("Action Performed By", activity.details?.actionBy || activity.requestedBy)}
           </>
         )
-      case "Asignación":
+      case "Assignment":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Asignación</h3>
-            {renderDetail("Asignado a", activity.details.assignedTo)}
-            {renderDetail("Departamento", activity.details.department)}
-            {renderDetail("Fecha de Asignación", formatDate(activity.details.assignmentDate))}
-            {renderDetail("Asignado Por", activity.details.assignedBy || activity.requestedBy)}
-            {renderDetail("Notas", activity.details.notes)}
-            <h4 className="font-semibold mt-4 mb-2">Artículos Asignados:</h4>
+            <h3 className="text-lg font-semibold mb-2">Assignment Details</h3>
+            {renderDetail("Assigned to", activity.details?.assignedTo)}
+            {renderDetail("Department", activity.details?.department)}
+            {renderDetail("Assignment Date", formatDate(activity.details?.assignmentDate as string))}
+            {renderDetail("Assigned By", activity.details?.assignedBy || activity.requestedBy)}
+            {renderDetail("Notes", activity.details?.notes)}
+            <h4 className="font-semibold mt-4 mb-2">Assigned Items:</h4>
             <ul className="list-disc pl-5 space-y-1">
-              {activity.details.items?.map((item: any, index: number) => (
+              {(activity.details?.items as InventoryItem[] | undefined)?.map((item, index) => (
                 <li key={index} className="text-sm">
-                  {item.name} (N/S: {item.serial || "N/A"}) - QTY: {item.quantity} - Marca: {item.brand || "N/A"} -
-                  Modelo: {item.model || "N/A"} - Categoría: {item.category || "N/A"}
-                </li>
-              ))}
-            </ul>
-          </>
-        )
-      case "Préstamo":
-        return (
-          <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Préstamo</h3>
-            {renderDetail("Prestado a", activity.details.lentTo)}
-            {renderDetail("Fecha de Préstamo", formatDate(activity.details.loanDate))}
-            {renderDetail("Fecha de Devolución", formatDate(activity.details.returnDate))}
-            {renderDetail("Prestado Por", activity.details.lentBy || activity.requestedBy)}
-            {renderDetail("Notas", activity.details.notes)}
-            <h4 className="font-semibold mt-4 mb-2">Artículos Prestados:</h4>
-            <ul className="list-disc pl-5 space-y-1">
-              {activity.details.items?.map((item: any, index: number) => (
-                <li key={index} className="text-sm">
-                  {item.name} (N/S: {item.serial || "N/A"}) - QTY: {item.quantity} - Marca: {item.brand || "N/A"} -
-                  Modelo: {item.model || "N/A"} - Categoría: {item.category || "N/A"}
+                  {item.name} (S/N: {item.serialNumber || "N/A"}) - QTY: {item.quantity} - Brand: {item.brand || "N/A"} - Model: {item.model || "N/A"} - Category: {item.category || "N/A"}
                 </li>
               ))}
             </ul>
           </>
         )
-      case "Devolución":
+      case "Loan":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Devolución</h3>
-            {renderDetail("Devuelto por", activity.details.returnedBy)}
-            {renderDetail("Fecha de Devolución", formatDate(activity.details.returnDate))}
-            {renderDetail("Recibido Por", activity.details.receivedBy || activity.requestedBy)}
-            {renderDetail("Condición al Devolver", activity.details.condition)}
-            <h4 className="font-semibold mt-4 mb-2">Artículos Devueltos:</h4>
+            <h3 className="text-lg font-semibold mb-2">Loan Details</h3>
+            {renderDetail("Loaned to", activity.details?.lentTo)}
+            {renderDetail("Loan Date", formatDate(activity.details?.loanDate as string))}
+            {renderDetail("Return Date", formatDate(activity.details?.returnDate as string))}
+            {renderDetail("Loaned By", activity.details?.lentBy || activity.requestedBy)}
+            {renderDetail("Notes", activity.details?.notes)}
+            <h4 className="font-semibold mt-4 mb-2">Loaned Items:</h4>
             <ul className="list-disc pl-5 space-y-1">
-              {activity.details.items?.map((item: any, index: number) => (
+              {(activity.details?.items as InventoryItem[] | undefined)?.map((item, index) => (
                 <li key={index} className="text-sm">
-                  {item.name} (N/S: {item.serial || "N/A"}) - QTY: {item.quantity} - Estado: {item.estado || "N/A"}
+                  {item.name} (S/N: {item.serialNumber || "N/A"}) - QTY: {item.quantity} - Brand: {item.brand || "N/A"} - Model: {item.model || "N/A"} - Category: {item.category || "N/A"}
                 </li>
               ))}
             </ul>
           </>
         )
-      case "Importación CSV":
+      case "Return":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Importación</h3>
-            {renderDetail("Cantidad de Productos Importados", activity.details.count)}
-            {renderDetail("Nombre del Archivo", activity.details.fileName)}
-            {renderDetail("Importado Por", activity.details.importedBy || activity.requestedBy)}
+            <h3 className="text-lg font-semibold mb-2">Return Details</h3>
+            {renderDetail("Returned by", activity.details?.returnedBy)}
+            {renderDetail("Return Date", formatDate(activity.details?.returnDate as string))}
+            {renderDetail("Received By", activity.details?.receivedBy || activity.requestedBy)}
+            {renderDetail("Condition on Return", activity.details?.condition)}
+            <h4 className="font-semibold mt-4 mb-2">Returned Items:</h4>
+            <ul className="list-disc pl-5 space-y-1">
+              {(activity.details?.items as InventoryItem[] | undefined)?.map((item, index) => (
+                <li key={index} className="text-sm">
+                  {item.name} (S/N: {item.serialNumber || "N/A"}) - QTY: {item.quantity} - Status: {item.status || "N/A"}
+                </li>
+              ))}
+            </ul>
           </>
         )
-      case "Creación de Tarea":
-      case "Cancelación de Tarea":
-      case "Finalización de Tarea":
+      case "CSV Import":
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles de Tarea</h3>
-            {renderDetail("ID de Tarea", activity.details.taskId)}
-            {renderDetail("Tipo de Tarea", activity.details.taskType)}
-            {renderDetail("Creado Por", activity.details.createdBy || activity.requestedBy)}
-            {renderDetail("Fecha de Creación", formatDate(activity.details.creationDate))}
-            {activity.details.productName && renderDetail("Producto", activity.details.productName)}
-            {activity.details.quantity && renderDetail("Cantidad", activity.details.quantity)}
-            {activity.details.serialNumbers &&
-              renderDetail("Números de Serie", activity.details.serialNumbers.join(", "))}
-            {activity.details.itemsImplicados && (
+            <h3 className="text-lg font-semibold mb-2">Import Details</h3>
+            {renderDetail("Number of Imported Products", activity.details?.count)}
+            {renderDetail("File Name", activity.details?.fileName)}
+            {renderDetail("Imported By", activity.details?.importedBy || activity.requestedBy)}
+          </>
+        )
+      case "Task Creation":
+      case "Task Cancellation":
+      case "Task Completion":
+        return (
+          <>
+            <h3 className="text-lg font-semibold mb-2">Task Details</h3>
+            {renderDetail("Task ID", activity.details?.taskId)}
+            {renderDetail("Task Type", activity.details?.taskType)}
+            {renderDetail("Created By", activity.details?.createdBy || activity.requestedBy)}
+            {renderDetail("Creation Date", formatDate(activity.details?.creationDate as string))}
+            {activity.details?.productName && renderDetail("Product", activity.details.productName)}
+            {activity.details?.quantity && renderDetail("Quantity", activity.details.quantity)}
+            {activity.details?.serialNumbers &&
+              renderDetail("Serial Numbers", (activity.details.serialNumbers as string[]).join(", "))}
+            {activity.details?.involvedItems && (
               <>
-                <h4 className="font-semibold mt-4 mb-2">Artículos Implicados:</h4>
+                <h4 className="font-semibold mt-4 mb-2">Involved Items:</h4>
                 <ul className="list-disc pl-5 space-y-1">
-                  {activity.details.itemsImplicados.map((item: any, index: number) => (
+                  {(activity.details.involvedItems as InventoryItem[]).map((item, index) => (
                     <li key={index} className="text-sm">
-                      {item.name} (N/S: {item.serial || "N/A"}) - QTY: {item.quantity || 1} - Estado:{" "}
-                      {item.estado || "N/A"}
+                      {item.name} (S/N: {item.serialNumber || "N/A"}) - QTY: {item.quantity || 1} - Status: {item.status || "N/A"}
                     </li>
                   ))}
                 </ul>
               </>
             )}
-            {activity.details.auditLog && activity.details.auditLog.length > 0 && (
+            {activity.details?.auditLog && (activity.details.auditLog as { event: string; user: string; dateTime: string; description: string }[]).length > 0 && (
               <>
-                <h4 className="font-semibold mt-4 mb-2">Log de Auditoría:</h4>
+                <h4 className="font-semibold mt-4 mb-2">Audit Log:</h4>
                 <div className="space-y-2">
-                  {activity.details.auditLog.map((log: any, index: number) => (
+                  {(activity.details.auditLog as { event: string; user: string; dateTime: string; description: string }[]).map((log, index) => (
                     <Card key={index} className="p-3">
                       <p className="text-xs text-muted-foreground">
                         {formatDateTime(log.dateTime)}
                       </p>
                       <p className="text-sm font-medium">
-                        {log.event} por {log.user}
+                        {log.event} by {log.user}
                       </p>
                       <p className="text-xs text-muted-foreground">{log.description}</p>
                     </Card>
@@ -260,7 +264,7 @@ export function ActivityDetailSheet({ open, onOpenChange, activity }: ActivityDe
         // Render all details dynamically for unknown types
         return (
           <>
-            <h3 className="text-lg font-semibold mb-2">Detalles Adicionales</h3>
+            <h3 className="text-lg font-semibold mb-2">Additional Details</h3>
             <dl className="space-y-2">
               {Object.entries(activity.details || {}).map(([key, value]) => {
                 if (typeof value === "object" && value !== null) {
@@ -294,9 +298,9 @@ export function ActivityDetailSheet({ open, onOpenChange, activity }: ActivityDe
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" />
-            Detalle de Actividad
+            Activity Detail
           </SheetTitle>
-          <SheetDescription>Información completa sobre la actividad registrada.</SheetDescription>
+          <SheetDescription>Complete information about the recorded activity.</SheetDescription>
         </SheetHeader>
         <ScrollArea className="flex-1 pr-4">
           <div className="mt-6 space-y-6 pb-4">
@@ -304,21 +308,21 @@ export function ActivityDetailSheet({ open, onOpenChange, activity }: ActivityDe
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <History className="h-5 w-5" />
-                  Información General
+                  General Information
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <dl className="space-y-2">
-                  {renderDetail("Tipo de Actividad", <StatusBadge status={activity.type} />)}
-                  {renderDetail("Descripción", activity.description)}
-                  {renderDetail("Fecha y Hora", formatDateTime(activity.date))}
-                  {activity.requestedBy && renderDetail("Registrado por", (
+                  {renderDetail("Activity Type", <StatusBadge status={activity.type} />)}
+                  {renderDetail("Description", activity.description)}
+                  {renderDetail("Date and Time", formatDateTime(activity.date))}
+                  {activity.requestedBy && renderDetail("Recorded by", (
                     <span className="flex items-center gap-1">
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
                       {activity.requestedBy}
                     </span>
                   ))}
-                  {activity.status && renderDetail("Estado de Solicitud", <StatusBadge status={activity.status} />)}
+                  {activity.status && renderDetail("Request Status", <StatusBadge status={activity.status} />)}
                 </dl>
               </CardContent>
             </Card>
@@ -328,7 +332,7 @@ export function ActivityDetailSheet({ open, onOpenChange, activity }: ActivityDe
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <FileText className="h-5 w-5" />
-                    Detalles Específicos
+                    Specific Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">{renderActivityDetails()}</CardContent>
