@@ -1,132 +1,132 @@
 # GATI-C Backend
 
-Backend para el sistema de gestión de activos de TI de la CFE, construido con Node.js, Express y TypeScript.
+Backend for CFE's IT asset management system, built with Node.js, Express, and TypeScript.
 
-## 🚀 Características
+## 🚀 Features
 
-- **Arquitectura Modular**: Estructura organizada por módulos de dominio
-- **Autenticación JWT**: Sistema seguro de autenticación con cookies httpOnly
-- **Validación Zod**: Validación robusta de entrada con esquemas TypeScript
-- **API RESTful**: Endpoints bien definidos siguiendo estándares REST
-- **Documentación OpenAPI**: Especificación completa de la API
-- **TypeScript**: Código tipado y robusto
-- **Middleware de Seguridad**: Helmet, CORS configurado, rate limiting
+- **Modular Architecture**: Structure organized by domain modules
+- **JWT Authentication**: Secure authentication system with httpOnly cookies
+- **Zod Validation**: Robust input validation with TypeScript schemas
+- **RESTful API**: Well-defined endpoints following REST standards
+- **OpenAPI Documentation**: Complete API specification
+- **TypeScript**: Typed, robust code
+- **Security Middleware**: Helmet, configured CORS, rate limiting
 
-## 📋 Prerrequisitos
+## 📋 Prerequisites
 
-- Node.js 18+ 
-- npm o yarn
-- MySQL 8.0+ (para futuras implementaciones)
+- Node.js 18+
+- npm or yarn
+- MySQL 8.0+ (for future implementations)
 
-## 🛠️ Instalación
+## 🛠️ Installation
 
-1. **Clonar el repositorio** (si no está ya en el directorio del proyecto):
+1. **Clone the repository** (if not already in the project directory):
    ```bash
    cd backend
    ```
 
-2. **Instalar dependencias**:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. **Configurar variables de entorno**:
+3. **Configure environment variables**:
    ```bash
    cp env.example .env
-   # Editar .env con tus valores
+   # Edit .env with your values
    ```
 
-4. **Generar clave JWT segura**:
+4. **Generate a secure JWT key**:
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   # Copiar la salida y pegarla en JWT_SECRET en .env
+   # Copy the output and paste it into JWT_SECRET in .env
    ```
 
-## 🚀 Desarrollo
+## 🚀 Development
 
-### Iniciar servidor de desarrollo:
+### Start development server:
 ```bash
 npm run dev
 ```
 
-El servidor estará disponible en `http://localhost:3001`
+The server will be available at `http://localhost:3001`
 
-### Endpoints disponibles:
+### Available endpoints:
 - `GET /api/v1/health` - Health check
-- `GET /` - Información del servicio
+- `GET /` - Service information
 
-## 📚 Documentación de la API
+## 📚 API Documentation
 
-La documentación completa está disponible en:
+Full documentation is available at:
 - **OpenAPI**: `docs/openapi.yml`
-- **Swagger UI**: Disponible en desarrollo en `/api/docs` (futuro)
+- **Swagger UI**: Available in development at `/api/docs` (future)
 
-## 🏗️ Estructura del Proyecto
+## 🏗️ Project Structure
 
 ```
 backend/
-├── docs/           # Documentación OpenAPI
-├── prisma/         # Esquemas y migraciones de base de datos
+├── docs/           # OpenAPI documentation
+├── prisma/         # Database schemas and migrations
 ├── src/
-│   ├── config/     # Configuraciones del sistema
-│   ├── middleware/ # Middleware personalizado
-│   ├── modules/    # Módulos de dominio
-│   │   └── auth/   # Módulo de autenticación
-│   ├── routes/     # Definición de rutas
-│   ├── utils/      # Utilidades y helpers
-│   └── server.ts   # Punto de entrada principal
+│   ├── config/     # System configurations
+│   ├── middleware/ # Custom middleware
+│   ├── modules/    # Domain modules
+│   │   └── auth/   # Authentication module
+│   ├── routes/     # Route definitions
+│   ├── utils/      # Utilities and helpers
+│   └── server.ts   # Main entry point
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
 
-## 🔧 Scripts Disponibles
+## 🔧 Available Scripts
 
-- `npm run dev` - Servidor de desarrollo con hot reload
-- `npm run build` - Compilar TypeScript a JavaScript
-- `npm run start` - Ejecutar servidor compilado
+- `npm run dev` - Development server with hot reload
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm run start` - Run compiled server
 
-## 🔒 Seguridad
+## 🔒 Security
 
-- **JWT**: Tokens seguros con expiración configurable
-- **Cookies httpOnly**: Prevención de XSS
-- **Helmet**: Headers de seguridad HTTP
-- **CORS**: Configuración restrictiva por origen
-- **Rate Limiting**: Protección contra ataques de fuerza bruta
+- **JWT**: Secure tokens with configurable expiration
+- **httpOnly Cookies**: Prevent XSS
+- **Helmet**: HTTP security headers
+- **CORS**: Restrictive configuration by origin
+- **Rate Limiting**: Protection against brute force attacks
 
 ## 🧪 Testing
 
-Los tests serán implementados en futuras fases del proyecto.
+Tests will be implemented in future phases of the project.
 
 ## 📝 Logs
 
-El sistema registra:
-- Errores del servidor
-- Intentos de autenticación
-- Operaciones críticas del sistema
+The system records:
+- Server errors
+- Authentication attempts
+- Critical system operations
 
-## 🔄 Próximos Pasos
+## 🔄 Next Steps
 
-1. **Implementar módulo de autenticación completo**
-2. **Configurar base de datos con Prisma**
-3. **Implementar endpoints de inventario**
-4. **Sistema de auditoría y logging**
-5. **Tests automatizados**
+1. **Implement full authentication module**
+2. **Configure database with Prisma**
+3. **Implement inventory endpoints**
+4. **Audit and logging system**
+5. **Automated tests**
 
-## 🤝 Contribución
+## 🤝 Contribution
 
-Este proyecto sigue las convenciones establecidas en el TRD de GATI-C. Para contribuir:
+This project follows the conventions established in GATI-C's TRD. To contribute:
 
-1. Revisar la documentación del proyecto
-2. Seguir el estándar de código establecido
-3. Actualizar la documentación según sea necesario
+1. Review the project documentation
+2. Follow the established code standard
+3. Update documentation as necessary
 
-## 📄 Licencia
+## 📄 License
 
-Proyecto interno de la CFE - Todos los derechos reservados.
+Internal CFE project - All rights reserved.
 
 ---
 
-**Versión**: 0.1.0  
-**Última actualización**: Agosto 2025  
-**Equipo**: GATI-C Development Team
+**Version**: 0.1.0
+**Last update**: August 2025
+**Team**: GATI-C Development Team
