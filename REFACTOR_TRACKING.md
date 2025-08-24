@@ -165,10 +165,10 @@
 
 ### components/inventory
 - [x] components/inventory/advanced-filter-form.tsx
-- [ ] components/inventory/child-row.tsx
+- [x] components/inventory/child-row.tsx
 - [x] components/inventory/column-toggle-menu.tsx
-- [ ] components/inventory/grouped-inventory-table.tsx
-- [ ] components/inventory/parent-row.tsx
+- [x] components/inventory/grouped-inventory-table.tsx
+- [x] components/inventory/parent-row.tsx
 - [x] components/inventory/search-bar.tsx
 
 #### components/inventory/modals

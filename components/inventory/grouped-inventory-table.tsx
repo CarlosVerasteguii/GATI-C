@@ -99,47 +99,47 @@ export function GroupedInventoryTable({
                     (parent.product.brand?.toLowerCase().includes(lowercasedQuery)) ||
                     (parent.product.model?.toLowerCase().includes(lowercasedQuery));
 
-                // --- LÓGICA DE RESALTADO ---
+                // --- HIGHLIGHTING LOGIC ---
                 let highlightedChildId: string | null = null;
                 const matchingChildren = parent.children.filter(child =>
                     child.serialNumber && child.serialNumber.toLowerCase().includes(lowercasedQuery)
                 );
 
                 if (matchingChildren.length === 1 && !parentMatches) {
-                    // Si solo un hijo coincide y el padre no, lo marcamos para resaltar.
+                    // If only one child matches and the parent doesn't, we mark it for highlighting.
                     highlightedChildId = matchingChildren[0].id.toString();
                 }
-                // --- FIN LÓGICA DE RESALTADO ---
+                // --- END HIGHLIGHTING LOGIC ---
 
                 if (parentMatches || matchingChildren.length > 0) {
-                    return { ...parent, highlightedChildId }; // Devolvemos el padre con la info de resaltado
+                    return { ...parent, highlightedChildId }; // Return the parent with highlighting info
                 }
                 return null;
             })
             .filter((p): p is GroupedProduct & { highlightedChildId: string | null } => p !== null);
     }, [data, lowercasedQuery]);
 
-    // --- LÓGICA PARA AUTO-EXPANDIR ---
+    // --- AUTO-EXPAND LOGIC ---
     useEffect(() => {
         if (lowercasedQuery) {
-            // Si la búsqueda filtra y deja un único resultado padre, lo expandimos.
+            // If the search filters and leaves a single parent result, we expand it.
             if (filteredData.length === 1) {
                 setExpandedRows({ [filteredData[0].product.id]: true });
             } else {
-                // Si hay más de un resultado o ninguno, colapsamos todo para una vista limpia.
+                // If there are more than one result or none, we collapse everything for a clean view.
                 setExpandedRows({});
             }
         } else {
-            // Si la búsqueda está vacía, colapsamos todo.
+            // If the search is empty, we collapse everything.
             setExpandedRows({});
         }
     }, [searchQuery, filteredData]);
-    // --- FIN LÓGICA PARA AUTO-EXPANDIR ---
+    // --- END AUTO-EXPAND LOGIC ---
 
     const handleMenuAction = (action: string, product: GroupedProduct) => {
-        if (action === 'Asignar') {
+        if (action === 'Assign') {
             setModalState({ type: 'assign', data: product });
-        } else if (action === 'Retiro Rápido') {
+        } else if (action === 'Quick Retirement') {
             handleOpenQuickRetire(product);
         } else {
             onAction(action, product);
@@ -153,7 +153,7 @@ export function GroupedInventoryTable({
     return (
         <>
             <Table>
-                <TableCaption>Una lista de los activos de tu inventario.</TableCaption>
+                <TableCaption>A list of your inventory assets.</TableCaption>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[50px]">
@@ -180,7 +180,7 @@ export function GroupedInventoryTable({
                                 )}
                             </TableHead>
                         ))}
-                        <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -18,10 +18,10 @@ import { cn } from "@/lib/utils";
 
 const getStatusVariant = (status: InventoryItem['status']): 'default' | 'destructive' | 'outline' | 'secondary' => {
     switch (status) {
-        case 'Disponible': return 'default';
-        case 'Asignado':
-        case 'Prestado': return 'secondary';
-        case 'Retirado': return 'destructive';
+        case 'Available': return 'default';
+        case 'Assigned':
+        case 'Lent': return 'secondary';
+        case 'Retired': return 'destructive';
         default: return 'secondary';
     }
 };
@@ -68,7 +68,7 @@ export function ChildRow({
             {columns.filter(c => c.id !== 'name' && c.visible).map(col => {
                 const value = asset[col.id as keyof InventoryItem];
 
-                // Si la columna es 'marca' o 'modelo', renderiza una celda vacía para mantener la alineación.
+                // If the column is 'brand' or 'model', render an empty cell to maintain alignment.
                 if (col.id === 'brand' || col.id === 'model') {
                     return <TableCell key={col.id} />;
                 }
@@ -85,7 +85,7 @@ export function ChildRow({
                     return (
                         <TableCell key={col.id}>
                             {typeof value === 'number'
-                                ? value.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
                                 : '$0.00'}
                         </TableCell>
                     );
@@ -116,68 +116,68 @@ export function ChildRow({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
-                            <span className="sr-only">Abrir menú</span>
+                            <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones de Activo</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => onAction('Ver Detalles', asset)}>
-                            Ver Detalles
+                        <DropdownMenuLabel>Asset Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => onAction('View Details', asset)}>
+                            View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Editar', asset)}>
-                            Editar
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Edit', asset)}>
+                            Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Duplicar', asset)}>
-                            Duplicar
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Duplicate', asset)}>
+                            Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
 
-                        {/* --- LÓGICA CONTEXTUAL --- */}
-                        {asset.status === 'Disponible' && (
+                        {/* --- CONTEXTUAL LOGIC --- */}
+                        {asset.status === 'Available' && (
                             <>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
-                                    Asignar
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Assign', asset)}>
+                                    Assign
                                 </DropdownMenuItem>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Prestar', asset)}>
-                                    Prestar
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Lend', asset)}>
+                                    Lend
                                 </DropdownMenuItem>
                             </>
                         )}
 
-                        {asset.status === 'Asignado' && (
+                        {asset.status === 'Assigned' && (
                             <>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('liberar', asset)}>
-                                    Liberar Asignación
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('release', asset)}>
+                                    Release Assignment
                                 </DropdownMenuItem>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
-                                    Re-asignar
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Assign', asset)}>
+                                    Re-assign
                                 </DropdownMenuItem>
                             </>
                         )}
 
-                        {(asset.status === 'Prestado') && (
+                        {(asset.status === 'Lent') && (
                             <>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('devolver', asset)}>
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('return', asset)}>
                                     <Undo2 className="mr-2 h-4 w-4" />
-                                    <span>Devolver Préstamo</span>
+                                    <span>Return Loan</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', asset)}>
-                                    Re-asignar
+                                <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Assign', asset)}>
+                                    Re-assign
                                 </DropdownMenuItem>
                             </>
                         )}
 
-                        {asset.status === 'Retirado' && (
-                            <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Reactivar', asset)}>
-                                Reactivar Activo
+                        {asset.status === 'Retired' && (
+                            <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Reactivate', asset)}>
+                                Reactivate Asset
                             </DropdownMenuItem>
                         )}
-                        {/* --- FIN LÓGICA CONTEXTUAL --- */}
+                        {/* --- END CONTEXTUAL LOGIC --- */}
 
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isReadOnly} className="text-red-600" onSelect={() => onAction('Eliminar', asset)}>
-                            Eliminar
+                        <DropdownMenuItem disabled={isReadOnly} className="text-red-600" onSelect={() => onAction('Delete', asset)}>
+                            Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

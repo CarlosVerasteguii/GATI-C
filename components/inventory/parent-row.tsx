@@ -50,11 +50,11 @@ export function ParentRow({
 
     const areAllChildrenSelected = parentProduct.children.length > 0 && parentProduct.children.every(child => selectedRowIds.includes(child.id));
 
-    const renderEstadoTooltip = () => (
+    const renderStatusTooltip = () => (
         <div className="flex flex-col gap-1 p-1 text-xs">
-            <h4 className="font-bold text-sm mb-1">Desglose de Stock</h4>
-            {summary.states.Asignado > 0 && <div>Asignado: <strong>{summary.states.Asignado}</strong></div>}
-            {summary.states.Prestado > 0 && <div>Prestado: <strong>{summary.states.Prestado}</strong></div>}
+            <h4 className="font-bold text-sm mb-1">Stock Breakdown</h4>
+            {summary.states.Assigned > 0 && <div>Assigned: <strong>{summary.states.Assigned}</strong></div>}
+            {summary.states.Lent > 0 && <div>Lent: <strong>{summary.states.Lent}</strong></div>}
         </div>
     );
 
@@ -94,12 +94,12 @@ export function ParentRow({
             </TableCell>
             {columns.filter(c => c.id !== 'name' && c.visible).map(col => {
                 let content: React.ReactNode = null;
-                if (col.id === 'costo') {
-                    const totalCosto = parentProduct.children.reduce(
+                if (col.id === 'cost') {
+                    const totalCost = parentProduct.children.reduce(
                         (sum, child) => sum + (typeof child.cost === 'number' ? child.cost : 0),
                         0
                     );
-                    content = totalCosto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+                    content = totalCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
                 } else {
                     switch (col.id) {
                         case 'brand':
@@ -120,20 +120,20 @@ export function ParentRow({
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex flex-col cursor-pointer">
-                                                <span>{`${summary.total} en Total`}</span>
-                                                <span className="text-xs text-green-600">{`${summary.available} Disp.`}</span>
+                                                <span>{`${summary.total} Total`}</span>
+                                                <span className="text-xs text-green-600">{`${summary.available} Avail.`}</span>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            {renderEstadoTooltip()}
+                                            {renderStatusTooltip()}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             );
                             break;
                         default:
-                            // Para otras columnas, podrías querer mostrar algo por defecto
-                            // o simplemente no renderizar la celda si no hay un caso para ella.
+                            // For other columns, you might want to show something by default
+                            // or simply not render the cell if there's no case for it.
                             content = parentProduct.product[col.id as keyof typeof parentProduct.product] || '';
                     }
                 }
@@ -142,33 +142,33 @@ export function ParentRow({
             <TableCell colSpan={2} className="py-2">
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                     <div>Total: <strong>{summary.total}</strong></div>
-                    {summary.states.Disponible > 0 && <div>Disponible: <strong>{summary.states.Disponible}</strong></div>}
-                    {summary.states.Asignado > 0 && <div>Asignado: <strong>{summary.states.Asignado}</strong></div>}
-                    {summary.states.Prestado > 0 && <div>Prestado: <strong>{summary.states.Prestado}</strong></div>}
-                    {summary.states['PENDIENTE_DE_RETIRO'] > 0 && <div>Pendiente Retiro: <strong>{summary.states['PENDIENTE_DE_RETIRO']}</strong></div>}
-                    {summary.states.Retirado > 0 && <div>Retirado: <strong>{summary.states.Retirado}</strong></div>}
+                    {summary.states.Available > 0 && <div>Available: <strong>{summary.states.Available}</strong></div>}
+                    {summary.states.Assigned > 0 && <div>Assigned: <strong>{summary.states.Assigned}</strong></div>}
+                    {summary.states.Lent > 0 && <div>Lent: <strong>{summary.states.Lent}</strong></div>}
+                    {summary.states['PENDING_RETIREMENT'] > 0 && <div>Pending Retirement: <strong>{summary.states['PENDING_RETIREMENT']}</strong></div>}
+                    {summary.states.Retired > 0 && <div>Retired: <strong>{summary.states.Retired}</strong></div>}
                 </div>
             </TableCell>
             <TableCell colSpan={2} className="text-right py-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
-                            <span className="sr-only">Abrir menú</span>
+                            <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones de Stock</DropdownMenuLabel>
+                        <DropdownMenuLabel>Stock Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Asignar', parentProduct)}>
-                            Asignar desde Stock
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Assign', parentProduct)}>
+                            Assign from Stock
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Prestar', parentProduct)}>
-                            Prestar desde Stock
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Lend', parentProduct)}>
+                            Lend from Stock
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Retiro Rápido', parentProduct)}>
-                            Retiro Rápido de Stock
+                        <DropdownMenuItem disabled={isReadOnly} onSelect={() => onAction('Quick Retirement', parentProduct)}>
+                            Quick Stock Retirement
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
