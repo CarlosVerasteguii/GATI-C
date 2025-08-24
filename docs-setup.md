@@ -1,112 +1,112 @@
-# Documentación de Configuración y Solución de Problemas - GATI-C
+# Setup and Troubleshooting Documentation - GATI-C
 
-## 1. Diagnóstico Inicial
+## 1. Initial Diagnosis
 
-### Problemas detectados:
+### Issues detected:
 
-1. **Errores de dependencias y paquetes npm**:
-   - Múltiples advertencias de `npm warn ERESOLVE overriding peer dependency`
+1. **Dependency and npm package errors:**
+   - Multiple warnings of `npm warn ERESOLVE overriding peer dependency`
    - Error: `Cannot read properties of null (reading 'matches')`
-   - Estos problemas pueden causar instalaciones incompletas o comportamiento inconsistente
+   - These problems can cause incomplete installations or inconsistent behavior
 
-2. **Problemas de inicialización de Next.js**:
-   - La compilación a veces solo comienza cuando se accede manualmente a localhost:3000
-   - Error de permisos: `[Error: EPERM: operation not permitted, open '.next/trace']`
-   - Puerto 3000 ya en uso (usando 3001 en su lugar)
+2. **Next.js initialization issues:**
+   - Compilation sometimes only starts when manually accessing localhost:3000
+   - Permission error: `[Error: EPERM: operation not permitted, open '.next/trace']`
+   - Port 3000 already in use (using 3001 instead)
 
-3. **Error de rutas duplicadas** (añadido posteriormente):
+3. **Duplicate route error** (added later):
    - Error: `You cannot have two parallel pages that resolve to the same path`
-   - Dos archivos diferentes intentaban servir la misma ruta `/dashboard`:
+   - Two different files attempted to serve the same `/dashboard` route:
      - `app/dashboard/page.tsx`
      - `app/(app)/dashboard/page.tsx`
 
-## 2. Soluciones implementadas
+## 2. Solutions implemented
 
-### 2.1 Limpieza del entorno de ejecución
-- Detenidos todos los procesos de Node.js en ejecución (`taskkill /f /im node.exe`)
-- Limpieza de caché de npm (`npm cache clean --force`)
-- Eliminación de directorios problemáticos:
-  - `node_modules`: Para evitar dependencias corruptas o incompletas
-  - `.next`: Para evitar problemas de compilación y caché
-- Eliminación del archivo `pnpm-lock.yaml` para evitar conflictos entre gestores de paquetes
+### 2.1 Runtime environment cleanup
+- Stopped all running Node.js processes (`taskkill /f /im node.exe`)
+- Cleared npm cache (`npm cache clean --force`)
+- Removed problematic directories:
+  - `node_modules`: To avoid corrupt or incomplete dependencies
+  - `.next`: To avoid build and cache issues
+- Deleted the `pnpm-lock.yaml` file to avoid conflicts between package managers
 
-### 2.2 Instalación de dependencias
-- Reinstalación limpia de dependencias usando npm con la opción `--legacy-peer-deps` para evitar problemas de compatibilidad
-- Creación de archivo `.env.local` con configuraciones básicas, incluyendo puerto 3001 como alternativa
-- Ejecución exitosa del servidor de desarrollo (`npm run dev`) - El servidor está escuchando en el puerto 3000
+### 2.2 Dependency installation
+- Clean reinstall of dependencies using npm with the `--legacy-peer-deps` option to avoid compatibility issues
+- Created `.env.local` file with basic settings, including port 3001 as an alternative
+- Successful execution of the development server (`npm run dev`) - server listening on port 3000
 
-### 2.3 Estructura del proyecto y resolución de rutas
-- Análisis de la estructura de carpetas y rutas de Next.js App Router
-- Identificación de archivos duplicados que apuntan a la misma ruta
-- Eliminación de `app/dashboard/page.tsx` para resolver conflicto de rutas con `app/(app)/dashboard/page.tsx`
-- Corrección de errores sintácticos en los componentes
+### 2.3 Project structure and route resolution
+- Analysis of folder structure and Next.js App Router routes
+- Identification of duplicate files pointing to the same route
+- Deleted `app/dashboard/page.tsx` to resolve route conflict with `app/(app)/dashboard/page.tsx`
+- Corrected syntax errors in components
 
-### 2.4 Resultados
-- ✅ Se resolvieron los problemas de dependencias
-- ✅ Se eliminaron los errores de instalación
-- ✅ El servidor Next.js inicia correctamente
-- ✅ Se resolvió el conflicto de rutas duplicadas
-- ✅ La aplicación está accesible en http://localhost:3000
+### 2.4 Results
+- ✅ Dependency issues resolved
+- ✅ Installation errors removed
+- ✅ Next.js server starts correctly
+- ✅ Duplicate route conflict resolved
+- ✅ Application accessible at http://localhost:3000
 
-## 3. Guía de Solución de Problemas Futuros
+## 3. Future Troubleshooting Guide
 
-### 3.1 Problemas de compilación o inicio lento
-Si la aplicación tarda en iniciar o solo compila cuando se accede a ella:
-1. Detén todos los procesos de Node.js: `taskkill /f /im node.exe`
-2. Elimina el directorio de caché: `Remove-Item -Recurse -Force .next`
-3. Reinicia el servidor: `npm run dev`
+### 3.1 Compilation problems or slow startup
+If the application takes a long time to start or only compiles when accessed:
+1. Stop all Node.js processes: `taskkill /f /im node.exe`
+2. Remove the cache directory: `Remove-Item -Recurse -Force .next`
+3. Restart the server: `npm run dev`
 
-### 3.2 Errores de dependencias
-Si aparecen errores relacionados con dependencias:
-1. Limpia la caché de npm: `npm cache clean --force`
-2. Elimina node_modules: `Remove-Item -Recurse -Force node_modules`
-3. Reinstala con la opción legacy: `npm install --legacy-peer-deps`
+### 3.2 Dependency errors
+If dependency-related errors appear:
+1. Clear npm cache: `npm cache clean --force`
+2. Remove node_modules: `Remove-Item -Recurse -Force node_modules`
+3. Reinstall with the legacy option: `npm install --legacy-peer-deps`
 
-### 3.3 Puerto en uso
-Si el puerto predeterminado está en uso:
-1. Configura un puerto alternativo en `.env.local`: `PORT=3002`
-2. O ejecuta directamente con un puerto diferente: `npm run dev -- -p 3002`
+### 3.3 Port in use
+If the default port is in use:
+1. Set an alternate port in `.env.local`: `PORT=3002`
+2. Or run directly with a different port: `npm run dev -- -p 3002`
 
-### 3.4 Errores de permisos
-Si aparecen errores EPERM o de permisos:
-1. Ejecuta PowerShell como administrador
-2. Verifica que el usuario tiene permisos completos en la carpeta del proyecto
-3. Ejecuta el comando que falló con privilegios elevados
+### 3.4 Permission errors
+If EPERM or permission errors appear:
+1. Run PowerShell as administrator
+2. Ensure the user has full permissions on the project folder
+3. Run the failing command with elevated privileges
 
-### 3.5 Errores de rutas duplicadas
-Si aparece error "You cannot have two parallel pages that resolve to the same path":
-1. Identifica qué archivos están intentando servir la misma ruta
-2. Decide cuál mantener según la estructura del proyecto
-3. Elimina o renombra uno de los archivos duplicados
-4. Ten en cuenta que en Next.js App Router:
-   - Las carpetas determinan las rutas URL
-   - Los grupos de rutas (carpetas con paréntesis como `(app)`) no afectan a la URL
+### 3.5 Duplicate route errors
+If the error "You cannot have two parallel pages that resolve to the same path" appears:
+1. Identify which files are trying to serve the same route
+2. Decide which to keep according to the project structure
+3. Delete or rename one of the duplicate files
+4. Keep in mind that in Next.js App Router:
+   - Folders determine URL routes
+   - Route groups (folders with parentheses like `(app)`) do not affect the URL
 
-## 4. Recomendaciones de Desarrollo
+## 4. Development Recommendations
 
-### 4.1 Gestión de paquetes
-- Utilizar **siempre** el mismo gestor de paquetes (npm o pnpm, pero no mezclar)
-- Para este proyecto, preferir npm con la opción `--legacy-peer-deps`
+### 4.1 Package management
+- **Always** use the same package manager (npm or pnpm, but do not mix)
+- For this project, prefer npm with the `--legacy-peer-deps` option
 
-### 4.2 Actualizaciones
-- Actualizar las dependencias gradualmente, no todas a la vez
-- Probar la aplicación después de cada actualización importante
-- Mantener el archivo de documentación actualizado con cualquier problema y solución
+### 4.2 Updates
+- Update dependencies gradually, not all at once
+- Test the application after each major update
+- Keep the documentation file updated with any issue and solution
 
-### 4.3 Entorno de desarrollo
-- Usar Node.js LTS (versión recomendada 18.x o 20.x)
-- Verificar que no hay procesos de Node.js abandonados antes de iniciar el servidor
+### 4.3 Development environment
+- Use Node.js LTS (recommended version 18.x or 20.x)
+- Ensure there are no orphaned Node.js processes before starting the server
 
-### 4.4 Script de reseteo rápido
-Se ha creado un script PowerShell (`reset-project.ps1`) para facilitar la limpieza y reinstalación del proyecto:
-- Detiene todos los procesos de Node.js
-- Limpia la caché de npm
-- Elimina directorios problemáticos (node_modules, .next)
-- Elimina archivos de bloqueo de paquetes
-- Reinstala todas las dependencias con las configuraciones correctas
-- Ofrece iniciar el servidor automáticamente
+### 4.4 Quick reset script
+A PowerShell script (`reset-project.ps1`) has been created to facilitate project cleanup and reinstall:
+- Stops all Node.js processes
+- Clears npm cache
+- Removes problematic directories (node_modules, .next)
+- Deletes package lock files
+- Reinstalls all dependencies with correct settings
+- Offers to start the server automatically
 
-Para usarlo, ejecutar desde PowerShell:
+To use it, run from PowerShell:
 ```
 .\reset-project.ps1
-``` 
+```

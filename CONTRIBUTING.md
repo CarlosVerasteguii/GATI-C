@@ -1,121 +1,121 @@
-# Guía de Contribución para GATI-C
+# Contribution Guide for GATI-C
 
-Esta guía describe el proceso de desarrollo y las convenciones que deben seguirse al contribuir al proyecto GATI-C.
+This guide describes the development process and conventions to follow when contributing to the GATI-C project.
 
-## Flujo de Trabajo con Git
+## Git Workflow
 
-Seguimos una variante del flujo de trabajo [GitFlow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) adaptada a nuestras necesidades:
+We follow a variant of the [GitFlow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) workflow adapted to our needs:
 
-### Ramas Principales
+### Main Branches
 
-- **main**: Rama principal que contiene código listo para producción.
-- **develop**: Rama de desarrollo donde se integran las características completadas.
+- **main**: Main branch containing production-ready code.
+- **develop**: Development branch where completed features are integrated.
 
-### Ramas de Soporte
+### Support Branches
 
-- **feature/nombre-caracteristica**: Para desarrollar nuevas características.
-- **fix/nombre-problema**: Para corregir errores.
-- **refactor/nombre-mejora**: Para refactorización de código sin cambiar su comportamiento.
-- **docs/nombre-documentacion**: Para actualización de documentación.
+- **feature/feature-name**: For developing new features.
+- **fix/problem-name**: For bug fixes.
+- **refactor/improvement-name**: For code refactors without changing behavior.
+- **docs/documentation-name**: For documentation updates.
 
-### Proceso de Desarrollo
+### Development Process
 
-1. **Crear una rama**: Desde `develop`, crea una nueva rama según el tipo de trabajo:
+1. **Create a branch**: From `develop`, create a new branch according to the type of work:
    ```bash
-   # Para nuevas características
+   # For new features
    git checkout develop
    git pull
-   git checkout -b feature/nombre-caracteristica
-   
-   # Para corrección de errores
-   git checkout -b fix/nombre-problema
-   
-   # Para refactorización
-   git checkout -b refactor/nombre-mejora
-   
-   # Para documentación
-   git checkout -b docs/nombre-documentacion
+   git checkout -b feature/feature-name
+
+   # For bug fixes
+   git checkout -b fix/problem-name
+
+   # For refactors
+   git checkout -b refactor/improvement-name
+
+   # For documentation
+   git checkout -b docs/documentation-name
    ```
 
-2. **Realizar cambios**: Trabaja en tu rama local realizando commits frecuentes.
+2. **Make changes**: Work on your local branch making frequent commits.
 
-3. **Mensajes de Commit**: Usar [Conventional Commits](https://www.conventionalcommits.org/):
+3. **Commit Messages**: Use [Conventional Commits](https://www.conventionalcommits.org/):
    ```
-   <tipo>[ámbito opcional]: <descripción>
-   
-   [cuerpo opcional]
-   
-   [nota de pie opcional]
-   ```
-   
-   Donde `<tipo>` puede ser:
-   - **feat**: Nueva característica
-   - **fix**: Corrección de errores
-   - **docs**: Cambios en documentación
-   - **style**: Cambios que no afectan el significado del código (espacios, formato, etc.)
-   - **refactor**: Refactorización del código
-   - **test**: Añadir pruebas o corregir existentes
-   - **chore**: Cambios en el proceso de build o herramientas auxiliares
+   <type>[optional scope]: <description>
 
-   Ejemplo:
+   [optional body]
+
+   [optional footer]
    ```
-   feat(inventario): implementar filtro avanzado por estado
-   
-   - Añade filtros por múltiples estados
-   - Implementa persistencia de filtros en localStorage
-   - Optimiza rendimiento con React.useMemo
-   
+
+   Where `<type>` can be:
+   - **feat**: New feature
+   - **fix**: Bug fix
+   - **docs**: Documentation changes
+   - **style**: Changes that do not affect code meaning (spacing, formatting, etc.)
+   - **refactor**: Code refactor
+   - **test**: Add or fix tests
+   - **chore**: Changes to the build process or auxiliary tools
+
+   Example:
+   ```
+   feat(inventory): implement advanced state filter
+
+   - Adds filters for multiple states
+   - Implements filter persistence in localStorage
+   - Optimizes performance with React.useMemo
+
    Closes #123
    ```
 
-4. **Pull Request**: Al terminar los cambios:
-   - Asegúrate de que tu rama esté actualizada con develop
+4. **Pull Request**: When finished:
+   - Make sure your branch is up to date with develop
    ```bash
    git checkout develop
    git pull
-   git checkout tu-rama
+   git checkout your-branch
    git rebase develop
    ```
-   - Sube tu rama al repositorio
+   - Push your branch to the repository
    ```bash
-   git push -u origin tu-rama
+   git push -u origin your-branch
    ```
-   - Crea un Pull Request (PR) a través de GitHub
-   - Asigna revisores
+   - Create a Pull Request (PR) via GitHub
+   - Assign reviewers
 
-5. **Revisión de Código**:
-   - Todos los cambios deben ser revisados por al menos un desarrollador
-   - Abordar todos los comentarios de la revisión
+5. **Code Review**:
+   - All changes must be reviewed by at least one developer
+   - Address all review comments
 
 6. **Merge**:
-   - Una vez aprobado, el PR se fusiona con `develop`
-   - Para releases, `develop` se fusionará con `main`
+   - Once approved, the PR is merged into `develop`
+   - For releases, `develop` will be merged into `main`
 
-## Estándares de Código
+## Code Standards
 
-Seguimos los estándares definidos en [.cursorules](/.cursorules) que incluyen:
+We follow the standards defined in [.cursorules](/.cursorules) including:
 
-- **TypeScript**: Usar tipos estrictos
-- **React/Next.js**: Convenciones para componentes y hooks
-- **Tailwind CSS**: Para estilos
-- **Documentación**: JSDoc para todos los componentes
+- **TypeScript**: Use strict types
+- **React/Next.js**: Conventions for components and hooks
+- **Tailwind CSS**: For styling
+- **Documentation**: JSDoc for all components
 
-## Pruebas
+## Tests
 
-- Todas las nuevas características deben incluir pruebas unitarias
-- Los PR no serán aprobados si las pruebas no pasan
+- All new features must include unit tests
+- PRs will not be approved if tests do not pass
 
-## Actualización del CHANGELOG
+## Updating the CHANGELOG
 
-Después de cada conjunto significativo de cambios:
+After each significant set of changes:
 
-1. Actualiza el archivo `CHANGELOG.md` en la sección [Unreleased]
-2. Cuando se prepare un release, mueve los cambios a una nueva sección con el número de versión
+1. Update the `CHANGELOG.md` file in the [Unreleased] section
+2. When preparing a release, move the changes to a new section with the version number
 
-## Herramientas Recomendadas
+## Recommended Tools
 
-- Visual Studio Code con extensiones:
+- Visual Studio Code with extensions:
   - ESLint
   - Prettier
   - Tailwind CSS IntelliSense
-- Cursor IDE para integración con IA 
+- Cursor IDE for AI integration
