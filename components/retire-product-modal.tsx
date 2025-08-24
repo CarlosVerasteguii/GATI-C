@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
   Dialog,
@@ -21,12 +20,23 @@ import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
 import { useApp } from "@/contexts/app-context"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "./confirmation-dialog-for-editor"
+import type { InventoryItem } from "@/types/inventory"
 
 interface RetireProductModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  product: any // This modal is for a specific product
+  product: InventoryItem
   onSuccess: () => void
+}
+
+interface RetirementActionDetails {
+  productId: number
+  productName: string
+  productSerialNumber: string | null
+  retireReason: string
+  notes: string
+  quantity: number
+  productModel: string
 }
 
 export function RetireProductModal({ open, onOpenChange, product, onSuccess }: RetireProductModalProps) {
@@ -34,15 +44,15 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
   const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmEditorOpen, setIsConfirmEditorOpen] = useState(false)
-  const [pendingActionDetails, setPendingActionDetails] = useState<any>(null)
+  const [pendingActionDetails, setPendingActionDetails] = useState<RetirementActionDetails | null>(null)
 
   const availableQuantity =
-    product?.numeroSerie === null
+    product.serialNumber === null
       ? state.inventoryData
-        .filter(
-          (item) => item.nombre === product.nombre && item.modelo === product.modelo && item.estado === "Disponible",
-        )
-        .reduce((sum, item) => sum + item.cantidad, 0)
+          .filter(
+            (item) => item.name === product.name && item.model === product.model && item.status === "AVAILABLE",
+          )
+          .reduce((sum, item) => sum + item.quantity, 0)
       : 1 // For serialized, it's always 1 if available
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -52,38 +62,37 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
     const formData = new FormData(e.currentTarget)
     const retireReason = formData.get("retireReason") as string
     const notes = formData.get("notes") as string
-    const quantity = product.numeroSerie === null ? Number.parseInt(formData.get("quantity") as string) : 1
+    const quantity = product.serialNumber === null ? Number.parseInt(formData.get("quantity") as string) : 1
 
     if (!retireReason) {
       showError({
         title: "Error",
-        description: "Por favor, selecciona un motivo de retiro."
+        description: "Please select a retirement reason.",
       })
       setIsLoading(false)
       return
     }
 
-    if (product.numeroSerie === null && quantity > availableQuantity) {
+    if (product.serialNumber === null && quantity > availableQuantity) {
       showError({
-        title: "Error de Cantidad",
-        description: `Solo hay ${availableQuantity} unidades disponibles para retirar.`
+        title: "Quantity Error",
+        description: `Only ${availableQuantity} units are available to retire.`,
       })
       setIsLoading(false)
       return
     }
 
-    const actionDetails = {
-      type: "Retiro",
+    const actionDetails: RetirementActionDetails = {
       productId: product.id,
-      productName: product.nombre,
-      productSerialNumber: product.numeroSerie,
+      productName: product.name,
+      productSerialNumber: product.serialNumber,
       retireReason,
       notes,
       quantity,
-      productModel: product.modelo, // Added for non-serialized logic
+      productModel: product.model,
     }
 
-    if (user?.rol === "Editor") {
+    if (user?.role === "EDITOR") {
       setPendingActionDetails(actionDetails)
       setIsConfirmEditorOpen(true)
       setIsLoading(false)
@@ -93,28 +102,28 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
     executeRetirement(actionDetails)
   }
 
-  const executeRetirement = (details: any) => {
+  const executeRetirement = (details: RetirementActionDetails) => {
     setTimeout(() => {
       if (details.productSerialNumber !== null) {
         // Serialized item
-        updateInventoryItemStatus(details.productId, "Retirado", null, null, details.retireReason)
+        updateInventoryItemStatus(details.productId, "RETIRED")
       } else {
         // Non-serialized item: find and update available units
         let remainingToRetire = details.quantity
         const updatedInventory = state.inventoryData.map((item) => {
           if (
-            item.nombre === details.productName &&
-            item.modelo === details.productModel &&
-            item.numeroSerie === null &&
-            item.estado === "Disponible" &&
+            item.name === details.productName &&
+            item.model === details.productModel &&
+            item.serialNumber === null &&
+            item.status === "AVAILABLE" &&
             remainingToRetire > 0
           ) {
-            const qtyToTake = Math.min(item.cantidad, remainingToRetire)
+            const qtyToTake = Math.min(item.quantity, remainingToRetire)
             remainingToRetire -= qtyToTake
             return {
               ...item,
-              cantidad: item.cantidad - qtyToTake,
-              estado: item.cantidad - qtyToTake === 0 ? "Retirado" : item.estado,
+              quantity: item.quantity - qtyToTake,
+              status: item.quantity - qtyToTake === 0 ? "RETIRED" : item.status,
             }
           }
           return item
@@ -122,23 +131,27 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
 
         // Add new retired entries for the non-serialized items
         if (details.quantity > 0) {
-          const newRetiredItem = {
-            id: Math.max(...state.inventoryData.map((item) => item.id)) + 1, // Generate new ID
-            nombre: details.productName,
-            marca: product.marca, // Assuming product has brand
-            modelo: product.modelo,
-            categoria: product.categoria,
-            descripcion: product.descripcion,
-            estado: "Retirado",
-            cantidad: details.quantity,
-            numeroSerie: null,
-            fechaIngreso: product.fechaIngreso, // Keep original entry date
-            motivoRetiro: details.retireReason,
-            fechaRetiro: new Date().toISOString().split("T")[0],
-            notasRetiro: details.notes,
-            proveedor: product.proveedor, // Include new fields
-            fechaAdquisicion: product.fechaAdquisicion, // Include new fields
-            contratoId: product.contratoId, // Include new fields
+          const newRetiredItem: InventoryItem & {
+            retirementReason: string
+            retirementDate: string
+            retirementNotes: string
+          } = {
+            id: Math.max(...state.inventoryData.map((item) => item.id)) + 1,
+            name: details.productName,
+            brand: product.brand,
+            model: product.model,
+            category: product.category,
+            description: product.description,
+            status: "RETIRED",
+            quantity: details.quantity,
+            serialNumber: null,
+            entryDate: product.entryDate,
+            retirementReason: details.retireReason,
+            retirementDate: new Date().toISOString().split("T")[0],
+            retirementNotes: details.notes,
+            provider: product.provider,
+            purchaseDate: product.purchaseDate,
+            contractId: product.contractId,
           }
           updatedInventory.push(newRetiredItem)
         }
@@ -146,12 +159,12 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
       }
 
       showSuccess({
-        title: "Producto retirado",
-        description: `${details.productName} ha sido marcado como retirado por ${details.retireReason}.`,
+        title: "Product retired",
+        description: `${details.productName} has been marked as retired due to ${details.retireReason}.`,
       })
       addRecentActivity({
-        type: "Retiro de Producto",
-        description: `${details.productName} retirado por ${details.retireReason}`,
+        type: "Product Retirement",
+        description: `${details.productName} retired due to ${details.retireReason}`,
         date: new Date().toLocaleString(),
         details: {
           product: { id: details.productId, name: details.productName, serial: details.productSerialNumber },
@@ -167,60 +180,60 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
   }
 
   const handleConfirmEditorAction = () => {
+    if (!pendingActionDetails) return
     addPendingRequest({
-      type: pendingActionDetails.type,
+      id: Date.now(),
+      type: "PRODUCT_RETIREMENT",
       details: pendingActionDetails,
-      requestedBy: user?.nombre || "Editor",
+      requestedBy: user?.name || "Editor",
       date: new Date().toISOString(),
-      status: "Pendiente",
+      status: "PENDING",
       auditLog: [
         {
-          event: "CREACIÓN",
-          user: user?.nombre || "Editor",
+          event: "CREATION",
+          user: user?.name || "Editor",
           dateTime: new Date().toISOString(),
-          description: `Solicitud de ${pendingActionDetails.type.toLowerCase()} creada.`,
+          description: `Product retirement request created.`,
         },
       ],
     })
     showInfo({
-      title: "Solicitud enviada",
-      description: `Tu solicitud de ${pendingActionDetails.type.toLowerCase()} ha sido enviada a un administrador para aprobación.`,
+      title: "Request sent",
+      description: `Your product retirement request has been sent to an administrator for approval.`,
     })
     setIsConfirmEditorOpen(false)
     onOpenChange(false)
   }
-
-  if (!product) return null
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Retirar Producto</DialogTitle>
-            <DialogDescription>Marca "{product.nombre}" como retirado del inventario.</DialogDescription>
+            <DialogTitle>Retire Product</DialogTitle>
+            <DialogDescription>Mark "{product.name}" as retired from the inventory.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="retireReason">Motivo de Retiro</Label>
+                <Label htmlFor="retireReason">Retirement Reason</Label>
                 <Select name="retireReason" required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un motivo" />
+                    <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Dañado">Dañado</SelectItem>
-                    <SelectItem value="Obsoleto">Obsoleto</SelectItem>
-                    <SelectItem value="Perdido">Perdido</SelectItem>
-                    <SelectItem value="Vendido">Vendido</SelectItem>
-                    <SelectItem value="Prestado/Asignado (No Retornado)">Prestado/Asignado (No Retornado)</SelectItem>
-                    <SelectItem value="Otro">Otro</SelectItem>
+                    <SelectItem value="Damaged">Damaged</SelectItem>
+                    <SelectItem value="Obsolete">Obsolete</SelectItem>
+                    <SelectItem value="Lost">Lost</SelectItem>
+                    <SelectItem value="Sold">Sold</SelectItem>
+                    <SelectItem value="Loaned/Assigned (Not Returned)">Loaned/Assigned (Not Returned)</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {product.numeroSerie === null && (
+              {product.serialNumber === null && (
                 <div className="space-y-2">
-                  <Label htmlFor="quantity">Cantidad a Retirar</Label>
+                  <Label htmlFor="quantity">Quantity to Retire</Label>
                   <Input
                     id="quantity"
                     name="quantity"
@@ -230,18 +243,18 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
                     max={availableQuantity}
                     required
                   />
-                  <p className="text-sm text-muted-foreground">Actualmente disponibles: {availableQuantity}</p>
+                  <p className="text-sm text-muted-foreground">Currently available: {availableQuantity}</p>
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="notes">Notas (Opcional)</Label>
-                <Textarea id="notes" name="notes" placeholder="Notas adicionales sobre el retiro" />
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea id="notes" name="notes" placeholder="Additional notes about the retirement" />
               </div>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={isLoading} className="bg-destructive hover:bg-destructive/90">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Confirmar Retiro
+                Confirm Retirement
               </Button>
             </DialogFooter>
           </form>
@@ -256,3 +269,4 @@ export function RetireProductModal({ open, onOpenChange, product, onSuccess }: R
     </>
   )
 }
+
