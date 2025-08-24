@@ -144,7 +144,7 @@ export default function InventarioPage() {
     lastRefresh: number;
   }
 
-  type InventoryAction = 
+  type InventoryAction =
     | { type: "REFRESH_INVENTORY" }
     | { type: string };
 
