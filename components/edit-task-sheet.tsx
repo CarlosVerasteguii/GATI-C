@@ -27,16 +27,16 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
   const [isLoading, setIsLoading] = useState(false)
 
   // States for form fields, initialized from task details
-  const [productName, setProductName] = useState(task?.details?.productName || task?.details?.productData?.nombre || "")
+  const [productName, setProductName] = useState(task?.details?.productName || task?.details?.productData?.name || "")
   const [quantity, setQuantity] = useState(task?.details?.quantity || 1)
   const [serialNumbers, setSerialNumbers] = useState(
-    task?.details?.serialNumbers?.join("\n") || task?.details?.productData?.numeroSerie || "",
+    task?.details?.serialNumbers?.join("\n") || task?.details?.productData?.serialNumber || "",
   )
-  const [brand, setBrand] = useState(task?.details?.brand || task?.details?.productData?.marca || "")
-  const [model, setModel] = useState(task?.details?.model || task?.details?.productData?.modelo || "")
-  const [category, setCategory] = useState(task?.details?.category || task?.details?.productData?.categoria || "")
+  const [brand, setBrand] = useState(task?.details?.brand || task?.details?.productData?.brand || "")
+  const [model, setModel] = useState(task?.details?.model || task?.details?.productData?.model || "")
+  const [category, setCategory] = useState(task?.details?.category || task?.details?.productData?.category || "")
   const [description, setDescription] = useState(
-    task?.details?.description || task?.details?.productData?.descripcion || "",
+    task?.details?.description || task?.details?.productData?.description || "",
   )
   const [reason, setReason] = useState(task?.details?.reason || "")
   const [notes, setNotes] = useState(task?.details?.notes || "")
@@ -48,13 +48,13 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
   // Update states when a new task is passed
   useEffect(() => {
     if (task) {
-      setProductName(task.details?.productName || task.details?.productData?.nombre || "")
+      setProductName(task.details?.productName || task.details?.productData?.name || "")
       setQuantity(task.details?.quantity || 1)
-      setSerialNumbers(task.details?.serialNumbers?.join("\n") || task.details?.productData?.numeroSerie || "")
-      setBrand(task.details?.brand || task.details?.productData?.marca || "")
-      setModel(task.details?.model || task.details?.productData?.modelo || "")
-      setCategory(task.details?.category || task.details?.productData?.categoria || "")
-      setDescription(task.details?.description || task.details?.productData?.descripcion || "")
+      setSerialNumbers(task.details?.serialNumbers?.join("\n") || task.details?.productData?.serialNumber || "")
+      setBrand(task.details?.brand || task.details?.productData?.brand || "")
+      setModel(task.details?.model || task.details?.productData?.model || "")
+      setCategory(task.details?.category || task.details?.productData?.category || "")
+      setDescription(task.details?.description || task.details?.productData?.description || "")
       setReason(task.details?.reason || "")
       setNotes(task.details?.notes || "")
       setAssignedTo(task.details?.assignedTo || "")
@@ -109,13 +109,13 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
       case "Edición de Producto":
       case "Duplicación de Producto":
         updatedDetails.productData = {
-          nombre: productName,
-          marca: brand,
-          modelo: model,
-          categoria: category,
-          descripcion: description,
-          cantidad: Number(quantity),
-          numeroSerie: serialNumbers || null,
+          name: productName,
+          brand: brand,
+          model: model,
+          category: category,
+          description: description,
+          quantity: Number(quantity),
+          serialNumber: serialNumbers || null,
         }
         break
       case "Reactivación":
@@ -130,9 +130,9 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
           ...(task.auditLog || []),
           {
             event: "EDICIÓN",
-            user: user?.nombre || "Administrador",
+            user: user?.name || "Administrador",
             dateTime: new Date().toISOString(),
-            description: `Tarea editada por ${user?.nombre || "Administrador"}.`,
+            description: `Tarea editada por ${user?.name || "Administrador"}.`,
           },
         ],
       })
@@ -233,7 +233,7 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
                       <SelectValue placeholder="Selecciona una categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      {state.categorias.map((cat) => (
+                      {state.categories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
@@ -259,7 +259,7 @@ export function EditTaskSheet({ open, onOpenChange, task }: EditTaskSheetProps) 
             task.type === "Duplicación de Producto") && (
               <>
                 {task.details?.serialNumbers?.length > 0 ||
-                  (task.details?.productData?.numeroSerie && task.details.productData.numeroSerie !== null) ? (
+                  (task.details?.productData?.serialNumber && task.details.productData.serialNumber !== null) ? (
                   <div className="space-y-2">
                     <Label htmlFor="serialNumbers">Números de Serie (uno por línea)</Label>
                     <Textarea

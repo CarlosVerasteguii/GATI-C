@@ -3,40 +3,13 @@
 import { useState, useEffect, useReducer, useMemo } from "react"
 import * as React from 'react';
 import { useSearchParams, useRouter } from "next/navigation"
-import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { GroupedProduct, InventoryItem } from "@/types/inventory"
 import { DetailSheet } from "@/components/detail-sheet"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
-import { Badge } from "@/components/ui/badge"
 import {
   Plus,
   Upload,
@@ -80,8 +53,6 @@ import { EmptyState } from "@/components/empty-state"
 import { useApp } from "@/contexts/app-context"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
 import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
-// import { ActionMenu } from "@/components/action-menu"
-import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
@@ -96,6 +67,8 @@ import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
 import { useInventory } from "@/hooks/useInventory";
 import { createProductAPI, updateProductAPI, deleteProductAPI, type CreateProductData, type UpdateProductData } from "@/lib/api/inventory";
+import { cn } from "@/lib/utils"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -123,7 +96,7 @@ interface QtyBreakdown {
 
 interface PendingActionDetails {
   type: string
-  productData?: any
+  productData?: Partial<InventoryItem>
   originalProductId?: number
   productId?: number
   productName?: string
@@ -167,7 +140,15 @@ export default function InventarioPage() {
   const inventoryData = React.useMemo(() => Array.isArray(inventory) ? (inventory as unknown as InventoryItem[]) : [], [inventory])
 
   // Definir el reducer local para manejar acciones específicas del componente
-  const inventoryReducer = (state: any, action: any) => {
+  interface InventoryLocalState {
+    lastRefresh: number;
+  }
+
+  type InventoryAction = 
+    | { type: "REFRESH_INVENTORY" }
+    | { type: string };
+
+  const inventoryReducer = (state: InventoryLocalState, action: InventoryAction): InventoryLocalState => {
     switch (action.type) {
       case "REFRESH_INVENTORY":
         // Esta acción simplemente desencadena una actualización del estado local
@@ -397,7 +378,7 @@ export default function InventarioPage() {
   useEffect(() => {
     if (user?.id) {
       const visibleColumnIds = columns.filter(col => col.visible).map(col => col.id);
-      dispatch({
+      appDispatch({
         type: 'UPDATE_USER_COLUMN_PREFERENCES',
         payload: {
           userId: user.id,
@@ -406,7 +387,7 @@ export default function InventarioPage() {
         }
       })
     }
-  }, [columns, user?.id, dispatch])
+  }, [columns, user?.id, appDispatch])
 
   // Sorting logic
   const handleSort = (columnId: string) => {
@@ -422,13 +403,13 @@ export default function InventarioPage() {
   // Helper to get current assignee/assignment date for a serialized item
   const getAssignmentDetails = (item: InventoryItem): AssignmentDetails => {
     if (item.serialNumber) {
-      const activeAssignment = state.asignadosData.find(
-        (a) => a.numeroSerie === item.serialNumber && a.estado === "Activo",
+      const activeAssignment = state.assignmentsData.find(
+        (a) => a.serialNumber === item.serialNumber && a.status === "Activo",
       )
       if (activeAssignment) {
         return {
-          asignadoA: activeAssignment.asignadoA,
-          fechaAsignacion: activeAssignment.fechaAsignacion,
+          asignadoA: activeAssignment.assignedTo,
+          fechaAsignacion: activeAssignment.assignmentDate,
         }
       }
     }
@@ -883,8 +864,8 @@ export default function InventarioPage() {
     }
   }
 
-  const isLector = true // Modo solo lectura temporal
-  const isReadOnly = true
+  const isLector = false
+  const isReadOnly = false
 
   // Function to calculate available and unavailable quantities for non-serialized items
   const getNonSerializedQtyBreakdown = (item: InventoryItem): QtyBreakdown | null => {
@@ -1224,13 +1205,13 @@ export default function InventarioPage() {
               />
               <FilterPopover
                 title="Categoría"
-                options={state.categorias}
+                options={state.categories}
                 selectedValue={filterCategoria || null}
                 onSelect={(value) => handleFilterChange('categoria', value)}
               />
               <FilterPopover
                 title="Marca"
-                options={state.marcas}
+                options={state.brands}
                 selectedValue={filterMarca || null}
                 onSelect={(value) => handleFilterChange('marca', value)}
               />
@@ -1323,7 +1304,7 @@ export default function InventarioPage() {
               onRowSelect={handleRowSelect}
               onSelectAll={handleSelectAll}
               onAction={handleMenuAction}
-              isLector={true}
+              isLector={false}
               onParentRowSelect={handleParentRowSelect}
               onSort={handleSort}
               sortColumn={sortColumn}

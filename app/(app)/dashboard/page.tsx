@@ -56,10 +56,10 @@ interface PrestamoExtendido extends InventoryItem {
 }
 
 export default function DashboardPage() {
-  const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity, devolverPrestamo } = useApp()
+  const { state, updateLoanStatus, updateInventoryItemStatus, addRecentActivity, returnLoan } = useApp()
   const { user } = useAuthStore()
   const { toast, showSuccess } = useToast();
-  const [selectedLoan, setSelectedLoan] = useState<PrestamoItemExtended | null>(null)
+  const [selectedLoan, setSelectedLoan] = useState<PrestamoExtendido | null>(null)
   const [isLoanDetailSheetOpen, setIsLoanDetailSheetOpen] = useState(false)
   const [isActivityDetailSheetOpen, setIsActivityDetailSheetOpen] = useState(false)
   const [selectedActivity, setSelectedActivity] = useState<any>(null)
@@ -68,12 +68,12 @@ export default function DashboardPage() {
   const [showToastDemo, setShowToastDemo] = useState(false)
 
   const totalProducts = state.inventoryData.length
-  const availableProducts = state.inventoryData.filter((item) => item.estado === "Disponible").length
+  const availableProducts = state.inventoryData.filter((item) => item.status === "Disponible").length
 
   // Derivar todas las métricas del inventario principal
-  const assignedProducts = state.inventoryData.filter(item => item.estado === 'Asignado').length;
-  const lentProducts = state.inventoryData.filter(item => item.estado === 'Prestado').length;
-  const retiredProducts = state.inventoryData.filter(item => item.estado === 'Retirado').length;
+  const assignedProducts = state.inventoryData.filter(item => item.status === 'Asignado').length;
+  const lentProducts = state.inventoryData.filter(item => item.status === 'Prestado').length;
+  const retiredProducts = state.inventoryData.filter(item => item.status === 'Retirado').length;
 
   // Lógica de Tareas Pendientes (ya estaba correcta)
   const pendingTasks = state.tasks ? state.tasks.filter(task => task.status === 'Pendiente').length : 0;
@@ -92,13 +92,13 @@ export default function DashboardPage() {
     const unDiaEnMs = 24 * 60 * 60 * 1000;
 
     const prestamosActivos = state.inventoryData.filter(
-      (item) => item.estado === 'Prestado' && item.fechaDevolucion
+      (item) => item.status === 'Prestado' && item.returnDate
     );
 
     const vencidos = prestamosActivos
-      .filter(p => new Date(p.fechaDevolucion!) < hoy)
+      .filter(p => new Date(p.returnDate!) < hoy)
       .map(p => {
-        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        const fechaDevolucion = new Date(p.returnDate!);
         let diasVencido = Math.floor((hoy.getTime() - fechaDevolucion.getTime()) / unDiaEnMs);
         if (diasVencido < 0) diasVencido = 0;
         return { ...p, diasVencido };
@@ -106,12 +106,12 @@ export default function DashboardPage() {
 
     const porVencer = prestamosActivos
       .filter(p => {
-        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        const fechaDevolucion = new Date(p.returnDate!);
         const unaSemanaDesdeHoy = new Date(hoy.getTime() + 7 * unDiaEnMs);
         return fechaDevolucion >= hoy && fechaDevolucion <= unaSemanaDesdeHoy;
       })
       .map(p => {
-        const fechaDevolucion = new Date(p.fechaDevolucion!);
+        const fechaDevolucion = new Date(p.returnDate!);
         let diasRestantes = Math.ceil((fechaDevolucion.getTime() - hoy.getTime()) / unDiaEnMs);
         if (diasRestantes < 0) diasRestantes = 0;
         return { ...p, diasRestantes };
@@ -128,21 +128,21 @@ export default function DashboardPage() {
     const diasAlerta = 30; // Rango configurable
     const unDiaEnMs = 24 * 60 * 60 * 1000;
     const productosConGarantia = state.inventoryData.filter(
-      (item) => item.fechaVencimientoGarantia
+      (item) => item.warrantyExpirationDate
     );
-    const vencidas = productosConGarantia.filter(p => new Date(p.fechaVencimientoGarantia!) < hoy)
+    const vencidas = productosConGarantia.filter(p => new Date(p.warrantyExpirationDate!) < hoy)
       .map(p => {
-        const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+        const fechaVenc = new Date(p.warrantyExpirationDate!);
         let diasVencido = Math.floor((hoy.getTime() - fechaVenc.getTime()) / unDiaEnMs);
         if (diasVencido < 0) diasVencido = 0;
         return { ...p, diasVencido };
       });
     const porVencer = productosConGarantia.filter(p => {
-      const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+      const fechaVenc = new Date(p.warrantyExpirationDate!);
       const limite = new Date(hoy.getTime() + diasAlerta * unDiaEnMs);
       return fechaVenc >= hoy && fechaVenc <= limite;
     }).map(p => {
-      const fechaVenc = new Date(p.fechaVencimientoGarantia!);
+      const fechaVenc = new Date(p.warrantyExpirationDate!);
       let diasRestantes = Math.ceil((fechaVenc.getTime() - hoy.getTime()) / unDiaEnMs);
       if (diasRestantes < 0) diasRestantes = 0;
       return { ...p, diasRestantes };
@@ -154,9 +154,9 @@ export default function DashboardPage() {
   const { getEffectiveLowStockThreshold } = useApp();
   const inventarioBajo = React.useMemo(() => {
     return state.inventoryData.filter(item => {
-      if (typeof item.cantidad !== 'number' || item.estado !== 'Disponible') return false;
+      if (typeof item.quantity !== 'number' || item.status !== 'Disponible') return false;
       const threshold = getEffectiveLowStockThreshold(item);
-      return item.cantidad < threshold;
+      return item.quantity < threshold;
     });
   }, [state.inventoryData, getEffectiveLowStockThreshold]);
 
@@ -174,7 +174,7 @@ export default function DashboardPage() {
   // Reemplazamos el gráfico de distribución con métricas más útiles para la toma de decisiones
   const inventoryMetrics = useMemo(() => {
     // Calcular métricas de valor y actividad en lugar de solo distribución
-    const totalValue = state.inventoryData.reduce((sum, item) => sum + (item.costo || 0), 0);
+    const totalValue = state.inventoryData.reduce((sum, item) => sum + (item.cost || 0), 0);
 
     // ⚠️ ELIMINADO: Productos que requieren atención - Tarjeta removida del dashboard
     // Código eliminado: const pendingRetirementItems = state.inventoryData.filter(item => item.estado === "PENDIENTE_DE_RETIRO");
@@ -183,7 +183,7 @@ export default function DashboardPage() {
 
     // Productos por categoría (top 5)
     const categoryCounts = state.inventoryData.reduce((acc, item) => {
-      acc[item.categoria] = (acc[item.categoria] || 0) + 1;
+      acc[item.category] = (acc[item.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -193,7 +193,7 @@ export default function DashboardPage() {
 
     // Productos por marca (top 5)
     const brandCounts = state.inventoryData.reduce((acc, item) => {
-      acc[item.marca] = (acc[item.marca] || 0) + 1;
+      acc[item.brand] = (acc[item.brand] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -203,13 +203,13 @@ export default function DashboardPage() {
 
     // Productos que necesitan renovación (basado en vida útil, si está disponible)
     const needsRenewal = state.inventoryData.filter(item => {
-      if (!item.vidaUtil) return false;
+      if (!item.usefulLife) return false;
       try {
         // Asumiendo que vidaUtil es una fecha límite en formato ISO
-        const expiryDate = new Date(item.vidaUtil);
+        const expiryDate = new Date(item.usefulLife);
         const today = new Date();
         const monthsRemaining = (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30);
-        return monthsRemaining <= 3 && item.estado !== "Retirado"; // Productos con 3 meses o menos de vida útil
+        return monthsRemaining <= 3 && item.status !== "Retirado"; // Productos con 3 meses o menos de vida útil
       } catch (e) {
         return false;
       }
@@ -218,8 +218,8 @@ export default function DashboardPage() {
     return {
       totalValue,
       totalItems: state.inventoryData.length,
-      assignedItems: state.inventoryData.filter(item => item.estado === "Asignado").length,
-      lentItems: state.inventoryData.filter(item => item.estado === "Prestado").length,
+      assignedItems: state.inventoryData.filter(item => item.status === "Asignado").length,
+      lentItems: state.inventoryData.filter(item => item.status === "Prestado").length,
       // ⚠️ ELIMINADO: pendingRetirementItems - NO REUTILIZAR
       topCategories,
       topBrands,
@@ -284,12 +284,12 @@ export default function DashboardPage() {
     if (!selectedLoan) return;
 
     // Llama a la función centralizada del contexto
-    devolverPrestamo(selectedLoan.id, user || null);
+    returnLoan(selectedLoan.id, user || null);
 
     // Muestra una notificación de éxito (usando showSuccess del sistema)
     showSuccess({
       title: 'Devolución Registrada',
-      description: `El préstamo para "${selectedLoan.nombre}" ha sido registrado como devuelto.`,
+      description: `El préstamo para "${selectedLoan.name}" ha sido registrado como devuelto.`,
     });
 
     // Cierra el modal
@@ -403,9 +403,9 @@ export default function DashboardPage() {
                     onClick={() => handleLoanClick(prestamo, "overdue")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-base">{prestamo.nombre}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
+                      <p className="font-medium text-base">{prestamo.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.lentTo}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.serialNumber || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-status-retired text-white text-base px-2 py-1" title="Días vencido">{prestamo.diasVencido} días</Badge>
@@ -440,9 +440,9 @@ export default function DashboardPage() {
                     onClick={() => handleLoanClick(prestamo, "expiring")}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-base">{prestamo.nombre}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.prestadoA}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.numeroSerie || "N/A"}</p>
+                      <p className="font-medium text-base">{prestamo.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Prestado a: {prestamo.lentTo}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {prestamo.serialNumber || "N/A"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-status-lent text-white text-base px-2 py-1" title="Días restantes">{prestamo.diasRestantes} días</Badge>
@@ -480,9 +480,9 @@ export default function DashboardPage() {
                     onClick={() => router.push(`/inventario?producto=${item.id}`)}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-base">{item.nombre}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Venció: {formatDate(item.fechaVencimientoGarantia || "")}</p>
+                      <p className="font-medium text-base">{item.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.serialNumber || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Venció: {formatDate(item.warrantyExpirationDate || "")}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-status-retired text-white text-base px-2 py-1" title="Días vencido">{item.diasVencido} días</Badge>
@@ -518,9 +518,9 @@ export default function DashboardPage() {
                     onClick={() => router.push(`/inventario?producto=${item.id}`)}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-base">{item.nombre}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Vence: {formatDate(item.fechaVencimientoGarantia || "")}</p>
+                      <p className="font-medium text-base">{item.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.serialNumber || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Vence: {formatDate(item.warrantyExpirationDate || "")}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-status-lent text-white text-base px-2 py-1" title="Días restantes">{item.diasRestantes} días</Badge>
@@ -559,9 +559,9 @@ export default function DashboardPage() {
                     onClick={() => router.push(`/inventario?producto=${item.id}`)}
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-base">{item.nombre}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.numeroSerie || "N/A"}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Cantidad: {item.cantidad}</p>
+                      <p className="font-medium text-base">{item.name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">N/S: {item.serialNumber || "N/A"}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Cantidad: {item.quantity}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-status-warning text-white text-base px-2 py-1" title="Inventario bajo">Bajo</Badge>
@@ -626,7 +626,7 @@ export default function DashboardPage() {
                 ${inventoryMetrics.totalValue.toLocaleString('es-MX')}
               </div>
               <p className="text-xs text-muted-foreground">
-                Basado en {state.inventoryData.filter(item => typeof item.costo === 'number').length} productos con costo registrado
+                Basado en {state.inventoryData.filter(item => typeof item.cost === 'number').length} productos con costo registrado
               </p>
             </div>
 
@@ -720,7 +720,7 @@ export default function DashboardPage() {
               {loanSheetType === "overdue" ? "Préstamo Vencido" : "Préstamo por Vencer"}
             </SheetTitle>
             <SheetDescription>
-              {selectedLoan ? `Detalles del préstamo para: ${selectedLoan.nombre}` : ''}
+              {selectedLoan ? `Detalles del préstamo para: ${selectedLoan.name}` : ''}
             </SheetDescription>
           </SheetHeader>
           {selectedLoan && (
@@ -729,39 +729,39 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Producto</h4>
-                    <p>{selectedLoan.nombre}</p>
+                    <p>{selectedLoan.name}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">N/S</h4>
-                    <p>{selectedLoan.numeroSerie || "N/A"}</p>
+                    <p>{selectedLoan.serialNumber || "N/A"}</p>
                   </div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Prestado a</h4>
-                  <p>{selectedLoan.prestadoA}</p>
+                  <p>{selectedLoan.lentTo}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Fecha Préstamo</h4>
                     <p>
-                      {formatDate(selectedLoan.fechaPrestamo)}
+                      {formatDate(selectedLoan.loanDate || "")}
                     </p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Fecha Devolución</h4>
                     <p>
-                      {formatDate(selectedLoan.fechaDevolucion)}
+                      {formatDate(selectedLoan.returnDate || "")}
                     </p>
                   </div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Estado</h4>
-                  <StatusBadge type="loan" status={selectedLoan.estado} />
+                  <StatusBadge type="loan" status={selectedLoan.status as any} />
                 </div>
-                {selectedLoan.notas && (
+                {(selectedLoan as any).notes && (
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">Notas</h4>
-                    <p className="text-sm">{selectedLoan.notas}</p>
+                    <p className="text-sm">{(selectedLoan as any).notes}</p>
                   </div>
                 )}
               </div>

@@ -256,10 +256,10 @@ export function EditProductModal({
       description: formData.description || null,
       cost: formData.cost ? parseFloat(formData.cost) : null,
       purchaseDate: formData.purchaseDate || null,
-      condition: null as string | null,
       brandId: null as string | null,
       categoryId: null as string | null,
       locationId: null as string | null,
+      contractId: formData.contractId || null,
     };
 
     try {
