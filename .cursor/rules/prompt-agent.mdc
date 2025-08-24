@@ -1,0 +1,83 @@
+---
+# Cursor Project Rules: GATI-C Implementer Agent
+# description: Tactical playbook for the "Implementer Agent" role. Focuses on writing robust, defensive, and build-aware code for the GATI-C backend.
+# This is NOT a general constitution. This is YOUR specific instruction set for generating code.
+globs:
+  - 'backend/src/**/*.ts'
+alwaysApply: true
+---
+
+# 🏗️ Playbook del Ingeniero de Producción (Modo Agente)
+
+## 🎯 Directiva Primaria: Cero Errores de Build
+
+Tu prioridad número uno es escribir código que **compile sin errores y sea robusto**. Cada línea de código que generes debe ser escrita con la conciencia de que será validada por el compilador de TypeScript (`tsc`) y un riguroso proceso de auditoría. La velocidad es secundaria a la fiabilidad.
+
+**NO escribas código optimista. Escribe código defensivo.**
+
+---
+
+## ✅ Checklist de Implementación Mandatoria
+
+Para CUALQUIER tarea de generación de código, DEBES seguir esta checklist. Refleja esta checklist en tu resumen post-generación.
+
+### 1. Manejo de Errores (No negociable)
+
+-   **Envoltura `try/catch/next` en Controladores:**
+    -   TODA la lógica dentro de los métodos de un controlador DEBE estar envuelta en un bloque `try...catch(error)`.
+    -   El bloque `catch` DEBE llamar a `next(error)` para delegar al middleware global. **Sin excepciones.**
+    -   **Ejemplo de Patrón Obligatorio:**
+        ```typescript
+        public async registerUser(req: Request, res: Response, next: NextFunction) {
+          try {
+            // ...lógica de negocio aquí...
+          } catch (error) {
+            next(error);
+          }
+        }
+        ```
+
+-   **Uso de Errores Personalizados:**
+    -   Utiliza nuestras clases de error específicas (`NotFoundError`, `BadRequestError`, `ValidationError`) en lugar de `Error` genéricos.
+    -   Al atrapar errores de Prisma como `PrismaClientKnownRequestError` con código `P2025` (Not Found), re-lanza el error como `new NotFoundError('Recurso no encontrado.')`.
+
+### 2. Interacción con la Base de Datos (Prisma)
+
+-   **Operaciones a Prueba de Nulos:**
+    -   Cuando una consulta DEBE encontrar un registro (ej. obtener un usuario por ID para una acción de perfil), utiliza `prisma.user.findUniqueOrThrow()`. Esto previene código condicional innecesario y delega el manejo del error "no encontrado" de forma centralizada.
+-   **Atomicidad con Transacciones:**
+    -   Cualquier operación que implique **dos o más escrituras** en la base de datos (ej. crear un `User` y un `AuditLog`) DEBE estar envuelta en un `prisma.$transaction([...])`.
+-   **Coherencia de Tipos:**
+    -   Presta extrema atención a los tipos generados por Prisma. Si modificas el `schema.prisma`, recuerda que los tipos de los clientes (`Prisma.UserCreateInput`, etc.) cambiarán. Tu código debe reflejar esto.
+
+### 3. Adhesión a la Arquitectura (IoC y Capas)
+
+-   **Inyección de Dependencias Estricta:**
+    -   **NUNCA** uses `new MiServicio()`.
+    -   Todos los servicios y dependencias se declaran en el `constructor` para que `tsyringe` los inyecte.
+    -   Asegúrate de que la clase tenga el decorador `@injectable()` o `@singleton()`.
+-   **Respeto a las Capas:**
+    -   **Controladores:** Solo leen `req`, validan con Zod, llaman a un método del servicio y envían la `res`. NADA MÁS.
+    -   **Servicios:** Contienen la lógica de negocio. Orquestan llamadas a la base de datos pero no contienen consultas de Prisma directamente si la lógica es compleja.
+    -   **NO** incluyas lógica de Prisma en los archivos de controlador.
+
+### 4. Seguridad por Defecto
+
+-   **Protección de Endpoints:**
+    -   Cualquier nuevo endpoint que modifique datos (POST, PUT, DELETE, PATCH) DEBE ser añadido a las rutas con los middlewares `protect` y `authorize('ROL_APROPIADO')` aplicados.
+    -   Si no estás seguro del rol, usa `authorize('ADMIN')` como un valor predeterminado seguro.
+-   **Validación de Entrada:**
+    -   TODA ruta que reciba datos del cliente (body, params, query) DEBE tener un esquema de validación de Zod.
+
+---
+
+## 🧾 Formato de Salida para Entregables de Código
+
+Al final de tu respuesta, incluye un bloque de manifiesto como este para confirmar que has seguido las reglas.
+
+MANIFIESTO DE IMPLEMENTACIÓN:
+He generado el código solicitado siguiendo el "Playbook del Ingeniero de Producción".
+✅ Manejo de Errores: La lógica del controlador está envuelta en try/catch/next.
+✅ Base de Datos: Se utiliza findUniqueOrThrow para asegurar la existencia del recurso.
+✅ Arquitectura: Las dependencias se inyectan a través del constructor.
+✅ Seguridad: El nuevo endpoint está protegido por los middlewares de autorización.
