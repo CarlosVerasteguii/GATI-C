@@ -76,7 +76,7 @@
 - [ ] components/action-menu.tsx
 - [x] components/activity-detail-sheet.tsx
 - [ ] components/app-layout.tsx
-- [ ] components/assign-modal.tsx
+- [x] components/assign-modal.tsx
 - [ ] components/brand-combobox.tsx
 - [ ] components/breadcrumbs.tsx
 - [ ] components/bulk-assign-modal.tsx
@@ -89,7 +89,7 @@
 - [ ] components/document-preview.tsx
 - [ ] components/document-upload.tsx
 - [ ] components/document-viewer.tsx
-- [ ] components/edit-product-modal.tsx
+- [x] components/edit-product-modal.tsx
 - [ ] components/edit-task-sheet.tsx
 - [ ] components/empty-state.tsx
 - [ ] components/help-modal.tsx
@@ -101,7 +101,7 @@
 - [ ] components/provider-combobox.tsx
 - [ ] components/quick-load-modal.tsx
 - [ ] components/quick-retire-modal.tsx
-- [ ] components/retire-product-modal.tsx
+- [x] components/retire-product-modal.tsx
 - [ ] components/status-badge.tsx
 - [ ] components/task-audit-log-sheet.tsx
 - [ ] components/theme-provider.tsx
