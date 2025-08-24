@@ -39,22 +39,24 @@ export class AuthService {
         try {
             const hashedPassword = await bcrypt.hash(userData.password, 12);
 
-            // Verificar si el usuario ya existe
-            const existingUser = await this.prisma.user.findUnique({ where: { email: userData.email } });
-            if (existingUser) {
-                throw new ConflictError('El correo electrónico ya está en uso.');
-            }
-
-            // Operación principal: crear el usuario
+            // Operación atómica: crear usuario directamente sin verificación previa
             const newUser = await this.prisma.user.create({
-                data: { name: userData.name, email: userData.email, password_hash: hashedPassword },
+                data: {
+                    name: userData.name,
+                    email: userData.email,
+                    password_hash: hashedPassword,
+                    role: 'LECTOR' // Rol por defecto explícito
+                },
             });
 
             // Operación de auditoría como "mejor esfuerzo"
             try {
-                await this.auditService.log({
-                    userId: newUser.id, action: 'USER_REGISTER_SUCCESS', targetType: 'USER',
-                    targetId: newUser.id, changes: { name: newUser.name, email: newUser.email, role: newUser.role },
+                await this.auditService.logNonTransactional({
+                    userId: newUser.id,
+                    action: 'USER_REGISTER_SUCCESS',
+                    targetType: 'USER',
+                    targetId: newUser.id,
+                    changes: { name: newUser.name, email: newUser.email, role: newUser.role },
                 });
             } catch (auditError) {
                 console.error('Error al registrar auditoría de registro de usuario:', auditError);
@@ -66,51 +68,70 @@ export class AuthService {
             return { user: userWithoutPassword, token };
 
         } catch (error) {
-            if (error instanceof AppError) { throw error; }
+            if (error instanceof AppError) {
+                throw error;
+            }
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                // Captura la violación de la restricción única (email ya existe)
+                if (error.code === 'P2002') {
+                    throw new ConflictError('El correo electrónico ya está en uso.');
+                }
+                // Para otros errores de Prisma, lanzar error genérico
                 console.error('Prisma Error en Registro:', { code: error.code, meta: error.meta });
                 throw new AppError('Error al procesar la solicitud en la base de datos.', 500);
             }
+            // Para cualquier otro error inesperado
             console.error('Error Inesperado en Registro:', error);
             throw new AppError('Ha ocurrido un error interno inesperado.', 500);
         }
     }
 
     public async loginUser(loginData: LoginUserData): Promise<AuthResult> {
-        const user = await this.prisma.user.findUnique({ where: { email: loginData.email } });
+        const user = await this.prisma.user.findUnique({
+            where: { email: loginData.email },
+        });
 
+        // MITIGACIÓN DE TIMING ATTACK
         const fakeHash = '$2b$12$Ea.2n.e.e.A9.E8.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.';
         const hashToCompare = user ? user.password_hash : fakeHash;
         const isPasswordValid = await bcrypt.compare(loginData.password, hashToCompare);
 
+        // Verificación unificada
         if (!user || !user.isActive || !isPasswordValid) {
+            // La auditoría de intento fallido es de "mejor esfuerzo"
+            if (user) {
+                this.auditService.logNonTransactional({
+                    userId: user.id,
+                    action: 'USER_LOGIN_FAILURE',
+                    targetType: 'USER',
+                    targetId: user.id,
+                    changes: { reason: !isPasswordValid ? 'Invalid password' : 'Inactive account' }
+                }).catch(console.error);
+            }
             throw new AuthError('Credenciales inválidas.');
         }
 
-        // Generar token primero para asegurar que la operación principal funciona
-        const token = await this.generateToken(user);
-        const { password_hash, ...userWithoutPassword } = user;
-
-        // Operaciones secundarias (actualización de lastLoginAt y auditoría) como "mejor esfuerzo"
-        try {
-            // Actualizar la hora del último login
-            await this.prisma.user.update({
+        // Actualización y auditoría de éxito en transacción
+        await this.prisma.$transaction(async (tx) => {
+            // Paso 1: Actualizar el usuario
+            await tx.user.update({
                 where: { id: user.id },
-                data: { lastLoginAt: new Date() }
+                data: { lastLoginAt: new Date() },
             });
 
-            // Registrar la auditoría
-            await this.auditService.log({
+            // Paso 2: Registrar la auditoría DENTRO de la misma transacción
+            await this.auditService.logTransactional(tx, {
                 userId: user.id,
                 action: 'USER_LOGIN_SUCCESS',
                 targetType: 'USER',
                 targetId: user.id,
                 changes: { lastLoginAt: new Date() }
             });
-        } catch (updateError) {
-            console.error('Error al actualizar lastLoginAt o registrar auditoría de login:', updateError);
-            // El error en estas operaciones no afecta la operación principal (login)
-        }
+        });
+
+        const token = await this.generateToken(user);
+
+        const { password_hash, ...userWithoutPassword } = user;
 
         return { user: userWithoutPassword, token };
     }
@@ -118,7 +139,7 @@ export class AuthService {
     public async logoutUser(userId: string): Promise<{ success: boolean }> {
         // Operación de auditoría como "mejor esfuerzo"
         try {
-            await this.auditService.log({
+            await this.auditService.logNonTransactional({
                 userId,
                 action: 'USER_LOGOUT_SUCCESS',
                 targetType: 'USER',

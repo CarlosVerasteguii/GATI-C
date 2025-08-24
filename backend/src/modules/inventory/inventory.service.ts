@@ -72,14 +72,14 @@ export class InventoryService {
 
             // Auditoría de mejor esfuerzo (no bloqueante)
             this.auditService
-                .log({
+                .logNonTransactional({
                     userId,
                     action: 'PRODUCT_CREATED',
                     targetType: 'PRODUCT',
                     targetId: created.id,
                     changes: created,
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     console.error('Error al registrar auditoría de creación de producto:', err);
                 });
 
@@ -130,14 +130,14 @@ export class InventoryService {
 
             // Auditoría de mejor esfuerzo (no bloqueante)
             this.auditService
-                .log({
+                .logNonTransactional({
                     userId,
                     action: 'PRODUCT_UPDATED',
                     targetType: 'PRODUCT',
                     targetId: updated.id,
                     changes: { before: existing, after: updated },
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     console.error('Error al registrar auditoría de actualización de producto:', err);
                 });
 
@@ -167,14 +167,14 @@ export class InventoryService {
 
             // Auditoría de mejor esfuerzo (no bloqueante)
             this.auditService
-                .log({
+                .logNonTransactional({
                     userId,
                     action: 'PRODUCT_DELETED',
                     targetType: 'PRODUCT',
                     targetId: existing.id,
                     changes: existing,
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     console.error('Error al registrar auditoría de eliminación de producto:', err);
                 });
         } catch (error: any) {

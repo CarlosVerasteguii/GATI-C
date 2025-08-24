@@ -1,6 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { singleton } from 'tsyringe';
 import prisma from '../../config/prisma.js';
+
+type PrismaTransactionalClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 export interface AuditLogData {
     userId: string;
@@ -12,7 +14,19 @@ export interface AuditLogData {
 
 @singleton()
 export class AuditService {
-    public async log(data: AuditLogData): Promise<void> {
+    public async logTransactional(tx: PrismaTransactionalClient, data: AuditLogData): Promise<void> {
+        await tx.auditLog.create({
+            data: {
+                userId: data.userId,
+                action: data.action,
+                target_type: data.targetType,
+                target_id: data.targetId,
+                changes_json: data.changes as unknown as Prisma.InputJsonValue,
+            },
+        });
+    }
+
+    public async logNonTransactional(data: AuditLogData): Promise<void> {
         try {
             await prisma.auditLog.create({
                 data: {
