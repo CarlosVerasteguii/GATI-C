@@ -116,13 +116,19 @@ export class AuthService {
     }
 
     public async logoutUser(userId: string): Promise<{ success: boolean }> {
-        await this.auditService.log({
-            userId,
-            action: 'USER_LOGOUT_SUCCESS',
-            targetType: 'USER',
-            targetId: userId,
-            changes: { logoutAt: new Date() }
-        });
+        // Operación de auditoría como "mejor esfuerzo"
+        try {
+            await this.auditService.log({
+                userId,
+                action: 'USER_LOGOUT_SUCCESS',
+                targetType: 'USER',
+                targetId: userId,
+                changes: { logoutAt: new Date() }
+            });
+        } catch (auditError) {
+            console.error('Best-effort audit logging failed for USER_LOGOUT_SUCCESS:', auditError);
+            // El error en la auditoría no afecta la operación principal
+        }
 
         return { success: true };
     }
