@@ -25,7 +25,7 @@
 - [ ] app/ClientLayout.tsx
 - [ ] app/globals.css
 - [ ] app/layout.tsx
-- [ ] app/page.tsx
+- [x] app/page.tsx
 
 ### app/login
 - [ ] app/login/page.tsx
@@ -175,14 +175,14 @@
 - [ ] components/inventory/modals/quick-retire-modal.tsx
 
 ## contexts
-- [ ] contexts/app-context.tsx
+- [x] contexts/app-context.tsx
 
 ## hooks
-- [ ] hooks/use-debounce.ts
+- [x] hooks/use-debounce.ts
 - [ ] hooks/use-device.tsx
 - [ ] hooks/use-keyboard-shortcuts.tsx
 - [ ] hooks/use-navigation.tsx
-- [ ] hooks/use-pending-tasks.tsx
+- [x] hooks/use-pending-tasks.tsx
 - [ ] hooks/use-toast.ts
 - [ ] hooks/useInventory.ts
 
@@ -203,7 +203,7 @@
 - [ ] lib/mocks/inventory-mock-data.ts
 
 ## types
-- [ ] types/inventory.ts
+- [x] types/inventory.ts
 
 ## styles
 - [ ] styles/globals.css

@@ -74,15 +74,15 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 // El tipo InventoryItem ahora se importa desde @/types/inventory
 
 interface AssignmentItem {
-  serialNumber: string
+  serialNumber: string | null
   status: string
   assignedTo: string
   assignmentDate: string
 }
 
 interface AssignmentDetails {
-  asignadoA: string | null
-  fechaAsignacion: string | null
+  assignedTo: string | null
+  assignmentDate: string | null
 }
 
 interface QtyBreakdown {
@@ -115,19 +115,19 @@ interface ColumnDefinition {
 
 // Define all possible columns and their properties
 const allColumns: ColumnDefinition[] = [
-  { id: "name", label: "Nombre", defaultVisible: true, sortable: true, fixed: "start", type: 'string' },
-  { id: "brand", label: "Marca", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "model", label: "Modelo", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "serialNumber", label: "N/S", defaultVisible: true, sortable: false },
-  { id: "category", label: "Categoría", defaultVisible: true, sortable: true, type: 'string' },
-  { id: "location", label: "Ubicación", defaultVisible: false, sortable: true, type: 'string' },
-  { id: "status", label: "Estado", defaultVisible: true, sortable: true, type: 'status' },
-  { id: "provider", label: "Proveedor", defaultVisible: false, sortable: true, type: 'string' },
-  { id: "purchaseDate", label: "Fecha Adquisición", defaultVisible: false, sortable: true, type: 'date' },
-  { id: "contractId", label: "Contrato ID", defaultVisible: false, sortable: false },
-  { id: "assignedTo", label: "Asignado A", defaultVisible: false, sortable: true, type: 'string' },
-  { id: "assignmentDate", label: "Fecha Asignación", defaultVisible: false, sortable: true, type: 'date' },
-  { id: "cost", label: "Costo", defaultVisible: false, sortable: true, type: "number" },
+  { id: "name", label: "Name", defaultVisible: true, sortable: true, fixed: "start", type: 'string' },
+  { id: "brand", label: "Brand", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "model", label: "Model", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "serialNumber", label: "S/N", defaultVisible: true, sortable: false },
+  { id: "category", label: "Category", defaultVisible: true, sortable: true, type: 'string' },
+  { id: "location", label: "Location", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "status", label: "Status", defaultVisible: true, sortable: true, type: 'status' },
+  { id: "provider", label: "Provider", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "purchaseDate", label: "Purchase Date", defaultVisible: false, sortable: true, type: 'date' },
+  { id: "contractId", label: "Contract ID", defaultVisible: false, sortable: false },
+  { id: "assignedTo", label: "Assigned To", defaultVisible: false, sortable: true, type: 'string' },
+  { id: "assignmentDate", label: "Assignment Date", defaultVisible: false, sortable: true, type: 'date' },
+  { id: "cost", label: "Cost", defaultVisible: false, sortable: true, type: "number" },
 ]
 
 export default function InventarioPage() {
@@ -139,7 +139,7 @@ export default function InventarioPage() {
   const { inventory, isLoading: inventoryLoading, isError: inventoryError, mutate } = useInventory()
   const inventoryData = React.useMemo(() => Array.isArray(inventory) ? (inventory as unknown as InventoryItem[]) : [], [inventory])
 
-  // Definir el reducer local para manejar acciones específicas del componente
+  // Define the local reducer to handle component-specific actions
   interface InventoryLocalState {
     lastRefresh: number;
   }
@@ -151,22 +151,22 @@ export default function InventarioPage() {
   const inventoryReducer = (state: InventoryLocalState, action: InventoryAction): InventoryLocalState => {
     switch (action.type) {
       case "REFRESH_INVENTORY":
-        // Esta acción simplemente desencadena una actualización del estado local
+        // This action simply triggers a local state update
         return { ...state, lastRefresh: Date.now() };
       default:
         return state;
     }
   };
 
-  // Usar useReducer para manejar acciones locales
+  // Use useReducer to handle local actions
   const [localState, dispatch] = useReducer(inventoryReducer, { lastRefresh: Date.now() });
 
-  // Reemplazar la constante ITEMS_PER_PAGE por un estado
+  // Replace the ITEMS_PER_PAGE constant with a state
   const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
     const userId = user?.id;
     const pageId = "inventario";
 
-    // Obtener de preferencias de usuario si están disponibles
+    // Get from user preferences if available
     if (userId &&
       state.userColumnPreferences &&
       Array.isArray(state.userColumnPreferences) &&
@@ -176,7 +176,7 @@ export default function InventarioPage() {
         return userPrefs.itemsPerPage;
       }
     }
-    // Valor por defecto
+    // Default value
     return 25;
   });
 
@@ -195,15 +195,15 @@ export default function InventarioPage() {
   const [showImportProgress, setShowImportProgress] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState<string | null>(searchParams.get("search"))
-  const [filterCategoria, setFilterCategoria] = useState<string | null>(searchParams.get("categoria"))
-  const [filterMarca, setFilterMarca] = useState<string | null>(searchParams.get("marca"))
-  const [filterEstado, setFilterEstado] = useState<string | null>(searchParams.get("estado"))
+  const [filterCategory, setFilterCategory] = useState<string | null>(searchParams.get("category"))
+  const [filterBrand, setFilterBrand] = useState<string | null>(searchParams.get("brand"))
+  const [filterStatus, setFilterStatus] = useState<string | null>(searchParams.get("status"))
   const [hasSerialNumber, setHasSerialNumber] = useState(false)
 
-  const handleFilterChange = (filterType: 'categoria' | 'marca' | 'estado', value: string | null) => {
-    if (filterType === 'categoria') setFilterCategoria(value);
-    if (filterType === 'marca') setFilterMarca(value);
-    if (filterType === 'estado') setFilterEstado(value);
+  const handleFilterChange = (filterType: 'category' | 'brand' | 'status', value: string | null) => {
+    if (filterType === 'category') setFilterCategory(value);
+    if (filterType === 'brand') setFilterBrand(value);
+    if (filterType === 'status') setFilterStatus(value);
   };
 
   // Modify handleSerialNumberFilterChange to use local state
@@ -267,16 +267,16 @@ export default function InventarioPage() {
     const pageId = "inventario";
     const userPrefs = state.userColumnPreferences?.find(pref => pref.page === pageId);
 
-    // Si existen preferencias de usuario para esta página, las aplicamos
+    // If user preferences exist for this page, we apply them
     if (userId && userPrefs?.preferences) {
-      // Mapeamos sobre allColumns para asegurar que tenemos todas las columnas disponibles
+      // Map over allColumns to ensure we have all available columns
       return allColumns.map(col => {
         const savedPref = userPrefs.preferences.find(p => p.id === col.id);
-        // Si hay una preferencia guardada para esta columna, usamos su visibilidad
-        // Si no, usamos el valor por defecto de la columna
+        // If there is a saved preference for this column, we use its visibility
+        // If not, we use the column's default value
         return { ...col, visible: savedPref ? savedPref.visible : col.defaultVisible };
       }).sort((a, b) => {
-        // Opcional: Añadir lógica para ordenar según el orden guardado si existe
+        // Optional: Add logic to sort according to saved order if it exists
         const orderA = userPrefs.preferences.findIndex(p => p.id === a.id);
         const orderB = userPrefs.preferences.findIndex(p => p.id === b.id);
         if (orderA !== -1 && orderB !== -1) {
@@ -286,7 +286,7 @@ export default function InventarioPage() {
       });
     }
 
-    // Si no hay preferencias de usuario, inicializamos con la visibilidad por defecto
+    // If there are no user preferences, initialize with default visibility
     return allColumns.map(col => ({ ...col, visible: col.defaultVisible }));
   })
 
@@ -318,7 +318,7 @@ export default function InventarioPage() {
           model: task.details.model || "",
           category: task.details.category || "",
           description: task.details.description || "",
-          status: "Disponible"
+          status: "AVAILABLE"
         };
         setSelectedProduct(productData as InventoryItem);
         setTempMarca(task.details.brand || "")
@@ -335,8 +335,8 @@ export default function InventarioPage() {
       if (task && task.details.itemsImplicados) {
         setSelectedRowIds(task.details.itemsImplicados.map((item: any) => item.id))
         showInfo({
-          title: "Tarea de Retiro Pendiente",
-          description: `Artículos de la tarea #${taskId} seleccionados para completar el retiro.`,
+          title: "Pending Retirement Task",
+          description: `Items from task #${taskId} selected to complete retirement.`,
         })
         router.replace("/inventario", { scroll: false })
       }
@@ -344,14 +344,14 @@ export default function InventarioPage() {
     }
   }, [searchParams, state.tasks, router, isProcessingUrlParam])
 
-  // Calcular si hay filtros activos
-  const hasActiveFilters = filterCategoria || filterMarca || filterEstado || Object.values(advancedFilters).some(value => value);
+  // Calculate if there are active filters
+  const hasActiveFilters = filterCategory || filterBrand || filterStatus || Object.values(advancedFilters).some(value => value);
 
   const clearAllFilters = () => {
     setSearchTerm(null);
-    setFilterCategoria(null);
-    setFilterMarca(null);
-    setFilterEstado(null);
+    setFilterCategory(null);
+    setFilterBrand(null);
+    setFilterStatus(null);
     setAdvancedFilters({
       startDate: null,
       endDate: null,
@@ -362,17 +362,17 @@ export default function InventarioPage() {
     });
   };
 
-  // Actualizar URL con filtros
+  // Update URL with filters
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchTerm) params.set("search", searchTerm)
-    if (filterCategoria && filterCategoria !== "all") params.set("categoria", filterCategoria)
-    if (filterMarca && filterMarca !== "all") params.set("marca", filterMarca)
-    if (filterEstado && filterEstado !== "all") params.set("estado", filterEstado)
+    if (filterCategory && filterCategory !== "all") params.set("category", filterCategory)
+    if (filterBrand && filterBrand !== "all") params.set("brand", filterBrand)
+    if (filterStatus && filterStatus !== "all") params.set("status", filterStatus)
 
     const newUrl = params.toString() ? `?${params.toString()}` : ""
     router.replace(`/inventario${newUrl}`, { scroll: false })
-  }, [searchTerm, filterCategoria, filterMarca, filterEstado, router])
+  }, [searchTerm, filterCategory, filterBrand, filterStatus, router])
 
   // Save column preferences when they change
   useEffect(() => {
@@ -404,19 +404,19 @@ export default function InventarioPage() {
   const getAssignmentDetails = (item: InventoryItem): AssignmentDetails => {
     if (item.serialNumber) {
       const activeAssignment = state.assignmentsData.find(
-        (a) => a.serialNumber === item.serialNumber && a.status === "Activo",
+        (a) => a.serialNumber === item.serialNumber && a.status === "ACTIVE",
       )
       if (activeAssignment) {
         return {
-          asignadoA: activeAssignment.assignedTo,
-          fechaAsignacion: activeAssignment.assignmentDate,
+          assignedTo: activeAssignment.assignedTo,
+          assignmentDate: activeAssignment.assignmentDate,
         }
       }
     }
-    return { asignadoA: null, fechaAsignacion: null }
+    return { assignedTo: null, assignmentDate: null }
   }
 
-  // Función segura para obtener valores de columnas
+  // Safe function to get column values
   const getColumnValue = (item: InventoryItem, columnId: string): string | number | null => {
     switch (columnId) {
       case "name":
@@ -442,9 +442,9 @@ export default function InventarioPage() {
       case "entryDate":
         return item.entryDate || null;
       case "assignedTo":
-        return getAssignmentDetails(item).asignadoA;
+        return getAssignmentDetails(item).assignedTo;
       case "assignmentDate":
-        return getAssignmentDetails(item).fechaAsignacion;
+        return getAssignmentDetails(item).assignmentDate;
       case "cost":
         return item.cost ?? null;
       default:
@@ -452,31 +452,31 @@ export default function InventarioPage() {
     }
   };
 
-  // Hooks de Procesamiento de Datos - Cadena de Transformación
+  // Data Processing Hooks - Transformation Chain
   const expandedInventory = React.useMemo(() => {
     return inventoryData.flatMap(item => {
       if (item.isSerialized === false && item.quantity > 1) {
-        // Para stacks, expandir en items virtuales
+        // For stacks, expand into virtual items
         return Array.from({ length: item.quantity }, (_, index) => ({
           ...item,
-          reactKey: `${item.id}-${item.status}-${index}`, // Key única para React
+          reactKey: `${item.id}-${item.status}-${index}`, // Unique key for React
           isVirtual: true,
-          originalId: item.id, // Guardar referencia al ID original
+          originalId: item.id, // Keep reference to original ID
           quantity: 1,
         }));
       }
-      // Para items normales, solo añadir la reactKey
+      // For normal items, just add the reactKey
       return { ...item, reactKey: item.id.toString(), isVirtual: false };
     });
   }, [inventoryData]);
 
   const filteredData = React.useMemo(() => {
     const results = expandedInventory.filter((item: InventoryItem) => {
-      // --- INICIO DE BLOQUE DE DIAGNÓSTICO DE PROPIEDADES NULAS ---
+      // --- START OF NULL PROPERTIES DIAGNOSTIC BLOCK ---
       if (item.name === null || item.brand === null || item.model === null) {
-        console.warn("¡ALERTA DE DATO NULO! Ítem con propiedad nula encontrado:", item);
+        console.warn("NULL DATA ALERT! Item with null property found:", item);
       }
-      // --- FIN DE BLOQUE DE DIAGNÓSTICO ---
+      // --- END OF DIAGNOSTIC BLOCK ---
 
       const lowercasedQuery = searchTerm?.toLowerCase() || "";
       const matchesSearch = searchTerm === "" ||
@@ -488,17 +488,17 @@ export default function InventarioPage() {
         (item.status && item.status.toLowerCase().includes(lowercasedQuery)) ||
         (item.assignedTo && item.assignedTo.toLowerCase().includes(lowercasedQuery));
 
-      const matchesCategoria = !filterCategoria || item.category === filterCategoria;
-      const matchesMarca = !filterMarca || item.brand === filterMarca;
-      const matchesEstado = !filterEstado || item.status === filterEstado;
+      const matchesCategory = !filterCategory || item.category === filterCategory;
+      const matchesBrand = !filterBrand || item.brand === filterBrand;
+      const matchesStatus = !filterStatus || item.status === filterStatus;
       const matchesSerialNumber = hasSerialNumber ? !!item.serialNumber : true;
 
-      // Lógica para Filtros Avanzados
+      // Advanced Filters Logic
       const matchesAdvancedFilters = () => {
-        // Filtro por Rango de Fechas
+        // Date Range Filter
         if (advancedFilters.startDate && advancedFilters.endDate && item.purchaseDate) {
           const itemDate = new Date(item.purchaseDate);
-          // Normalizamos las fechas para ignorar la hora
+          // Normalize dates to ignore time
           const startDate = new Date(advancedFilters.startDate.setHours(0, 0, 0, 0));
           const endDate = new Date(advancedFilters.endDate.setHours(23, 59, 59, 999));
 
@@ -507,21 +507,21 @@ export default function InventarioPage() {
           }
         }
 
-        // Filtro por Proveedor
+        // Provider Filter
         if (advancedFilters.provider) {
           if (item.provider !== advancedFilters.provider) {
             return false;
           }
         }
 
-        // Filtro por ID de Contrato
+        // Contract ID Filter
         if (advancedFilters.contractId) {
           if (!item.contractId || !item.contractId.toLowerCase().includes(advancedFilters.contractId.toLowerCase())) {
             return false;
           }
         }
 
-        // Filtro por Rango de Costo
+        // Cost Range Filter
         if (item.cost !== null && item.cost !== undefined) {
           if (advancedFilters.minCost !== null && item.cost < advancedFilters.minCost) {
             return false;
@@ -530,19 +530,19 @@ export default function InventarioPage() {
             return false;
           }
         } else {
-          // Si el ítem no tiene costo, no coincide si se especifica un rango
+          // If the item has no cost, it doesn't match if a range is specified
           if (advancedFilters.minCost !== null || advancedFilters.maxCost !== null) {
             return false;
           }
         }
 
-        return true; // Si pasa todos los filtros avanzados
+        return true; // If it passes all advanced filters
       };
 
       const passesAllFilters = matchesSearch &&
-        matchesCategoria &&
-        matchesMarca &&
-        matchesEstado &&
+        matchesCategory &&
+        matchesBrand &&
+        matchesStatus &&
         matchesSerialNumber &&
         matchesAdvancedFilters();
 
@@ -555,9 +555,9 @@ export default function InventarioPage() {
   }, [
     expandedInventory,
     searchTerm,
-    filterCategoria,
-    filterMarca,
-    filterEstado,
+    filterCategory,
+    filterBrand,
+    filterStatus,
     hasSerialNumber,
     advancedFilters
   ]);
@@ -587,7 +587,7 @@ export default function InventarioPage() {
       productGroups[groupKey].children.push(item);
       productGroups[groupKey].summary.total++;
 
-      if (item.status === 'Disponible') {
+      if (item.status === 'AVAILABLE') {
         productGroups[groupKey].summary.available++;
       }
 
@@ -606,11 +606,11 @@ export default function InventarioPage() {
     if (sortColumn) {
       const getGroupStatus = (group: any) => {
         const statuses = new Set(group.children.map((item: any) => item.status));
-        if (statuses.has('Disponible')) return 'Disponible';
-        if (statuses.has('PENDIENTE_DE_RETIRO')) return 'Pendiente';
-        if (statuses.has('Asignado')) return 'Asignado';
-        if (statuses.has('Prestado')) return 'Prestado';
-        return 'Retirado';
+        if (statuses.has('AVAILABLE')) return 'Available';
+        if (statuses.has('PENDING_RETIREMENT')) return 'Pending';
+        if (statuses.has('ASSIGNED')) return 'Assigned';
+        if (statuses.has('LENT')) return 'Lent';
+        return 'Retired';
       };
 
       const getGroupValue = (group: any, column: string) => {
@@ -629,7 +629,7 @@ export default function InventarioPage() {
         const sortType = columnConfig ? columnConfig.type : 'string';
 
         const statusOrder: { [key: string]: number } = {
-          'Disponible': 1, 'Asignado': 2, 'Prestado': 3, 'PENDIENTE_DE_RETIRO': 4, 'Retirado': 5
+          'Available': 1, 'Assigned': 2, 'Lent': 3, 'Pending': 4, 'Retired': 5
         };
 
         if (aValue === null || aValue === undefined) return 1;
@@ -722,19 +722,19 @@ export default function InventarioPage() {
   }
 
   const handleDuplicate = (_product: InventoryItem) => {
-    showInfo({ title: "Pendiente", description: "Duplicar no implementado en esta iteración." })
+    showInfo({ title: "Pending", description: "Duplicate not implemented in this iteration." })
   }
 
   const handleMarkAsRetired = (_product: InventoryItem) => {
-    showInfo({ title: "Pendiente", description: "Flujo de retiro fuera de alcance de este cambio." })
+    showInfo({ title: "Pending", description: "Retirement flow out of scope for this change." })
   }
 
   const executeReactivate = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Reactivación deshabilitada temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Reactivation temporarily disabled." })
   }
 
   const handleReactivate = (_product: InventoryItem) => {
-    showInfo({ title: "Pendiente", description: "Reactivación fuera de alcance de este cambio." })
+    showInfo({ title: "Pending", description: "Reactivation out of scope for this change." })
   }
 
   const handleAddProduct = () => {
@@ -756,16 +756,16 @@ export default function InventarioPage() {
 
       // Mostrar notificación de éxito
       showSuccess({
-        title: productData.mode === 'add' ? "Producto creado" : "Producto actualizado",
-        description: productData.mode === 'add' ? "Se creó el producto correctamente." : "Se actualizó el producto correctamente."
+        title: productData.mode === 'add' ? "Product created" : "Product updated",
+        description: productData.mode === 'add' ? "Product created successfully." : "Product updated successfully."
       })
     } catch (error) {
       console.error('Error creating product:', error)
 
       // Mostrar notificación de error
       showError({
-        title: productData.mode === 'add' ? "Error al crear producto" : "Error al actualizar producto",
-        description: "Ocurrió un error en la operación. Inténtalo de nuevo."
+        title: productData.mode === 'add' ? "Error creating product" : "Error updating product",
+        description: "An error occurred in the operation. Please try again."
       })
     }
   }
@@ -774,59 +774,59 @@ export default function InventarioPage() {
     try {
       await deleteProductAPI(String(asset.id))
       await mutate()
-      showSuccess({ title: "Producto eliminado", description: `Se eliminó "${asset.name}".` })
+      showSuccess({ title: "Product deleted", description: `Deleted "${asset.name}".` })
     } catch (error) {
       console.error('Error deleting product:', error)
-      showError({ title: "Error al eliminar", description: "No se pudo eliminar el producto." })
+      showError({ title: "Error deleting", description: "Could not delete the product." })
     }
   }
 
   const executeSaveProduct = (_productData: Partial<InventoryItem>) => {
-    showInfo({ title: "Modo lectura", description: "Guardado deshabilitado temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Saving temporarily disabled." })
   }
 
   const handleSaveProduct = async () => {
-    showInfo({ title: "Modo lectura", description: "Guardar deshabilitado temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Save temporarily disabled." })
   }
 
   const handleImportCSV = () => {
-    showInfo({ title: "Modo lectura", description: "Importación deshabilitada temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Import temporarily disabled." })
   }
 
   const executeRetirement = () => {
-    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Retirement temporarily disabled." })
   }
 
   const confirmRetirement = () => {
-    showInfo({ title: "Modo lectura", description: "Retiro deshabilitado temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Retirement temporarily disabled." })
   }
 
   const getModalTitle = () => {
     switch (modalMode) {
       case "add":
-        return "Añadir Producto"
+        return "Add Product"
       case "edit":
-        return "Editar Producto"
+        return "Edit Product"
       case "duplicate":
-        return "Duplicar Producto"
+        return "Duplicate Product"
       case "process-carga":
-        return "Procesar Tarea de Carga"
+        return "Process Load Task"
       default:
-        return "Producto"
+        return "Product"
     }
   }
 
   const handleAssign = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Asignación deshabilitada temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Assignment temporarily disabled." })
   }
 
   const handleLend = (_product: InventoryItem) => {
-    showInfo({ title: "Modo lectura", description: "Préstamo deshabilitado temporalmente." })
+    showInfo({ title: "Read-only mode", description: "Loan temporarily disabled." })
   }
 
   const handleBulkSuccess = () => {
     setSelectedRowIds([])
-    // Usar dispatch local para refrescar el inventario
+    // Use local dispatch to refresh inventory
     dispatch({ type: "REFRESH_INVENTORY" })
   }
 
@@ -836,10 +836,10 @@ export default function InventarioPage() {
         type: 'ADD_PENDING_REQUEST',
         payload: {
           id: Math.floor(Math.random() * 1000),
-          type: pendingActionDetails.type as any, // Cast para evitar errores de tipo
-          requestedBy: user?.nombre || "Editor",
+          type: pendingActionDetails.type as any, // Cast to avoid type errors
+          requestedBy: user?.name || "Editor",
           date: new Date().toISOString(),
-          status: "Pendiente",
+          status: "Pending",
           details: pendingActionDetails,
         }
       });
@@ -883,19 +883,19 @@ export default function InventarioPage() {
     )
 
     allInstances.forEach((instance: InventoryItem) => {
-      if (instance.status !== "Retirado") {
+      if (instance.status !== "RETIRED") {
         totalInInventory += instance.quantity
       }
 
-      if (instance.status === "Disponible") {
+      if (instance.status === "AVAILABLE") {
         totalAvailable += instance.quantity
-      } else if (instance.status === "Asignado") {
+      } else if (instance.status === "ASSIGNED") {
         assignedCount += instance.quantity
         totalUnavailable += instance.quantity
-      } else if (instance.status === "Prestado") {
+      } else if (instance.status === "LENT") {
         lentCount += instance.quantity
         totalUnavailable += instance.quantity
-      } else if (instance.status === "PENDIENTE_DE_RETIRO") {
+      } else if (instance.status === "PENDING_RETIREMENT") {
         pendingRetireCount += instance.quantity
         totalUnavailable += instance.quantity
       }
@@ -914,34 +914,34 @@ export default function InventarioPage() {
   // Get status-based color class for serialized items
   const getSerializedQtyColorClass = (status: string) => {
     switch (status) {
-      case "Disponible":
-        return "text-status-disponible"
-      case "Prestado":
-        return "text-status-prestado"
-      case "Asignado":
-        return "text-status-asignado"
-      case "PENDIENTE_DE_RETIRO":
-        return "text-status-pendiente-de-retiro"
-      case "Retirado":
-        return "text-status-retirado"
+      case "AVAILABLE":
+        return "text-status-available"
+      case "LENT":
+        return "text-status-lent"
+      case "ASSIGNED":
+        return "text-status-assigned"
+      case "PENDING_RETIREMENT":
+        return "text-status-pending-retirement"
+      case "RETIRED":
+        return "text-status-retired"
       default:
         return "text-muted-foreground"
     }
   }
 
-  const canShowBulkActions = selectedRowIds.length > 0 && user?.rol !== "Lector" // Corregido según PRD
+  const canShowBulkActions = selectedRowIds.length > 0 && user?.role !== "READER" // Corrected according to PRD
 
-  // Función simulada para subir documentos
+  // Simulated function to upload documents
   const handleFileUpload = () => {
     if (!selectedFiles || selectedFiles.length === 0) {
       showError({
         title: "Error",
-        description: "Seleccione al menos un archivo para subir.",
+        description: "Select at least one file to upload.",
       });
       return;
     }
 
-    // Simulación de subida
+    // Upload simulation
     setUploadingFiles(true);
 
     setTimeout(() => {
@@ -957,16 +957,16 @@ export default function InventarioPage() {
       setUploadingFiles(false);
 
       showSuccess({
-        title: "Documentos subidos",
-        description: `Se han subido ${newDocs.length} documento(s) correctamente.`
+        title: "Documents uploaded",
+        description: `${newDocs.length} document(s) uploaded successfully.`
       });
     }, 2000);
   };
 
-  // Asegurarse de que localState.lastRefresh se use como dependencia para refrescar datos
+  // Ensure localState.lastRefresh is used as dependency to refresh data
   useEffect(() => {
-    // Aquí podrías realizar alguna acción cuando se refresca el inventario
-    // Por ejemplo, actualizar filtros, resetear selecciones, etc.
+    // Here you could perform some action when inventory is refreshed
+    // For example, update filters, reset selections, etc.
   }, [localState.lastRefresh]);
 
   const allCategories = useMemo(() => {
@@ -992,22 +992,22 @@ export default function InventarioPage() {
   if (inventoryLoading) {
     return (
       <div className="flex items-center justify-center p-8 text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cargando inventario...
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading inventory...
       </div>
     )
   }
 
   if (inventoryError) {
     return (
-      <div className="p-4 text-sm text-red-600">Error al cargar inventario. Inténtalo más tarde.</div>
+      <div className="p-4 text-sm text-red-600">Error loading inventory. Please try again later.</div>
     )
   }
 
-  if (groupedAndFilteredData.length === 0 && !searchTerm && !filterCategoria && !filterMarca && !filterEstado && !hasAdvancedFilters) {
+  if (groupedAndFilteredData.length === 0 && !searchTerm && !filterCategory && !filterBrand && !filterStatus && !hasAdvancedFilters) {
     return (
       <EmptyState
-        title="No hay productos en el inventario"
-        description="Comienza añadiendo productos a tu inventario."
+        title="No products in inventory"
+        description="Start by adding products to your inventory."
         action={undefined}
       />
     )
@@ -1050,7 +1050,7 @@ export default function InventarioPage() {
 
   // Manejador central para acciones de menú en la tabla anidada
   const handleMenuAction = (action: string, data: GroupedProduct | InventoryItem) => {
-    if (action !== 'Ver Detalles') {
+    if (action !== 'View Details') {
       // Allow edit/delete
     }
     const isGroup = 'isParent' in data && data.isParent;
@@ -1150,13 +1150,13 @@ export default function InventarioPage() {
         (product.provider && product.provider.toLowerCase().includes(lowercasedQuery)) ||
         (product.contractId && product.contractId.toLowerCase().includes(lowercasedQuery));
 
-      const matchesCategoria = !filterCategoria || product.category === filterCategoria;
-      const matchesMarca = !filterMarca || product.brand === filterMarca;
-      const matchesEstado = !filterEstado || product.status === filterEstado;
+      const matchesCategory = !filterCategory || product.category === filterCategory;
+      const matchesBrand = !filterBrand || product.brand === filterBrand;
+      const matchesStatus = !filterStatus || product.status === filterStatus;
 
-      return matchesSearch && matchesCategoria && matchesMarca && matchesEstado;
+      return matchesSearch && matchesCategory && matchesBrand && matchesStatus;
     });
-  }, [searchTerm, filterCategoria, filterMarca, filterEstado, state.inventoryData])
+  }, [searchTerm, filterCategory, filterBrand, filterStatus, state.inventoryData])
 
   return (
     <TooltipProvider>
@@ -1165,22 +1165,22 @@ export default function InventarioPage() {
 
         {/* NUEVA COMMAND BAR UNIFICADA */}
         <div className="flex flex-col gap-4">
-          {/* BARRA DE ACCIONES MASIVAS (se queda como está si existe) */}
+          {/* BULK ACTIONS BAR (keep as is if it exists) */}
           {selectedRowIds.length > 0 && (
             <div className="flex items-center gap-4 rounded-md border bg-muted p-2 text-sm text-muted-foreground mb-4">
               <div className="flex-1">
-                {selectedRowIds.length} elemento(s) seleccionado(s).
+                {selectedRowIds.length} item(s) selected.
               </div>
               <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds([])}>
-                Limpiar selección
+                Clear selection
               </Button>
-              {/* Botones de acciones masivas */}
+              {/* Bulk action buttons */}
               <Button
                 size="sm"
                 disabled
                 onClick={() => setIsBulkAssignModalOpen(true)}
               >
-                Asignar Selección
+                Assign Selection
               </Button>
               <Button
                 variant="destructive"
@@ -1188,102 +1188,102 @@ export default function InventarioPage() {
                 disabled
                 onClick={() => setIsBulkRetireModalOpen(true)}
               >
-                Retirar Selección
+                Retire Selection
               </Button>
             </div>
           )}
 
-          {/* NUEVA COMMAND BAR PRINCIPAL */}
+          {/* NEW MAIN COMMAND BAR */}
           <div className="flex items-center justify-between">
-            {/* Grupo Izquierdo: Búsqueda y Filtros Rápidos */}
+            {/* Left Group: Search and Quick Filters */}
             <div className="flex items-center gap-2 flex-1">
               <SearchBar
                 initialValue={searchTerm || ''}
                 onSearchChange={setSearchTerm}
-                placeholder="Buscar por nombre, marca, modelo..."
+                placeholder="Search by name, brand, model..."
                 className="w-full max-w-sm"
               />
               <FilterPopover
-                title="Categoría"
+                title="Category"
                 options={state.categories}
-                selectedValue={filterCategoria || null}
-                onSelect={(value) => handleFilterChange('categoria', value)}
+                selectedValue={filterCategory || null}
+                onSelect={(value) => handleFilterChange('category', value)}
               />
               <FilterPopover
-                title="Marca"
+                title="Brand"
                 options={state.brands}
-                selectedValue={filterMarca || null}
-                onSelect={(value) => handleFilterChange('marca', value)}
+                selectedValue={filterBrand || null}
+                onSelect={(value) => handleFilterChange('brand', value)}
               />
               <FilterPopover
-                title="Estado"
+                title="Status"
                 options={[...new Set(state.inventoryData.map(item => item.status))]}
-                selectedValue={filterEstado || null}
-                onSelect={(value) => handleFilterChange('estado', value)}
+                selectedValue={filterStatus || null}
+                onSelect={(value) => handleFilterChange('status', value)}
               />
             </div>
-            {/* Grupo Derecho: Acciones de Vista y Globales */}
+            {/* Right Group: View and Global Actions */}
             <div className="flex items-center gap-2">
               <ColumnToggleMenu
                 columns={columns}
                 onColumnsChange={setColumns}
               />
               <Button variant="outline" onClick={() => setIsAdvancedFilterOpen(true)}>
-                Filtros Avanzados
+                Advanced Filters
               </Button>
               <Button variant="outline" onClick={() => setIsImportModalOpen(true)} disabled>
-                Importar
+                Import
               </Button>
               <Button onClick={handleAddProduct}>
-                Añadir Producto
+                Add Product
               </Button>
             </div>
           </div>
 
-          {/* Sección de Filtros Activos */}
+          {/* Active Filters Section */}
           {(() => {
-            const hasActiveFilters = filterCategoria || filterMarca || filterEstado || advancedFilters.startDate || advancedFilters.provider || advancedFilters.contractId || advancedFilters.minCost !== null || advancedFilters.maxCost !== null;
+            const hasActiveFilters = filterCategory || filterBrand || filterStatus || advancedFilters.startDate || advancedFilters.provider || advancedFilters.contractId || advancedFilters.minCost !== null || advancedFilters.maxCost !== null;
             if (hasActiveFilters) {
               return (
                 <div className="flex items-center flex-wrap gap-2 mb-4">
-                  <span className="text-sm font-semibold">Filtros activos:</span>
-                  {filterCategoria && (
-                    <FilterBadge onRemove={() => setFilterCategoria(null)}>
-                      Categoría: {filterCategoria}
+                  <span className="text-sm font-semibold">Active filters:</span>
+                  {filterCategory && (
+                    <FilterBadge onRemove={() => setFilterCategory(null)}>
+                      Category: {filterCategory}
                     </FilterBadge>
                   )}
-                  {filterMarca && (
-                    <FilterBadge onRemove={() => setFilterMarca(null)}>
-                      Marca: {filterMarca}
+                  {filterBrand && (
+                    <FilterBadge onRemove={() => setFilterBrand(null)}>
+                      Brand: {filterBrand}
                     </FilterBadge>
                   )}
-                  {filterEstado && (
-                    <FilterBadge onRemove={() => setFilterEstado(null)}>
-                      Estado: {filterEstado}
+                  {filterStatus && (
+                    <FilterBadge onRemove={() => setFilterStatus(null)}>
+                      Status: {filterStatus}
                     </FilterBadge>
                   )}
                   {advancedFilters.startDate && advancedFilters.endDate && (
                     <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, startDate: null, endDate: null }))}>
-                      Fecha: {advancedFilters.startDate.toLocaleDateString()} - {advancedFilters.endDate.toLocaleDateString()}
+                      Date: {advancedFilters.startDate.toLocaleDateString()} - {advancedFilters.endDate.toLocaleDateString()}
                     </FilterBadge>
                   )}
                   {advancedFilters.provider && (
                     <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, provider: '' }))}>
-                      Proveedor: {advancedFilters.provider}
+                      Provider: {advancedFilters.provider}
                     </FilterBadge>
                   )}
                   {advancedFilters.contractId && (
                     <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, contractId: '' }))}>
-                      Contrato: {advancedFilters.contractId}
+                      Contract: {advancedFilters.contractId}
                     </FilterBadge>
                   )}
                   {(advancedFilters.minCost !== null || advancedFilters.maxCost !== null) && (
                     <FilterBadge onRemove={() => setAdvancedFilters(prev => ({ ...prev, minCost: null, maxCost: null }))}>
-                      Costo: {advancedFilters.minCost ?? 'Min'} - {advancedFilters.maxCost ?? 'Max'}
+                      Cost: {advancedFilters.minCost ?? 'Min'} - {advancedFilters.maxCost ?? 'Max'}
                     </FilterBadge>
                   )}
                   <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-red-500 hover:text-red-600">
-                    Limpiar todos
+                    Clear all
                   </Button>
                 </div>
               );
@@ -1292,7 +1292,7 @@ export default function InventarioPage() {
           })()}
         </div>
 
-        {/* El Card ahora solo contiene la tabla */}
+        {/* The Card now only contains the table */}
         <Card>
           <Separator />
           <CardContent className="p-0">
@@ -1314,16 +1314,16 @@ export default function InventarioPage() {
           </CardContent>
           <CardFooter className="flex items-center justify-between py-4">
             <div className="text-xs text-muted-foreground">
-              Mostrando {paginatedData.length} de {groupedAndFilteredData.length} productos agrupados.
+              Showing {paginatedData.length} of {groupedAndFilteredData.length} grouped products.
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-xs">Items por página:</span>
+                <span className="text-xs">Items per page:</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {
                     setItemsPerPage(Number(value));
-                    setCurrentPage(1); // Reset a la primera página al cambiar
+                    setCurrentPage(1); // Reset to first page when changing
                   }}
                 >
                   <SelectTrigger className="h-8 w-[70px]">
@@ -1337,7 +1337,7 @@ export default function InventarioPage() {
                 </Select>
               </div>
               <div className="text-xs font-medium">
-                Página {currentPage} de {totalPages}
+                Page {currentPage} of {totalPages}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1346,7 +1346,7 @@ export default function InventarioPage() {
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
-                  Anterior
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
@@ -1354,7 +1354,7 @@ export default function InventarioPage() {
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Siguiente
+                  Next
                 </Button>
               </div>
             </div>

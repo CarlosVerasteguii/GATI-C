@@ -13,9 +13,9 @@ interface PendingTasksCount {
 }
 
 /**
- * Hook para manejar el contador de tareas pendientes
- * Implementa polling automático cada 60 segundos como especifica el SRS
- * 
+ * Hook to handle pending tasks counter
+ * Implements automatic polling every 60 seconds as specified in the SRS
+ *
  * @returns {PendingTasksCount & { isLoading: boolean, refresh: () => void }}
  */
 export function usePendingTasks() {
@@ -30,29 +30,29 @@ export function usePendingTasks() {
         lastUpdated: null
     })
 
-    // Función para obtener el conteo de tareas pendientes
+    // Function to fetch pending tasks count
     const fetchPendingTasks = useCallback(async () => {
-        if (!user || !["Administrador", "Editor"].includes(user.rol)) {
-            return // Solo Admins y Editores ven tareas pendientes
+        if (!user || !["ADMINISTRATOR", "EDITOR"].includes(user.role)) {
+            return // Only Admins and Editors can see pending tasks
         }
 
         try {
             setIsLoading(true)
 
-            // Simular llamada a API - en producción sería:
+            // Simulate API call - in production it would be:
             // const response = await fetch('/api/v1/tasks/pending/count')
             // const data = await response.json()
 
-            // SIMULACIÓN DE DATOS PARA DEMOSTRACIÓN
+            // SIMULATED DATA FOR DEMONSTRATION
             const simulatedData: PendingTasksCount = {
-                total: Math.floor(Math.random() * 15), // 0-14 tareas
-                quickLoads: Math.floor(Math.random() * 8), // 0-7 cargas rápidas
-                quickRetires: Math.floor(Math.random() * 5), // 0-4 retiros rápidos
-                editorRequests: user.rol === "Administrador" ? Math.floor(Math.random() * 3) : 0, // 0-2 solicitudes (solo para Admin)
+                total: Math.floor(Math.random() * 15), // 0-14 tasks
+                quickLoads: Math.floor(Math.random() * 8), // 0-7 quick loads
+                quickRetires: Math.floor(Math.random() * 5), // 0-4 quick retires
+                editorRequests: user.role === "ADMINISTRATOR" ? Math.floor(Math.random() * 3) : 0, // 0-2 requests (Admin only)
                 lastUpdated: new Date()
             }
 
-            // Calcular total real
+            // Calculate actual total
             simulatedData.total = simulatedData.quickLoads + simulatedData.quickRetires + simulatedData.editorRequests
 
             setTasksCount(simulatedData)
@@ -65,26 +65,26 @@ export function usePendingTasks() {
         }
     }, [user])
 
-    // Función manual para refrescar
+    // Manual refresh function
     const refresh = useCallback(() => {
         fetchPendingTasks()
     }, [fetchPendingTasks])
 
-    // Configurar polling automático cada 60 segundos
+    // Set up automatic polling every 60 seconds
     useEffect(() => {
-        // Fetch inicial
+        // Initial fetch
         fetchPendingTasks()
 
-        // Configurar intervalo de 60 segundos como especifica el SRS
+        // Set up 60-second interval as specified in the SRS
         const interval = setInterval(fetchPendingTasks, 60000)
 
         return () => clearInterval(interval)
     }, [fetchPendingTasks])
 
-    // Refrescar cuando cambia el usuario o su rol
+    // Refresh when user or role changes
     useEffect(() => {
         fetchPendingTasks()
-    }, [user?.rol, fetchPendingTasks])
+    }, [user?.role, fetchPendingTasks])
 
     return {
         ...tasksCount,
