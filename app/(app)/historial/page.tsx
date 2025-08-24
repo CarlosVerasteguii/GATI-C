@@ -31,15 +31,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
 
 const ITEMS_PER_PAGE = 10
 
-export default function HistorialPage() {
+interface ActivityItem {
+  type: string
+  description: string
+  date: string
+  details?: Record<string, unknown>
+  requestedBy?: string
+  status?: string
+}
+
+export default function HistoryPage() {
   const { state } = useApp()
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({
-    type: "Todos",
+    type: "All",
   })
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [sortConfig, setSortConfig] = useState<{
@@ -48,15 +56,15 @@ export default function HistorialPage() {
   }>({ key: "date", direction: "descending" })
   const [currentPage, setCurrentPage] = useState(1)
   const [isActivityDetailSheetOpen, setIsActivityDetailSheetOpen] = useState(false)
-  const [selectedActivity, setSelectedActivity] = useState<any>(null)
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null)
 
-  const handleViewActivityDetails = (activity: any) => {
+  const handleViewActivityDetails = (activity: ActivityItem) => {
     setSelectedActivity(activity)
     setIsActivityDetailSheetOpen(true)
   }
 
   const filteredActivities = useMemo(() => {
-    const filtered = state.recentActivities.filter((activity) => {
+    const filtered = state.recentActivities.filter((activity: ActivityItem) => {
       const matchesSearch =
         (activity.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (activity.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,9 +73,9 @@ export default function HistorialPage() {
         (activity.details?.assignedTo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (activity.details?.lentTo || "").toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesType = filters.type === "Todos" || activity.type === filters.type
+      const matchesType = filters.type === "All" || activity.type === filters.type
 
-      // Filtro de fecha
+      // Date filter
       let matchesDate = true
       if (filterDate) {
         const activityDate = new Date(activity.date)
@@ -85,11 +93,11 @@ export default function HistorialPage() {
       return filteredActivities
     }
 
-    const sorted = [...filteredActivities].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+    const sorted = [...filteredActivities].sort((a: ActivityItem, b: ActivityItem) => {
+      let aValue: string | number
+      let bValue: string | number
 
-      // Manejo especial para fechas
+      // Special handling for dates
       if (sortConfig.key === "date") {
         aValue = new Date(a.date).getTime()
         bValue = new Date(b.date).getTime()
@@ -100,9 +108,10 @@ export default function HistorialPage() {
         aValue = a.description
         bValue = b.description
       } else {
-        // Fallback para otras propiedades
-        aValue = (a as any)[sortConfig.key] || ""
-        bValue = (b as any)[sortConfig.key] || ""
+        const aRecord = a as Record<string, unknown>
+        const bRecord = b as Record<string, unknown>
+        aValue = (aRecord[sortConfig.key] as string | number) || ""
+        bValue = (bRecord[sortConfig.key] as string | number) || ""
       }
 
       if (aValue < bValue) {
@@ -116,7 +125,7 @@ export default function HistorialPage() {
     return sorted
   }, [filteredActivities, sortConfig])
 
-  // Paginación
+  // Pagination
   const totalPages = Math.ceil(sortedActivities.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
@@ -142,15 +151,15 @@ export default function HistorialPage() {
 
   const allActivityTypes = useMemo(() => {
     const types = new Set(state.recentActivities.map((a) => a.type).filter(Boolean))
-    return ["Todos", ...Array.from(types).sort()]
+    return ["All", ...Array.from(types).sort()]
   }, [state.recentActivities])
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Historial</h1>
+        <h1 className="text-3xl font-bold tracking-tight">History</h1>
         <Button variant="outline" onClick={() => setFilterDate(undefined)}>
-          {filterDate ? "Limpiar Filtro de Fecha" : "Mostrar Todos"}
+          {filterDate ? "Clear Date Filter" : "Show All"}
         </Button>
       </div>
 
@@ -159,7 +168,7 @@ export default function HistorialPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Buscar actividad..."
+            placeholder="Search activity..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-lg bg-background pl-8"
@@ -169,7 +178,7 @@ export default function HistorialPage() {
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn(filterDate && "border-primary")}>
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filterDate ? format(filterDate, "PPP") : "Fecha"}
+              {filterDate ? format(filterDate, "PPP") : "Date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
@@ -183,16 +192,16 @@ export default function HistorialPage() {
         </Popover>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className={cn(filters.type !== "Todos" && "border-primary")}>
+            <Button variant="outline" className={cn(filters.type !== "All" && "border-primary")}>
               <Filter className="mr-2 h-4 w-4" />
-              Filtros
+              Filters
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
+            <DropdownMenuLabel>Filter by</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Tipo de Actividad</DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger>Activity Type</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
                   {allActivityTypes.map((type) => (
@@ -216,25 +225,25 @@ export default function HistorialPage() {
           <TableHeader>
             <TableRow>
               <TableHead onClick={() => requestSort("type")} className="cursor-pointer">
-                Tipo
+                Type
                 {getSortIcon("type")}
               </TableHead>
               <TableHead onClick={() => requestSort("description")} className="cursor-pointer">
-                Descripción
+                Description
                 {getSortIcon("description")}
               </TableHead>
               <TableHead onClick={() => requestSort("date")} className="cursor-pointer">
-                Fecha y Hora
+                Date and Time
                 {getSortIcon("date")}
               </TableHead>
-              <TableHead className="w-[100px]">Acciones</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedActivities.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  No se encontraron actividades.
+              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  No activities found.
                 </TableCell>
               </TableRow>
             ) : (
@@ -247,7 +256,7 @@ export default function HistorialPage() {
                     {activity.details && (
                       <Button variant="ghost" size="sm" onClick={() => handleViewActivityDetails(activity)}>
                         <Eye className="h-4 w-4" />
-                        <span className="sr-only">Ver Detalles</span>
+                        <span className="sr-only">View Details</span>
                       </Button>
                     )}
                   </TableCell>
@@ -258,11 +267,11 @@ export default function HistorialPage() {
         </Table>
       </div>
 
-      {/* Paginación */}
+      {/* Pagination */}
       {sortedActivities.length > ITEMS_PER_PAGE && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Mostrando {startIndex + 1} - {Math.min(endIndex, sortedActivities.length)} de {sortedActivities.length} actividades
+            Showing {startIndex + 1} - {Math.min(endIndex, sortedActivities.length)} of {sortedActivities.length} activities
           </p>
           <div className="flex gap-2">
             <Button
@@ -271,7 +280,7 @@ export default function HistorialPage() {
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
             </Button>
             <Button
               variant="outline"
@@ -279,7 +288,7 @@ export default function HistorialPage() {
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+              Next <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
