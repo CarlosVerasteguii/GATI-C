@@ -1,5 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
+const API = process.env.API_BASE ?? 'http://localhost:3001';
+
 // Credenciales de prueba (hardcoded para la red de seguridad)
 const VALID_EDITOR = { email: 'editor@test.com', password: 'password123' };
 const INVALID_USER = { email: 'invalid@test.com', password: 'wrongpassword' };
@@ -39,8 +41,43 @@ async function fillByLabelOrPlaceholder(page: Page, opts: { label: RegExp; place
     throw new Error(`Input field with label '${opts.label.source}' or placeholder '${opts.placeholder.source}' not found.`);
 }
 
+test.beforeAll(async ({ request }) => {
+    // 1. Esperar a que el backend esté saludable
+    await expect.poll(async () => {
+        try {
+            const response = await request.get(`${API}/api/v1/health`);
+            return response.ok();
+        } catch (error) {
+            console.warn('Backend health check failed, retrying...', error);
+            return false;
+        }
+    }, {
+        message: 'Backend did not become healthy in time.',
+        timeout: 30000 // 30 seconds timeout
+    }).toBe(true);
+
+    // 2. Registrar un usuario de prueba (ej. editor@test.com)
+    const reg = await request.post(`${API}/api/v1/auth/register`, {
+        data: {
+            name: 'Test Editor',
+            email: VALID_EDITOR.email,
+            password: VALID_EDITOR.password,
+        },
+    });
+
+    if (![201, 409].includes(reg.status())) {
+        throw new Error(`Failed to register test user: ${reg.status()} - ${await reg.text()}`);
+    }
+    console.log(`Test user ${VALID_EDITOR.email} registration: ${reg.status()}`);
+});
+
 // Navega a /login antes de cada prueba en este archivo
 test.beforeEach(async ({ page }) => {
+    // --- TELEMETRÍA DE RED ---
+    page.on('request', request => console.log('>> REQ:', request.method(), request.url()));
+    page.on('response', async response => console.log('<< RES:', response.status(), response.url()));
+    // -------------------------
+
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded'); // Wait for DOM to be loaded
     await expect(page).toHaveURL(/login/i);
@@ -71,7 +108,7 @@ test.describe('GATI-C Safety Net - E2E Pragmático', () => {
             // Aserciones: seguimos en login y vemos un mensaje de error comprensible
             await expect(page).toHaveURL(/login|auth|signin/i);
             await expect(
-                page.getByText(/credenciales inválidas|invalid credentials|correo o contraseña|usuario o contraseña/i)
+                page.getByText(/credenciales (inválidas|incorrectas)|invalid credentials/i)
             ).toBeVisible({ timeout: 10000 }); // Aumentar timeout para visibilidad del mensaje de error
         });
 
@@ -88,12 +125,14 @@ test.describe('GATI-C Safety Net - E2E Pragmático', () => {
                 value: VALID_EDITOR.password,
             });
 
-            // Enviar formulario y esperar la respuesta exitosa de la API de login
-            const loginPromise = page.waitForResponse(response =>
-                response.url().includes('/api/v1/auth/login') && response.request().method() === 'POST' && response.status() === 200
-            );
-            await page.getByRole('button', { name: /iniciar sesión|login|entrar|sign in|acceder/i }).click();
-            await loginPromise; // Esperar a que la respuesta de login exitosa llegue
+            // Enviar formulario y esperar la redirección al dashboard
+            await Promise.all([
+                page.waitForURL('**/dashboard', { timeout: 15000, waitUntil: 'domcontentloaded' }),
+                page.getByRole('button', { name: /iniciar sesión|login|entrar|sign in|acceder/i }).click(),
+            ]);
+            const context = page.context();
+            const gotJwt = (await context.cookies()).some(c => c.name === 'jwt');
+            expect(gotJwt).toBe(true);
 
             // Verificar redirección y presencia de elemento clave del dashboard
             await expect(page).toHaveURL(/dashboard/i);
@@ -115,11 +154,14 @@ test.describe('GATI-C Safety Net - E2E Pragmático', () => {
                 placeholder: /password|contraseña/i,
                 value: VALID_EDITOR.password,
             });
-            const loginPromise = page.waitForResponse(response =>
-                response.url().includes('/api/v1/auth/login') && response.request().method() === 'POST' && response.status() === 200
-            );
-            await page.getByRole('button', { name: /iniciar sesión|login|entrar|sign in|acceder/i }).click();
-            await loginPromise;
+            await Promise.all([
+                page.waitForURL('**/dashboard', { timeout: 15000, waitUntil: 'domcontentloaded' }),
+                page.getByRole('button', { name: /iniciar sesión|login|entrar|sign in|acceder/i }).click(),
+            ]);
+            const context = page.context();
+            const gotJwt = (await context.cookies()).some(c => c.name === 'jwt');
+            expect(gotJwt).toBe(true);
+
             await expect(page).toHaveURL(/dashboard/i); // Verificar que la redirección al dashboard fue exitosa
         });
 

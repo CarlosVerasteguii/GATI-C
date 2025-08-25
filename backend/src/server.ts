@@ -1,7 +1,7 @@
 import './config/env.js';
 import 'reflect-metadata';
 import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
@@ -14,11 +14,21 @@ const PORT = process.env.PORT || 3001;
 // Set security headers
 app.use(helmet());
 
-// Enable CORS with specific origin and credentials
+// --- Configuración de CORS ---
+
+// Lista blanca de orígenes permitidos en desarrollo.
+// En producción, esto debería ser una variable de entorno con la URL del frontend.
+const allowed = new Set([
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]);
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true
+    origin: (origin, callback) => callback(null, !origin || allowed.has(origin)),
+    credentials: true,
 }));
+
+// --- Fin de la Configuración de CORS ---
 
 // Parse JSON and URL-encoded bodies before rate limiting, but after CORS
 app.use(express.json({ limit: '10mb' }));
