@@ -7,7 +7,8 @@
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
         "build": "tsc",
-        "start": "node dist/server.js"
+        "start": "node dist/server.js",
+        "smoke-test": "node --loader ts-node/esm --no-warnings src/scripts/smoke-test.ts"
     },
     "dependencies": {
         "@prisma/client": "^6.14.0",

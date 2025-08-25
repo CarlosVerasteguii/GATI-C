@@ -31,7 +31,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
 
         const { password_hash, ...safeUser } = user;
         // Adjuntar el objeto de usuario completo (sin hash) a la request
-        req.user = safeUser as any;
+        req.user = safeUser;
         next();
     } catch (error: any) {
         // El bloque catch ahora maneja todos los errores, incluido el AuthError de "token no proporcionado".
