@@ -1,0 +1,240 @@
+# 2. Refactoring File Inventory & Tracking
+
+This document provides the initial file inventory for the frontend refactoring effort. Use it as a starting point, but track actual progress using **GitHub Issues** - that's the source of truth.
+
+## Tracking Methodology
+
+**THE SOURCE OF TRUTH: GitHub Issues + Projects**
+
+Instead of complex tables, we use GitHub's built-in project management:
+
+### Issue Labels for Tracking
+- **`refactor-p0`**: Critical foundation files (types, core utilities)
+- **`refactor-p1`**: High-impact infrastructure (20+ usages)
+- **`refactor-p2`**: Medium-impact components (5-19 usages)
+- **`refactor-p3`**: Low-impact files (1-4 usages)
+
+### Status Labels
+- **`status-not-started`**: Initial state
+- **`status-in-progress`**: Currently being worked on
+- **`status-completed`**: Refactoring finished
+- **`status-blocked`**: Waiting on dependencies
+
+### GitHub Projects Board
+**Create a board called "Frontend Refactoring" with columns:**
+- **Backlog** (not started)
+- **In Progress** (actively being worked on)
+- **Review** (needs code review)
+- **Done** (completed and tested)
+
+### How to Use This System
+1. **Create Issues:** For each file that needs refactoring, create a GitHub issue
+2. **Apply Labels:** Use the priority and status labels above
+3. **Track Progress:** Move issues through the project board
+4. **Link PRs:** Reference issues in your PR descriptions
+
+**WHY THIS WORKS BETTER:**
+- ✅ **Automatic tracking** - GitHub handles the workflow
+- ✅ **Team visibility** - Everyone can see progress
+- ✅ **Built-in collaboration** - Comments, assignments, notifications
+- ✅ **Flexible** - Easy to add new files or change priorities
+- ✅ **Integrated** - Works with your existing GitHub workflow
+
+## Key Files by Priority (Reference Only)
+
+**Use this as a starting point for creating GitHub issues.** The actual tracking happens in GitHub.
+
+---
+
+## File Inventory by Priority
+
+**Create GitHub issues for these files using the priority labels.**
+
+### **P0 (Critical Foundation)**
+These break everything if wrong - do first:
+- `types/inventory.ts` (19 usages) - Core type definitions
+
+### **P1 (High Impact Infrastructure)**
+20+ usages - affects many files:
+- `lib/utils.ts` (67 usages) - Most used utility library
+- `components/ui/button.tsx` (49 usages) - Base UI component
+- `contexts/app-context.tsx` (28 usages) - Global state management
+- `hooks/use-toast.ts` (26 usages) - Toast notifications
+- `lib/stores/useAuthStore.ts` (22 usages) - Authentication store
+- `components/ui/input.tsx` (22 usages) - Form input component
+- `components/ui/dialog.tsx` (21 usages) - Modal dialogs
+
+---
+
+### **Phase 2: Medium Impact Components (P2)**
+*Files with 5-19 usages implementing business logic and UI patterns.*
+
+#### Medium Fan-Out UI Components (P2)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P2 | `components/ui/card.tsx` | 18 | Not Started | None | Layout container used in 18+ files for content organization. |
+| P2 | `components/ui/table.tsx` | 13 | Not Started | None | Data table component used in 13+ files for data display. |
+
+#### API Services (P2)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P2 | `lib/api/client.ts` | N/A | Not Started | `types/inventory.ts` | Core API client configuration and base functionality. |
+| P2 | `lib/api/inventory.ts` | 2 | Not Started | `types/inventory.ts`, `lib/api/client.ts` | Inventory API service with all data fetching logic. |
+| P2 | `lib/api/auth.ts` | N/A | Not Started | `types/inventory.ts`, `lib/api/client.ts` | Authentication API service for login/logout operations. |
+
+#### Business Logic Hooks (P2)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P2 | `hooks/use-pending-tasks.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/stores/useAuthStore.ts` | Complex hook with polling logic and business rules. |
+| P2 | `hooks/useInventory.ts` | 1 | Not Started | `types/inventory.ts` | Core inventory logic hook with complex business rules. |
+
+#### Core Pages (P2)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P2 | `app/(app)/inventario/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts`, `components/inventory/grouped-inventory-table.tsx` | Main inventory page with complex state management. |
+| P2 | `app/(app)/tareas-pendientes/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Pending tasks page with approval workflows. |
+| P2 | `app/(app)/asignados/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Assignments management page. |
+| P2 | `app/(app)/prestamos/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Loans management page. |
+| P2 | `app/(app)/historial/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | History tracking page. |
+| P2 | `app/(app)/papelera-documentos/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Document trash management. |
+| P2 | `app/(app)/perfil/page.tsx` | N/A | Not Started | `contexts/app-context.tsx`, `lib/stores/useAuthStore.ts` | User profile management. |
+| P2 | `app/(app)/configuracion/page.tsx` | N/A | Not Started | `contexts/app-context.tsx` | Settings configuration page. |
+| P2 | `app/(app)/configuracion/umbrales-inventario/page.tsx` | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Inventory thresholds configuration. |
+| P2 | `app/(app)/dashboard/page.tsx` | Not Started | `contexts/app-context.tsx`, `lib/api/inventory.ts` | Main dashboard with analytics. |
+| P2 | `app/login/page.tsx` | Not Started | `lib/api/auth.ts`, `lib/stores/useAuthStore.ts` | Authentication page. |
+| P2 | `app/ClientLayout.tsx` | Not Started | `contexts/app-context.tsx` | Root client layout component. |
+| P2 | `app/layout.tsx` | Not Started | `contexts/app-context.tsx` | Root app layout component. |
+| P2 | `app/page.tsx` | Not Started | `contexts/app-context.tsx` | Landing page component. |
+| P2 | `app/(app)/layout.tsx` | Not Started | `contexts/app-context.tsx` | Main app layout. |
+
+#### Complex Components (P2)
+| Priority | File Path | Status | Dependencies (Parents) | Notes |
+|----------|-----------|--------|------------------------|--------|
+| P2 | `components/inventory/grouped-inventory-table.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | The core table component with complex sorting and filtering. |
+| P2 | `components/inventory/advanced-filter-form.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Advanced filtering component. |
+| P2 | `components/bulk-assign-modal.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Complex bulk operations modal. |
+| P2 | `components/bulk-edit-modal.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Complex bulk operations modal. |
+| P2 | `components/bulk-lend-modal.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Complex bulk operations modal. |
+| P2 | `components/bulk-retire-modal.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Complex bulk operations modal. |
+| P2 | `components/document-manager.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Document management with complex logic. |
+| P2 | `components/edit-task-sheet.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Task editing with approval workflows. |
+| P2 | `components/task-audit-log-sheet.tsx` | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Audit log display with complex data. |
+| P2 | `components/status-badge.tsx` | Not Started | `types/inventory.ts` | Status display component with business logic. |
+
+#### Loading States (P2)
+| Priority | File Path | Status | Dependencies (Parents) | Notes |
+|----------|-----------|--------|------------------------|--------|
+| P2 | `app/(app)/inventario/loading.tsx` | Not Started | None | Loading state for inventory. |
+| P2 | `app/(app)/tareas-pendientes/loading.tsx` | Not Started | None | Loading state for pending tasks. |
+| P2 | `app/(app)/asignados/loading.tsx` | Not Started | None | Loading state for assignments. |
+| P2 | `app/(app)/prestamos/loading.tsx` | Not Started | None | Loading state for loans. |
+| P2 | `app/(app)/historial/loading.tsx` | Not Started | None | Loading state for history. |
+| P2 | `app/(app)/papelera-documentos/loading.tsx` | Not Started | None | Loading state for document trash. |
+| P2 | `app/(app)/perfil/loading.tsx` | Not Started | None | Loading state for profile. |
+| P2 | `app/(app)/configuracion/loading.tsx` | Not Started | None | Loading state for configuration. |
+
+---
+
+### **Phase 3: Low Impact Components (P3)**
+*Files with 1-4 usages or utilities. Safe to refactor without major disruption.*
+
+#### Utility Hooks (P3)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P3 | `hooks/use-debounce.ts` | 1 | Not Started | None | Pure utility hook for debouncing. |
+| P3 | `hooks/use-device.tsx` | N/A | Not Started | None | Pure utility hook for device detection. |
+| P3 | `hooks/use-keyboard-shortcuts.tsx` | N/A | Not Started | None | Pure utility hook for keyboard shortcuts. |
+| P3 | `hooks/use-navigation.tsx` | N/A | Not Started | None | Pure utility hook for navigation. |
+
+#### Utility Libraries (P3)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P1 | `lib/utils.ts` | 67 | Not Started | None | **MOVED TO P1:** Most critical utility library used by 67+ files. |
+| P3 | `lib/particle-presets.ts` | N/A | Not Started | None | UI animation presets. |
+| P3 | `lib/document-storage.ts` | N/A | Not Started | None | Document storage utilities. |
+| P3 | `lib/mocks/inventory-mock-data.ts` | N/A | Not Started | `types/inventory.ts` | Mock data for development. |
+
+#### Key Business Components (P3)
+| Priority | File Path | Fan-Out (Usages) | Status | Dependencies (Parents) | Notes |
+|----------|-----------|------------------|--------|------------------------|--------|
+| P3 | `components/inventory/grouped-inventory-table.tsx` | 1 | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Main inventory table component. |
+| P3 | `components/edit-product-modal.tsx` | N/A | Not Started | `types/inventory.ts` | Product editing modal. |
+| P3 | `components/assign-modal.tsx` | N/A | Not Started | `types/inventory.ts` | Assignment modal. |
+| P3 | `components/lend-modal.tsx` | N/A | Not Started | `types/inventory.ts` | Lending modal. |
+| P3 | `components/bulk-assign-modal.tsx` | N/A | Not Started | `types/inventory.ts`, `lib/api/inventory.ts` | Bulk operations modal. |
+
+#### Remaining Components (P3)
+*Note: 80+ additional components with low fan-out (1-4 usages) exist but are not listed individually for brevity. These include:*
+- All other `components/ui/*` components (moved to P1 if fan-out >20)
+- All other `components/inventory/*` components
+- All other `components/*` business components
+- Configuration files (`components.json`, `package.json`)
+
+| Priority | Category | Count | Fan-Out Range | Notes |
+|----------|----------|-------|---------------|--------|
+| P3 | Remaining UI Components | ~50 | 1-4 usages | Safe to refactor individually |
+| P3 | Remaining Business Components | ~30 | 1-4 usages | May require coordination if related |
+| P3 | Configuration Files | 2 | N/A | Safe to refactor |
+
+---
+
+### **Strategic Execution Summary (Fan-Out Based)**
+
+**Total Files:** 120+ files re-prioritized by actual usage data
+
+**Execution Order (REVISED):**
+1. **Phase 0 (1 file)**: Start here - the foundation types
+2. **Phase 1 (7 files)**: **CRITICAL INFRASTRUCTURE** - highest fan-out files that affect everything
+3. **Phase 2 (20+ files)**: Medium impact components - safe to refactor in batches
+4. **Phase 3 (80+ files)**: Low impact leaves - can be done iteratively or in parallel
+
+**Fan-Out Impact Analysis:**
+- **67 usages:** `lib/utils.ts` - affects nearly every component
+- **49 usages:** `components/ui/button.tsx` - affects all user interactions
+- **28 usages:** `contexts/app-context.tsx` - central state management
+- **26 usages:** `hooks/use-toast.ts` - affects all user feedback
+- **19 usages:** `types/inventory.ts` - foundation for all data structures
+
+**Risk Mitigation (Updated):**
+- **Phase 1 files are CRITICAL** - breaking any will affect 20+ other files
+- **Phase 0 must be perfect** - all 19 dependents will break if wrong
+- **Phase 2 files are manageable** - 5-19 dependents each
+- **Phase 3 files are safe** - 1-4 dependents each, can be batched
+
+---
+
+## **🎯 Refactoring Battle Plan (Fan-Out Optimized)**
+
+**Phase 0 (Foundation)** → **Phase 1 (Critical Infrastructure)** → **Phase 2 (Medium Impact)** → **Phase 3 (Low Impact)**
+
+**Success Metrics (Updated):**
+- ✅ Phase 0: Types compile without errors (19 dependents affected)
+- ✅ Phase 1: High fan-out files functional (20-67 dependents each)
+- ✅ Phase 2: Medium impact components working (5-19 dependents each)
+- ✅ Phase 3: Low impact components polished (1-4 dependents each)
+
+**Communication:**
+- Update this document as files are completed
+- Mark files as "In Progress" when starting work
+- Use "Refactoring Needed" for files requiring additional work
+- Document any discovered dependencies or issues in the Notes column
+
+---
+
+## **Document Maintenance**
+
+This checklist is a **living document** that must evolve with the codebase. The fan-out analysis becomes stale as the project grows.
+
+**Maintenance Requirements:**
+- **Monthly Review:** Re-run fan-out analysis and update priorities
+- **Automated Script:** Create a script to calculate fan-out automatically
+- **New Files:** Any new file must be analyzed and placed in appropriate priority
+- **Dependency Changes:** Update when major refactors change import relationships
+
+**Recommended Automation:**
+```bash
+# Example automated fan-out analysis script
+find src -name "*.ts" -o -name "*.tsx" | xargs grep -h "from.*" | sort | uniq -c | sort -nr
+```
+
+---

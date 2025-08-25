@@ -4,7 +4,7 @@
 
 # --- General Principles ---
 - **Clarity and Readability:** Code must be self-documenting where possible. Use clear, descriptive names for variables, functions, and components. Prioritize simplicity over cleverness.
-- **Modularity:** Enforce strict module separation in the backend. Communication between modules MUST use the internal Event Bus, direct imports are forbidden. Components in the frontend should be small and single-purpose.
+- **Modularity:** Enforce a clean separation of concerns between backend modules. Services from one module can be injected into another, but direct coupling should be minimized. Components in the frontend should be small and single-purpose.
 - **Transparency and Auditing:** Every action that mutates data MUST be logged. Assume every operation needs a clear audit trail.
 - **User-Centric Design:** All UI components must be implemented with a focus on a fluid, modern, and professional user experience, following the CFE Visual Style Guide.
 
