@@ -40,14 +40,17 @@ export interface InventoryItem {
 
 
 
-// Este tipo representa un usuario.
+// Este tipo representa un usuario y debe coincidir 1:1 con el backend.
 export interface User {
-    id: number;
-    nombre: string;
+    id: string;
+    name: string;
     email: string;
-    password?: string;
-    rol: "Administrador" | "Editor" | "Lector";
-    departamento?: string;
+    role: "ADMINISTRADOR" | "EDITOR" | "LECTOR";
+    isActive: boolean;
+    lastLoginAt?: string | null;
+    trusted_ip?: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 // Este es el tipo para nuestra estructura de datos AGRUPADA que usa la tabla.

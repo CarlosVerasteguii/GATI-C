@@ -18,8 +18,8 @@ function resolveUrl(input: RequestInfo | URL): string {
     if (input instanceof URL) return input.href;
     // For Request objects
     try {
-        // @ts-expect-error - Request has url at runtime
-        return input.url as string;
+        // Request has url at runtime
+        return (input as any).url as string;
     } catch {
         return String(input);
     }
@@ -34,8 +34,6 @@ export async function apiClient(input: RequestInfo | URL, init: RequestInit = {}
     const mergedInit: RequestInit = {
         credentials: "include",
         ...init,
-        // Ensure credentials are always included even if provided in init
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             ...(init.headers || {}),
@@ -54,7 +52,7 @@ export async function apiClient(input: RequestInfo | URL, init: RequestInit = {}
             isHandling401 = true;
             try {
                 // Fire-and-forget logout to clear client state
-                const { useAuthStore } = await import("@/lib/stores/useAuthStore");
+                const { useAuthStore } = await import("../stores/useAuthStore");
                 Promise.resolve(useAuthStore.getState().logout()).catch(() => { /* ignore */ });
             } finally {
                 isHandling401 = false;

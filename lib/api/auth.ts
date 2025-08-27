@@ -1,14 +1,8 @@
-export interface LoginResponseUser {
-    id: number;
-    nombre: string;
-    email: string;
-    rol: "Administrador" | "Editor" | "Lector";
-    departamento?: string;
-}
+import type { User } from "@/types/inventory";
 
-import { apiClient, ApiError } from "@/lib/api/client";
+import { apiClient, ApiError } from "./client";
 
-export async function loginUser(email: string, password: string): Promise<LoginResponseUser> {
+export async function loginUser(email: string, password: string): Promise<User> {
     const response = await apiClient("http://localhost:3001/api/v1/auth/login", {
         method: "POST",
         headers: {
@@ -26,12 +20,12 @@ export async function loginUser(email: string, password: string): Promise<LoginR
 
     // apiClient already throws on non-ok
 
-    // Basic shape validation
-    if (!payload || typeof payload !== "object" || !payload.user) {
-        throw new Error("Invalid login response from server");
+    // Backend responds with { success: true, data: { ...User } }
+    if (!payload || typeof payload !== "object" || !payload.data) {
+        throw new Error("Invalid response structure from login API");
     }
 
-    return payload.user as LoginResponseUser;
+    return payload.data as User;
 }
 
 export async function logoutUser(): Promise<void> {
@@ -43,7 +37,7 @@ export async function logoutUser(): Promise<void> {
     });
 }
 
-export async function getProfile(): Promise<LoginResponseUser | null> {
+export async function getProfile(): Promise<User> {
     try {
         const response = await apiClient("http://localhost:3001/api/v1/auth/me", {
             method: "GET",
@@ -52,23 +46,18 @@ export async function getProfile(): Promise<LoginResponseUser | null> {
             },
         });
 
-        try {
-            const payload = await response.json();
-            if (!payload || typeof payload !== "object" || !payload.user) {
-                return null;
-            }
-            return payload.user as LoginResponseUser;
-        } catch {
-            return null;
+        const payload = await response.json();
+        if (!payload || typeof payload !== "object" || !payload.data) {
+            throw new Error("Invalid response structure from profile API");
         }
+        return payload.data as User;
     } catch (err: any) {
         if (err && err.name === "ApiError" && typeof err.status === "number") {
             if (err.status === 401) {
-                // Not authenticated -> treat as no session
-                return null;
+                // Not authenticated -> propagate to caller per contract (Promise<User> or throw)
+                throw err;
             }
         }
-        // Re-throw other errors for observability
         throw err;
     }
 }

@@ -18,11 +18,44 @@ interface AuthActions {
     updateCurrentUser: (updates: Partial<User>) => void;
 }
 
-// Mock users list (migrated from legacy context)
-const fakeUsers: User[] = [
-    { id: 1, nombre: 'Carlos Vera', email: 'carlos@example.com', password: 'password123', rol: 'Administrador' },
-    { id: 2, nombre: 'Ana López', email: 'ana@example.com', password: 'password123', rol: 'Editor' },
-    { id: 3, nombre: 'Pedro García', email: 'pedro@example.com', password: 'password123', rol: 'Lector' },
+// Mock users list (aligned with unified User contract from @/types/inventory)
+const fakeUsers: (User & { password: string })[] = [
+    {
+        id: '1',
+        name: 'Carlos Vera',
+        email: 'carlos@example.com',
+        password: 'password123',
+        role: 'ADMINISTRADOR',
+        isActive: true,
+        lastLoginAt: new Date().toISOString(),
+        trusted_ip: '192.168.1.100',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: '2',
+        name: 'Ana López',
+        email: 'ana@example.com',
+        password: 'password123',
+        role: 'EDITOR',
+        isActive: true,
+        lastLoginAt: new Date().toISOString(),
+        trusted_ip: '192.168.1.101',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: '3',
+        name: 'Pedro García',
+        email: 'pedro@example.com',
+        password: 'password123',
+        role: 'LECTOR',
+        isActive: true,
+        lastLoginAt: new Date().toISOString(),
+        trusted_ip: '192.168.1.102',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
 ];
 
 export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
@@ -30,7 +63,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     isAuthenticated: false,
     isLoading: false,
     sessionChecked: false,
-    users: fakeUsers.map(({ password: _p, ...u }) => u as User),
+    users: fakeUsers.map(({ password: _p, ...u }) => u),
     error: null,
 
     login: async (usernameOrEmail: string, password: string) => {
@@ -38,11 +71,13 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         try {
             const { loginUser } = await import('../api/auth');
             const loggedInUser = await loginUser(usernameOrEmail, password);
-            set({ user: loggedInUser as User, isAuthenticated: true, isLoading: false, error: null });
+            set({ user: loggedInUser, isAuthenticated: true, error: null });
         } catch (err: any) {
             const message = err?.message || 'Login failed';
-            set({ isLoading: false, error: message });
+            set({ error: message });
             throw err;
+        } finally {
+            set({ isLoading: false });
         }
     },
 
@@ -63,7 +98,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
             const { getProfile } = await import('../api/auth');
             const profile = await getProfile();
             if (profile) {
-                set({ user: profile as User, isAuthenticated: true });
+                set({ user: profile, isAuthenticated: true });
             } else {
                 set({ user: null, isAuthenticated: false });
             }
@@ -75,13 +110,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     },
 
     addUser: (newUser) => {
-        const nextId = Math.max(0, ...get().users.map(u => u.id)) + 1;
+        const nextId = Math.max(0, ...get().users.map(u => parseInt(u.id))) + 1;
         const userToAdd: User = {
-            id: newUser.id ?? nextId,
-            nombre: newUser.nombre || 'Nuevo Usuario',
+            id: newUser.id ?? nextId.toString(),
+            name: newUser.name || 'Nuevo Usuario',
             email: newUser.email || `${Date.now()}@example.com`,
-            rol: newUser.rol || 'Lector',
-            departamento: newUser.departamento,
+            role: newUser.role || 'LECTOR',
+            isActive: true,
+            lastLoginAt: null,
+            trusted_ip: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         };
         set({ users: [...get().users, userToAdd] });
     },
