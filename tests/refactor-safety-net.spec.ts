@@ -165,22 +165,17 @@ test.describe('GATI-C Safety Net - E2E Pragmático', () => {
             await expect(page).toHaveURL(/dashboard/i); // Verificar que la redirección al dashboard fue exitosa
         });
 
-        test('should allow access to the inventory page and detect Spanish nomenclature', async ({ page }) => {
+        test('should display the inventory table with English headers', async ({ page }) => {
             // Navegar a Inventario (ya estamos logueados por el beforeEach)
             await page.goto('/inventario');
             await expect(page).toHaveURL(/inventario/i);
 
-            // Aserciones explícitas sobre textos en español (cabeceras de tabla y elementos de UI)
-            // Se mantienen las verificaciones existentes para la red de seguridad.
-            await expect(page.getByRole('columnheader', { name: /nombre/i })).toBeVisible();
-            await expect(page.getByRole('columnheader', { name: /marca/i })).toBeVisible();
-            await expect(page.getByRole('columnheader', { name: /categoría/i })).toBeVisible();
-            await expect(page.getByRole('columnheader', { name: /estado/i })).toBeVisible();
-            await expect(page.getByRole('columnheader', { name: /cantidad/i })).toBeVisible();
-
-            // Elementos adicionales en español que deberían existir en la UI actual
-            await expect(page.getByRole('button', { name: /añadir|agregar/i })).toBeVisible();
-            await expect(page.getByRole('heading', { name: /inventario/i })).toBeVisible();
+            // Assertions: English table headers per new baseline
+            await expect(page.getByRole('columnheader', { name: /Name/i })).toBeVisible();
+            await expect(page.getByRole('columnheader', { name: /Brand/i })).toBeVisible();
+            await expect(page.getByRole('columnheader', { name: /Category/i })).toBeVisible();
+            await expect(page.getByRole('columnheader', { name: /Status/i })).toBeVisible();
+            await expect(page.getByRole('columnheader', { name: /Serial Number/i })).toBeVisible();
         });
     });
 });

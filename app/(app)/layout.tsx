@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/app-layout"
 import { showInfo, showWarning, showSuccess } from "@/hooks/use-toast"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
+import { useRouter } from "next/navigation"
 
 export default function MainAppLayout({
   children,
@@ -12,6 +13,7 @@ export default function MainAppLayout({
 }) {
   const [isOnline, setIsOnline] = useState(true)
   const { checkSession, isLoading, sessionChecked } = useAuthStore()
+  const router = useRouter()
 
   // Estado para el renderizado en dos pasos - evita conflictos de hidratación
   const [isClient, setIsClient] = useState(false)

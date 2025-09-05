@@ -91,6 +91,9 @@ export class AuthService {
             where: { email: loginData.email },
         });
 
+        // (El bypass de desarrollo con usuarios mock ha sido removido.
+        //  El entorno de desarrollo debe usar datos reales mediante un script de seeding.)
+
         // MITIGACIÓN DE TIMING ATTACK
         const fakeHash = '$2b$12$Ea.2n.e.e.A9.E8.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.';
         const hashToCompare = user ? user.password_hash : fakeHash;
