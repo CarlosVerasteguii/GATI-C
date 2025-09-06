@@ -70,7 +70,7 @@ export function LoginForm() {
       await login(username, password)
 
       if (rememberMe) {
-        const rememberedName = (user?.nombre ?? username)
+        const rememberedName = (user?.name ?? username)
         localStorage.setItem("gati-c-remember-me", JSON.stringify({
           username: rememberedName,
           rememberMe: true,
@@ -82,7 +82,7 @@ export function LoginForm() {
 
       showSuccess({
         title: "Inicio de sesión exitoso",
-        description: `Bienvenido, ${user?.nombre || username}!`
+        description: `Bienvenido, ${user?.name || username}!`
       })
       router.replace('/dashboard');
 

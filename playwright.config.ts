@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * Minimal Playwright config for GATI-C refactor safety net
+ * Playwright config using Setup Project pattern.
  */
 export default defineConfig({
     testDir: './tests',
@@ -14,13 +14,29 @@ export default defineConfig({
     timeout: 60 * 1000, // Default timeout for each test is 1 minute
     projects: [
         {
-            name: 'chromium',
+            name: 'setup',
+            testDir: './tests/setup',
+            testMatch: 'auth.setup.ts',
+            use: { channel: 'chromium' },
+        },
+        {
+            name: 'authenticated',
+            testDir: './tests/authenticated',
+            dependencies: ['setup'],
+            use: {
+                channel: 'chromium',
+                storageState: 'playwright/.auth/user.json',
+            },
+        },
+        {
+            name: 'guest',
+            testDir: './tests/guest',
             use: { channel: 'chromium' },
         },
     ],
     webServer: {
         command: 'npm run dev:e2e',
-        url: 'http://localhost:3000', // The URL that Playwright will expect
+        url: 'http://localhost:3000',
         timeout: 120 * 1000,
         reuseExistingServer: !process.env.CI,
     },

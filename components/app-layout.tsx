@@ -20,6 +20,15 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
@@ -112,7 +121,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   ]
 
-  const filteredNavItems = navItems.filter((item) => user && item.roles.includes(user.rol))
+  const filteredNavItems = navItems.filter((item) => {
+    if (!user) return false
+    const mappedRole = user.role === 'ADMINISTRADOR' ? 'Administrador' : user.role === 'EDITOR' ? 'Editor' : 'Lector'
+    return item.roles.includes(mappedRole)
+  })
 
   // Ajustar el tamaño de los iconos y el espaciado según el dispositivo
   const getIconSize = () => {
@@ -191,36 +204,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               })}
             </nav>
           </div>
-          {/* Sección de logout ahora con posición sticky */}
-          <div className="sticky bottom-0 p-5 border-t bg-muted/40">
-            {!sidebarCollapsed ? (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      {user?.nombre} ({user?.rol})
-                    </span>
-                  </div>
-                  <ThemeToggle />
-                </div>
-                <Button variant="secondary" className="w-full py-5 text-base" onClick={handleLogout}>
-                  <LogOut className="mr-3 h-5 w-5" />
-                  Cerrar Sesión
-                </Button>
-              </>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative" title={`${user?.nombre} (${user?.rol})`}>
-                  <Users className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <ThemeToggle />
-                <Button variant="secondary" size="icon" className="w-10 h-10" onClick={handleLogout} title="Cerrar Sesión">
-                  <LogOut className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
-          </div>
+          {/* Sección de usuario removida para consolidar acciones en el header */}
         </div>
       </div>
 
@@ -280,21 +264,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   )
                 })}
               </nav>
-              <div className="mt-auto pt-4 border-t">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {user?.nombre} ({user?.rol})
-                    </span>
-                  </div>
-                  <ThemeToggle />
-                </div>
-                <Button variant="secondary" className="w-full" onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar Sesión
-                </Button>
-              </div>
+              {/* Sección de usuario en menú móvil removida para consolidar acciones en el header */}
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1 flex items-center justify-between">
@@ -314,6 +284,38 @@ export function AppLayout({ children }: AppLayoutProps) {
 
               {/* Ayuda de atajos de teclado */}
               <KeyboardShortcutsHelp />
+
+              {/* Tema claro/oscuro */}
+              <ThemeToggle />
+
+              {/* Menú de usuario */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback>
+                        {(user?.name?.[0] || "U").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{user?.name || "Cuenta"}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => router.push('/perfil')}>
+                    Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleLogout}>
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
