@@ -64,7 +64,127 @@ Each file or small, logical group of related files will be refactored and commit
 - **LARGE CHANGES:** Split major features from refactoring into separate PRs
 - **SPEED OVER BUREAUCRACY:** Prioritize developer productivity over perfect separation
 
-## Naming and Casing Conventions
+## 4. Naming & Casing Constitution
+
+This section is the absolute source of truth for all naming conventions. All code, identifiers, comments, commit messages, and docs are in English. UI copy is also in English for now. Spanish i18n may be added later (out of scope of this refactor).
+
+### 4.1. TypeScript/JavaScript Code
+- Convention: `camelCase`
+- Applies to: variables, function names, object properties
+- Example: `const productPrice = calculateDiscount(product.unitPrice);`
+
+### 4.2. TypeScript Types, Classes & Components
+- Convention: `PascalCase`
+- Applies to: interfaces, types, classes, React component names
+- Example: `interface InventoryItem { ... }`, `class AuthService { ... }`, `function ProductTable() { ... }`
+
+### 4.3. Enums and Enum Values
+- Single standard: `UPPER_SNAKE_CASE` string values across the entire stack (API/DB/wire).
+- TypeScript (preferred): string literal unions that exactly match the API/DB values.
+- If TypeScript enums are used: members must be string-valued and equal to the same `UPPER_SNAKE_CASE` tokens (no numeric enums).
+- Prisma: enum members must be the same `UPPER_SNAKE_CASE` tokens; persisted as such.
+- Examples:
+  - TypeScript (preferred): `export type UserRole = 'ADMINISTRATOR' | 'EDITOR' | 'READER';`
+  - TypeScript enum (allowed): `export enum UserRole { ADMINISTRATOR = 'ADMINISTRATOR', EDITOR = 'EDITOR', READER = 'READER' }`
+  - Prisma: `enum UserRole { ADMINISTRATOR EDITOR READER }`
+
+### 4.4. API JSON Payloads (Client <-> Server)
+- Convention: `camelCase` keys for all JSON bodies; enum values are `UPPER_SNAKE_CASE` strings.
+- Backend owns transformations to/from DB and other layers.
+- Success example: `{"success": true, "data": {"id":"cuid123","serialNumber":"SN-456","purchaseDate":"2024-01-15T00:00:00.000Z"}}`
+- Error shape is standardized (see 4.9).
+
+### 4.5. Database Schema (Prisma)
+- Model/enum names: `PascalCase` (e.g., `model Product`, `enum UserRole`).
+- Field names (in schema): `camelCase` (e.g., `serialNumber`).
+- Column/table names (in DB): `snake_case` (singular).
+- Implementation: fields MUST use `@map("<snake_case>")`; tables MUST use `@@map("<snake_case>")`.
+- Example:
+  ```
+  model Product {
+    id           String    @id @default(cuid())
+    name         String
+    serialNumber String?   @map("serial_number")
+    purchaseDate DateTime? @map("purchase_date")
+    // ...
+    @@map("product")
+  }
+
+  enum UserRole {
+    ADMINISTRATOR
+    EDITOR
+    READER
+  }
+  ```
+
+### 4.6. Environment Variables (.env)
+- Convention: `UPPER_SNAKE_CASE`
+- Examples: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`
+
+### 4.7. Mapping Policy & Ownership
+- Boundary mapping only: all transformations happen at the edges (controllers/transport), not scattered through services.
+- Ownership:
+  - Server: `src/mappers/<aggregate>Mapper.ts` for API <-> Domain <-> Persistence (if needed).
+  - Client: `lib/mappers/<aggregate>Mapper.ts` for API <-> ViewModel (only where necessary).
+- DTOs: controllers accept/emit DTOs; services operate on domain types; Prisma models mapped via `@map`.
+- Prohibited: ad‑hoc, duplicated, or implicit mappings inside controllers/services.
+- Temporary compatibility: during migration, accept legacy `snake_case` input, normalize to `camelCase`, and log a deprecation warning. Remove after the deprecation window ends.
+
+### 4.8. Query Params & Headers
+- Query params: `camelCase` (e.g., `GET /api/v1/products?includeDocuments=true&minCost=100`).
+- Headers: dash-case on the wire (e.g., `x-correlation-id`); `camelCase` in code helpers (`xCorrelationId`).
+- Always propagate/log a correlation id (`x-correlation-id`) across services for traceability.
+
+### 4.9. Error Payload Contract
+- Shape (always `camelCase` keys; enum-like codes in `UPPER_SNAKE_CASE`):
+  ```
+  {
+    "success": false,
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input",
+    "details": [{ "field": "serialNumber", "message": "Required" }],
+    "traceId": "uuid-or-correlation-id",
+    "timestamp": "2025-01-15T12:34:56.000Z"
+  }
+  ```
+- Standard codes: `VALIDATION_ERROR`, `AUTHENTICATION_ERROR`, `AUTHORIZATION_ERROR`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_SERVER_ERROR`, `RATE_LIMIT_EXCEEDED`, `SERVICE_UNAVAILABLE`.
+- Controllers must consistently forward errors; a global error handler serializes them to this contract.
+
+### 4.10. Language Policy (Repo‑Wide)
+- English only for code, identifiers, comments, docs, commit messages, and branch names.
+- UI copy in English for now. Spanish i18n may be added later; keep identifiers English regardless.
+
+### 4.11. Examples & Anti‑Examples
+- Good (API body, enums, DB mapping aligned):
+  - Request: `{"name":"Laptop","serialNumber":"SN-001","purchaseDate":"2024-01-15T00:00:00.000Z","role":"EDITOR"}`
+  - Prisma model field: `serialNumber @map("serial_number")`
+  - Prisma enum: `EDITOR`
+- Bad:
+  - Request with `snake_case` keys: `{"serial_number":"SN-001"}` (allowed only temporarily during migration).
+  - Mixed-language identifiers: `numeroSerie`, `LECTOR`.
+
+### 4.12. Phased Migration Plan (Authoritative)
+- Phase 1 — Backend Foundations
+  - Prisma: change model fields to `camelCase` with `@map` for `snake_case` columns; set tables to singular `snake_case` with `@@map`.
+  - Enums: migrate existing data from Spanish to English `UPPER_SNAKE_CASE` (e.g., `ADMINISTRADOR` -> `ADMINISTRATOR`, `LECTOR` -> `READER`). Provide SQL/data migration scripts.
+  - Validation: update Zod schemas to expect `camelCase` API keys; add compatibility to accept legacy `snake_case` input (normalize + warn).
+  - Mappers: introduce `src/mappers/*` and use DTOs at controllers; services speak domain types.
+  - Errors: implement the standardized error contract (4.9) in the global error handler.
+- Phase 2 — Frontend Alignment
+  - Types: rename Spanish properties to English `camelCase` (e.g., `numeroSerie` -> `serialNumber`).
+  - API: ensure all requests use `camelCase` keys; adjust API client and mocks/tests.
+  - UI Copy: English; no Spanish identifiers.
+- Phase 3 — Deprecation & Cleanup
+  - Remove legacy `snake_case` acceptance; delete temporary mapping branches/logs.
+  - Sweep for Spanish identifiers and mixed casing; fix with codemods where feasible.
+  - Update docs/ADR/SRS to reflect the final contract and conventions.
+- Phase 4 — Quality Gates
+  - Enforce ESLint `@typescript-eslint/naming-convention` for `camelCase`/`PascalCase`.
+  - Add contract tests (OpenAPI or schema-based) to validate API shapes and enum values.
+  - Run E2E and smoke tests focusing on inventory/auth flows and enum-dependent behavior.
+  - CI: fail builds on naming violations or contract drift.
+
+## [DEPRECATED] Naming and Casing Conventions
 
 ### TypeScript Types/Interfaces
 All TypeScript types and interfaces MUST use `PascalCase`:
