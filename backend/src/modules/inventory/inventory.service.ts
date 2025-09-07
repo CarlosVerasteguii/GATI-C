@@ -55,10 +55,10 @@ export class InventoryService {
         try {
             const data: Prisma.ProductUncheckedCreateInput = {
                 name: productData.name,
-                ...(productData.serial_number ? { serial_number: productData.serial_number } : {}),
+                ...(productData.serialNumber ? { serialNumber: productData.serialNumber } : {}),
                 ...(productData.description ? { description: productData.description } : {}),
                 ...(productData.cost !== undefined && productData.cost !== null ? { cost: productData.cost } : {}),
-                ...(productData.purchase_date ? { purchase_date: new Date(productData.purchase_date) } : {}),
+                ...(productData.purchaseDate ? { purchaseDate: new Date(productData.purchaseDate) } : {}),
                 ...(productData.condition ? { condition: productData.condition } : {}),
                 ...(productData.brandId ? { brandId: productData.brandId } : {}),
                 ...(productData.categoryId ? { categoryId: productData.categoryId } : {}),
@@ -110,11 +110,11 @@ export class InventoryService {
             // Construir objeto de actualización solo con campos presentes
             const data: Prisma.ProductUncheckedUpdateInput = {
                 ...(productData.name !== undefined ? { name: productData.name } : {}),
-                ...(productData.serial_number !== undefined ? { serial_number: productData.serial_number ?? null } : {}),
+                ...(productData.serialNumber !== undefined ? { serialNumber: productData.serialNumber ?? null } : {}),
                 ...(productData.description !== undefined ? { description: productData.description ?? null } : {}),
                 ...(productData.cost !== undefined ? { cost: productData.cost ?? null } : {}),
-                ...(productData.purchase_date !== undefined
-                    ? { purchase_date: productData.purchase_date ? new Date(productData.purchase_date) : null }
+                ...(productData.purchaseDate !== undefined
+                    ? { purchaseDate: productData.purchaseDate ? new Date(productData.purchaseDate) : null }
                     : {}),
                 ...(productData.condition !== undefined ? { condition: productData.condition ?? null } : {}),
                 ...(productData.brandId !== undefined ? { brandId: productData.brandId ?? null } : {}),
@@ -189,5 +189,4 @@ export class InventoryService {
         }
     }
 }
-
 

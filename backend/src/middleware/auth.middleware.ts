@@ -29,7 +29,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
             throw new AuthError('Token de autenticación inválido.');
         }
 
-        const { password_hash, ...safeUser } = user;
+        const { passwordHash, ...safeUser } = user;
         // Adjuntar el objeto de usuario completo (sin hash) a la request
         req.user = safeUser;
         next();

@@ -17,7 +17,7 @@ router.get('/', protect, inventoryController.handleGetAllProducts.bind(inventory
 router.post(
     '/',
     protect,
-    authorize([UserRole.ADMINISTRADOR, UserRole.EDITOR]),
+    authorize([UserRole.ADMINISTRATOR, UserRole.EDITOR]),
     inventoryController.handleCreateProduct.bind(inventoryController)
 );
 
@@ -28,7 +28,7 @@ router.get('/:id', protect, inventoryController.handleGetProductById.bind(invent
 router.put(
     '/:id',
     protect,
-    authorize([UserRole.ADMINISTRADOR, UserRole.EDITOR]),
+    authorize([UserRole.ADMINISTRATOR, UserRole.EDITOR]),
     inventoryController.handleUpdateProduct.bind(inventoryController)
 );
 
@@ -36,10 +36,9 @@ router.put(
 router.delete(
     '/:id',
     protect,
-    authorize([UserRole.ADMINISTRADOR, UserRole.EDITOR]),
+    authorize([UserRole.ADMINISTRATOR, UserRole.EDITOR]),
     inventoryController.handleDeleteProduct.bind(inventoryController)
 );
 
 export default router;
-
 

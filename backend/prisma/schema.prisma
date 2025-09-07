@@ -8,98 +8,110 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String
-  email         String        @unique
-  password_hash String
-  role          UserRole      @default(LECTOR)
-  isActive      Boolean       @default(true)
-  lastLoginAt   DateTime?
-  trusted_ip    String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  auditLogs     AuditLog[]
-  pendingTasks  PendingTask[]
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         UserRole      @default(READER)
+  isActive     Boolean       @default(true)
+  lastLoginAt  DateTime?
+  trustedIp    String?       @map("trusted_ip")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  auditLogs    AuditLog[]
+  pendingTasks PendingTask[]
+
+  @@map("user")
 }
 
 model Product {
-  id            String     @id @default(cuid())
-  name          String
-  serial_number String?    @unique
-  description   String?
-  cost          Float?
-  purchase_date DateTime?
-  condition     String?
-  brandId       String?
-  categoryId    String?
-  locationId    String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  documents     Document[]
-  brand         Brand?     @relation(fields: [brandId], references: [id])
-  category      Category?  @relation(fields: [categoryId], references: [id])
-  location      Location?  @relation(fields: [locationId], references: [id])
+  id           String     @id @default(cuid())
+  name         String
+  serialNumber String?    @unique @map("serial_number")
+  description  String?
+  cost         Float?
+  purchaseDate DateTime?  @map("purchase_date")
+  condition    String?
+  brandId      String?
+  categoryId   String?
+  locationId   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  documents    Document[]
+  brand        Brand?     @relation(fields: [brandId], references: [id])
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  location     Location?  @relation(fields: [locationId], references: [id])
 
   @@index([brandId], map: "Product_brandId_fkey")
   @@index([categoryId], map: "Product_categoryId_fkey")
   @@index([locationId], map: "Product_locationId_fkey")
+  @@map("product")
 }
 
 model Brand {
   id       String    @id @default(cuid())
   name     String    @unique
   products Product[]
+
+  @@map("brand")
 }
 
 model Category {
   id       String    @id @default(cuid())
   name     String    @unique
   products Product[]
+
+  @@map("category")
 }
 
 model Location {
   id       String    @id @default(cuid())
   name     String    @unique
   products Product[]
+
+  @@map("location")
 }
 
 model Document {
-  id                   String    @id @default(cuid())
-  original_filename    String
-  stored_uuid_filename String
-  productId            String
-  deleted_at           DateTime?
-  createdAt            DateTime  @default(now())
-  product              Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id                 String    @id @default(cuid())
+  originalFilename   String    @map("original_filename")
+  storedUuidFilename String    @map("stored_uuid_filename")
+  productId          String
+  deletedAt          DateTime? @map("deleted_at")
+  createdAt          DateTime  @default(now())
+  product            Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId], map: "Document_productId_fkey")
+  @@map("document")
 }
 
 model AuditLog {
-  id           String   @id @default(cuid())
-  userId       String
-  action       String
-  target_type  String
-  target_id    String
-  changes_json Json
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  changesJson Json    @map("changes_json")
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "AuditLog_userId_fkey")
+  @@map("audit_log")
 }
 
 model PendingTask {
-  id           String         @id @default(cuid())
-  creatorId    String
-  type         String
-  status       String
-  details_json Json
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  creator      User           @relation(fields: [creatorId], references: [id])
-  taskAudit    TaskAuditLog[]
+  id          String         @id @default(cuid())
+  creatorId   String
+  type        String
+  status      String
+  detailsJson Json           @map("details_json")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  creator     User           @relation(fields: [creatorId], references: [id])
+  taskAudit   TaskAuditLog[]
 
   @@index([creatorId], map: "PendingTask_creatorId_fkey")
+  @@map("pending_task")
 }
 
 model TaskAuditLog {
@@ -112,10 +124,11 @@ model TaskAuditLog {
   task      PendingTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId], map: "TaskAuditLog_taskId_fkey")
+  @@map("task_audit_log")
 }
 
 enum UserRole {
-  ADMINISTRADOR
+  ADMINISTRATOR
   EDITOR
-  LECTOR
+  READER
 }

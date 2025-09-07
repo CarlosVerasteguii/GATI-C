@@ -22,7 +22,7 @@ async function main() {
       name: 'Carlos Vera (DEV)',
       email: 'carlos@example.com',
       password: 'password123',
-      role: UserRole.ADMINISTRADOR,
+      role: UserRole.ADMINISTRATOR,
       isActive: true,
     },
     {
@@ -36,7 +36,7 @@ async function main() {
       name: 'Pedro García (DEV)',
       email: 'pedro@example.com',
       password: 'password123',
-      role: UserRole.LECTOR,
+      role: UserRole.READER,
       isActive: true,
     },
   ];
@@ -54,7 +54,7 @@ async function main() {
         create: {
           name: u.name,
           email: u.email,
-          password_hash: hashed,
+          passwordHash: hashed,
           role: u.role,
           isActive: u.isActive ?? true,
         },

@@ -1,7 +1,7 @@
 import { singleton, inject } from 'tsyringe';
 import bcrypt from 'bcrypt';
 import { SignJWT } from 'jose';
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, UserRole } from '@prisma/client';
 import prisma from '../../config/prisma.js';
 import { AuditService } from '../audit/audit.service.js';
 import { AuthResult, LoginUserData, RegisterUserData } from '../../types/auth.types.js';
@@ -44,8 +44,8 @@ export class AuthService {
                 data: {
                     name: userData.name,
                     email: userData.email,
-                    password_hash: hashedPassword,
-                    role: 'LECTOR' // Rol por defecto explícito
+                    passwordHash: hashedPassword,
+                    role: UserRole.READER // Rol por defecto explícito
                 },
             });
 
@@ -64,7 +64,7 @@ export class AuthService {
             }
 
             const token = await this.generateToken(newUser);
-            const { password_hash, ...userWithoutPassword } = newUser;
+            const { passwordHash, ...userWithoutPassword } = newUser;
             return { user: userWithoutPassword, token };
 
         } catch (error) {
@@ -96,7 +96,7 @@ export class AuthService {
 
         // MITIGACIÓN DE TIMING ATTACK
         const fakeHash = '$2b$12$Ea.2n.e.e.A9.E8.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.';
-        const hashToCompare = user ? user.password_hash : fakeHash;
+        const hashToCompare = user ? user.passwordHash : fakeHash;
         const isPasswordValid = await bcrypt.compare(loginData.password, hashToCompare);
 
         // Verificación unificada
@@ -134,7 +134,7 @@ export class AuthService {
 
         const token = await this.generateToken(user);
 
-        const { password_hash, ...userWithoutPassword } = user;
+        const { passwordHash, ...userWithoutPassword } = user;
 
         return { user: userWithoutPassword, token };
     }
@@ -157,7 +157,7 @@ export class AuthService {
         return { success: true };
     }
 
-    public async getUserProfile(userId: string): Promise<Omit<User, 'password_hash'>> {
+    public async getUserProfile(userId: string): Promise<Omit<User, 'passwordHash'>> {
         const user = await this.prisma.user.findUnique({
             where: { id: userId }
         });
@@ -166,7 +166,7 @@ export class AuthService {
             throw new NotFoundError('Usuario no encontrado.');
         }
 
-        const { password_hash, ...userWithoutPassword } = user;
+        const { passwordHash, ...userWithoutPassword } = user;
         return userWithoutPassword;
     }
 }

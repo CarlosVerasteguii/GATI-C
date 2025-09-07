@@ -61,7 +61,7 @@ async function main() {
             });
 
             // Verificar que el hash de contraseña esté presente pero no sea el mismo que la original
-            if (dbUser.password_hash && dbUser.password_hash !== testUserData.password) {
+            if (dbUser.passwordHash && dbUser.passwordHash !== testUserData.password) {
                 console.log('🔒 Hash de contraseña correctamente almacenado y hasheado');
             } else {
                 throw new Error('El hash de contraseña no se almacenó correctamente');

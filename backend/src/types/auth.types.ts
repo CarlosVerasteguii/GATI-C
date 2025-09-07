@@ -12,6 +12,6 @@ export type LoginUserData = {
 };
 
 export type AuthResult = {
-    user: Omit<User, 'password_hash'>;
+    user: Omit<User, 'passwordHash'>;
     token: string;
 };

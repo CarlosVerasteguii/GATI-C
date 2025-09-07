@@ -19,9 +19,9 @@ export class AuditService {
             data: {
                 userId: data.userId,
                 action: data.action,
-                target_type: data.targetType,
-                target_id: data.targetId,
-                changes_json: data.changes as unknown as Prisma.InputJsonValue,
+                targetType: data.targetType,
+                targetId: data.targetId,
+                changesJson: data.changes as unknown as Prisma.InputJsonValue,
             },
         });
     }
@@ -32,9 +32,9 @@ export class AuditService {
                 data: {
                     userId: data.userId,
                     action: data.action,
-                    target_type: data.targetType,
-                    target_id: data.targetId,
-                    changes_json: data.changes as unknown as Prisma.InputJsonValue,
+                    targetType: data.targetType,
+                    targetId: data.targetId,
+                    changesJson: data.changes as unknown as Prisma.InputJsonValue,
                 },
             });
             console.log(`Audit log created for action: ${data.action}`);

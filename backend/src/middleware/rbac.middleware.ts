@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthorizationError } from '../utils/customErrors.js';
 import { UserRole, User } from '@prisma/client';
 
-type SafeUser = Omit<User, 'password_hash'>;
+type SafeUser = Omit<User, 'passwordHash'>;
 
 export function authorize(allowedRoles: UserRole[]) {
     return (req: Request, _res: Response, next: NextFunction) => {
@@ -19,5 +19,4 @@ export function authorize(allowedRoles: UserRole[]) {
         return next();
     };
 }
-
 

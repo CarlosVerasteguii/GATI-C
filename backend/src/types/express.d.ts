@@ -7,7 +7,7 @@ declare global {
     namespace Express {
         interface Request {
             // El usuario adjunto será el objeto completo de Prisma, sin el hash.
-            user?: Omit<User, 'password_hash'>;
+            user?: Omit<User, 'passwordHash'>;
         }
     }
 }
