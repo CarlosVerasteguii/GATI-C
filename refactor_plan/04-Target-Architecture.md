@@ -23,7 +23,7 @@ This document describes the ideal state of the GATI-C frontend architecture afte
 ```typescript
 // ✅ ALLOWED - Simple GET requests directly in components
 function ProductList() {
-    const { data: products, error, isLoading } = useSWR('/api/products', apiClient.get);
+    const { data: products, error, isLoading } = useSWR('/api/v1/inventory', apiClient.get);
     // ...
 }
 ```
@@ -33,14 +33,14 @@ function ProductList() {
 ```typescript
 // hooks/useProducts.ts - For complex business logic
 export function useProducts() {
-    return useSWR('/api/products', apiClient.get, {
+    return useSWR('/api/v1/inventory', apiClient.get, {
         // Complex configuration, caching, etc.
     });
 }
 
 // hooks/useCreateProduct.ts - For mutations
 export function useCreateProduct() {
-    return useSWRMutation('/api/products', apiClient.post);
+    return useSWRMutation('/api/v1/inventory', apiClient.post);
 }
 ```
 
@@ -96,10 +96,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check for existing session
         const checkAuth = async () => {
             try {
-                const response = await fetch('/api/auth/me');
+                const response = await fetch('/api/v1/auth/me', { credentials: 'include' });
                 if (response.ok) {
-                    const userData = await response.json();
-                    setUser(userData);
+                    const payload = await response.json();
+                    // Backend shape: { success: true, data: user }
+                    setUser(payload?.data ?? null);
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
@@ -113,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = (userData: User) => {
         setUser(userData);
-        // Persist to localStorage if needed
+        // Optional: persist UI session state (not an auth token)
         localStorage.setItem('user', JSON.stringify(userData));
     };
 
@@ -250,7 +251,7 @@ export function ProductFormFields({ data, onChange }: ProductFormFieldsProps) {
 ## 4. API Layer
 
 ### Consolidated API Client
-**One global fetcher** handles all HTTP requests, authentication, and data mapping.
+**One global fetcher** handles all HTTP requests and data mapping. Authentication is cookie‑based (httpOnly JWT); requests must include credentials.
 
 ### Global API Client
 ```typescript
@@ -261,26 +262,28 @@ class ApiClient {
     private baseURL: string;
 
     constructor() {
-        this.baseURL = process.env.NEXT_PUBLIC_API_URL || '/api';
+        this.baseURL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
     }
 
     private async request(endpoint: string, options: RequestInit = {}): Promise<any> {
-        const token = localStorage.getItem('auth-token');
-
         const response = await fetch(`${this.baseURL}${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...options.headers,
             },
+            credentials: 'include',
             ...options,
         });
 
+        const json = await response.json().catch(() => null);
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            // Backend error contract: { success: false, error: { code, message } }
+            const code = json?.error?.code ?? 'HTTP_ERROR';
+            const message = json?.error?.message ?? `HTTP ${response.status}`;
+            throw new Error(`[${code}] ${message}`);
         }
 
-        return response.json();
+        return json;
     }
 
     // Generic CRUD methods
@@ -313,7 +316,7 @@ export const apiClient = new ApiClient();
 ## 5. Data Mapping Layer
 
 ### Data Transformation Strategy
-**Transform data at the edges** - don't pollute business logic with mapping concerns.
+**Transform data at the edges** - don't pollute business logic with mapping concerns. API payloads are `camelCase`; enum values are `UPPER_SNAKE_CASE`.
 
 ### API Response Mapping
 ```typescript
@@ -324,10 +327,10 @@ export function mapApiProductToDomain(apiProduct: any): Product {
     return {
         id: apiProduct.id,
         name: apiProduct.name,
-        serialNumber: apiProduct.serial_number || null,
+        serialNumber: apiProduct.serialNumber ?? null,
         cost: apiProduct.cost || null,
-        // Transform API naming to domain naming
-        purchaseDate: apiProduct.purchase_date ? new Date(apiProduct.purchase_date) : null,
+        // Transform types as needed (naming already camelCase)
+        purchaseDate: apiProduct.purchaseDate ? new Date(apiProduct.purchaseDate) : null,
         // Handle enum transformations
         status: mapApiStatusToDomain(apiProduct.status),
         // ... other mappings
@@ -338,9 +341,9 @@ export function mapDomainProductToApi(domainProduct: Product): any {
     return {
         id: domainProduct.id,
         name: domainProduct.name,
-        serial_number: domainProduct.serialNumber,
+        serialNumber: domainProduct.serialNumber,
         cost: domainProduct.cost,
-        purchase_date: domainProduct.purchaseDate?.toISOString(),
+        purchaseDate: domainProduct.purchaseDate?.toISOString(),
         status: mapDomainStatusToApi(domainProduct.status),
         // ... other transformations
     };
@@ -352,7 +355,7 @@ export function mapDomainProductToApi(domainProduct: Product): any {
 // hooks/useProducts.ts
 export function useProducts() {
     return useSWR(
-        '/api/products',
+        '/api/v1/inventory',
         async (url) => {
             const apiProducts = await apiClient.get(url);
             return apiProducts.map(mapApiProductToDomain);

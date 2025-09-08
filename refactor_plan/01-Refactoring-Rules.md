@@ -66,7 +66,7 @@ Each file or small, logical group of related files will be refactored and commit
 
 ## 4. Naming & Casing Constitution
 
-This section is the absolute source of truth for all naming conventions. All code, identifiers, comments, commit messages, and docs are in English. UI copy is also in English for now. Spanish i18n may be added later (out of scope of this refactor).
+This section is the source of truth for naming conventions as implemented today. Code identifiers (variables, functions, types, etc.) are in English. User‑facing strings (API error messages, comments) may currently be in Spanish. English‑only UI copy and broader i18n are out of scope for this refactor.
 
 ### 4.1. TypeScript/JavaScript Code
 - Convention: `camelCase`
@@ -90,15 +90,15 @@ This section is the absolute source of truth for all naming conventions. All cod
 
 ### 4.4. API JSON Payloads (Client <-> Server)
 - Convention: `camelCase` keys for all JSON bodies; enum values are `UPPER_SNAKE_CASE` strings.
-- Backend owns transformations to/from DB and other layers.
+- Boundary transformations are handled within the module’s Zod schemas (see 4.7).
 - Success example: `{"success": true, "data": {"id":"cuid123","serialNumber":"SN-456","purchaseDate":"2024-01-15T00:00:00.000Z"}}`
-- Error shape is standardized (see 4.9).
+- NOTE: The inventory module currently accepts legacy `snake_case` inputs and normalizes them to `camelCase` via Zod transforms for backward compatibility (e.g., `serial_number` -> `serialNumber`, `purchase_date` -> `purchaseDate`).
 
 ### 4.5. Database Schema (Prisma)
 - Model/enum names: `PascalCase` (e.g., `model Product`, `enum UserRole`).
 - Field names (in schema): `camelCase` (e.g., `serialNumber`).
 - Column/table names (in DB): `snake_case` (singular).
-- Implementation: fields MUST use `@map("<snake_case>")`; tables MUST use `@@map("<snake_case>")`.
+- Implementation: fields are defined in `camelCase`. Use `@map("<snake_case>")` only when the database column name differs; tables use `@@map("<snake_case>")`.
 - Example:
   ```
   model Product {
@@ -122,66 +122,68 @@ This section is the absolute source of truth for all naming conventions. All cod
 - Examples: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`
 
 ### 4.7. Mapping Policy & Ownership
-- Boundary mapping only: all transformations happen at the edges (controllers/transport), not scattered through services.
-- Ownership:
-  - Server: `src/mappers/<aggregate>Mapper.ts` for API <-> Domain <-> Persistence (if needed).
-  - Client: `lib/mappers/<aggregate>Mapper.ts` for API <-> ViewModel (only where necessary).
-- DTOs: controllers accept/emit DTOs; services operate on domain types; Prisma models mapped via `@map`.
+- Boundary mapping only: transformations happen at the edges (controllers/transport), not scattered through services.
+- Ownership (today): boundary transformations are handled within the module’s Zod schemas (e.g., in `inventory.types.ts`).
+- DTOs: controllers accept/emit DTOs; services operate on domain types; Prisma models mapped via `@map` (when names differ).
 - Prohibited: ad‑hoc, duplicated, or implicit mappings inside controllers/services.
-- Temporary compatibility: during migration, accept legacy `snake_case` input, normalize to `camelCase`, and log a deprecation warning. Remove after the deprecation window ends.
+- Temporary compatibility: accept legacy `snake_case` input and normalize to `camelCase` in schemas.
+- (Future Enhancement): Log a warning when legacy `snake_case` payloads are received and plan depreciation.
 
 ### 4.8. Query Params & Headers
 - Query params: `camelCase` (e.g., `GET /api/v1/products?includeDocuments=true&minCost=100`).
-- Headers: dash-case on the wire (e.g., `x-correlation-id`); `camelCase` in code helpers (`xCorrelationId`).
-- Always propagate/log a correlation id (`x-correlation-id`) across services for traceability.
+- Headers: standard HTTP header casing on the wire; map to idiomatic names in code helpers when needed.
+- (Future Enhancement): A system‑wide `x-correlation-id` for tracing can be implemented later.
 
 ### 4.9. Error Payload Contract
-- Shape (always `camelCase` keys; enum-like codes in `UPPER_SNAKE_CASE`):
+- Shape (current, implemented):
   ```
   {
     "success": false,
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input",
-    "details": [{ "field": "serialNumber", "message": "Required" }],
-    "traceId": "uuid-or-correlation-id",
-    "timestamp": "2025-01-15T12:34:56.000Z"
+    "error": { "code": "<ERROR_CODE>", "message": "<Human-readable message>" }
   }
   ```
-- Standard codes: `VALIDATION_ERROR`, `AUTHENTICATION_ERROR`, `AUTHORIZATION_ERROR`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_SERVER_ERROR`, `RATE_LIMIT_EXCEEDED`, `SERVICE_UNAVAILABLE`.
-- Controllers must consistently forward errors; a global error handler serializes them to this contract.
+- Mapping rules:
+  - Operational errors (`AppError` and subclasses): HTTP status = `err.statusCode`; `error.code = err.name`; `error.message = err.message`.
+  - 404 handler: `{ success: false, error: { code: 'NOT_FOUND', message: 'Endpoint no encontrado' } }`.
+  - Unhandled errors: HTTP 500 with `{ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Ha ocurrido un error inesperado' } }`.
+- Notes:
+  - There is no `details`, `traceId`, or `timestamp` field today.
+  - Controllers should forward errors to the global handler for consistent serialization.
 
 ### 4.10. Language Policy (Repo‑Wide)
-- English only for code, identifiers, comments, docs, commit messages, and branch names.
-- UI copy in English for now. Spanish i18n may be added later; keep identifiers English regardless.
+- Code identifiers (variables, functions, types, etc.) MUST be in English.
+- User‑facing strings (API error messages, comments) may currently be in Spanish.
+- (Future Enhancement): Converge on English‑only user‑facing strings and/or add i18n as needed.
 
 ### 4.11. Examples & Anti‑Examples
 - Good (API body, enums, DB mapping aligned):
   - Request: `{"name":"Laptop","serialNumber":"SN-001","purchaseDate":"2024-01-15T00:00:00.000Z","role":"EDITOR"}`
   - Prisma model field: `serialNumber @map("serial_number")`
   - Prisma enum: `EDITOR`
-- Bad:
-  - Request with `snake_case` keys: `{"serial_number":"SN-001"}` (allowed only temporarily during migration).
+  - Error response: `{"success": false, "error": { "code": "NOT_FOUND", "message": "Endpoint no encontrado" }}`
+- Bad (avoid in new code):
+  - Request with `snake_case` keys: `{"serial_number":"SN-001"}` — currently accepted in the inventory module for backward compatibility and normalized to `camelCase` via Zod; prefer `camelCase`.
   - Mixed-language identifiers: `numeroSerie`, `LECTOR`.
 
-### 4.12. Phased Migration Plan (Authoritative)
-- Phase 1 — Backend Foundations
-  - Prisma: change model fields to `camelCase` with `@map` for `snake_case` columns; set tables to singular `snake_case` with `@@map`.
-  - Enums: migrate existing data from Spanish to English `UPPER_SNAKE_CASE` (e.g., `ADMINISTRADOR` -> `ADMINISTRATOR`, `LECTOR` -> `READER`). Provide SQL/data migration scripts.
-  - Validation: update Zod schemas to expect `camelCase` API keys; add compatibility to accept legacy `snake_case` input (normalize + warn).
-  - Mappers: introduce `src/mappers/*` and use DTOs at controllers; services speak domain types.
-  - Errors: implement the standardized error contract (4.9) in the global error handler.
+### 4.12. Phased Migration Plan (Future Enhancements)
+- Phase 1 — Backend Enhancements (planned)
+  - Prisma: continue defining fields in `camelCase`; use `@map` only where column names differ; tables use `@@map` to singular `snake_case`.
+  - Validation: keep expecting `camelCase` API keys; maintain compatibility to accept legacy `snake_case` input while it’s needed.
+  - Mapping: consider introducing dedicated mappers (`src/mappers/*`) and DTOs if complexity grows; today, Zod schemas handle boundary normalization.
+  - Errors: consider enhancing the error contract with optional `details`/`traceId`/`timestamp` fields if/when needed.
+  - Observability: consider adding a system‑wide `x-correlation-id` and deprecation warnings for legacy `snake_case` inputs.
 - Phase 2 — Frontend Alignment
-  - Types: rename Spanish properties to English `camelCase` (e.g., `numeroSerie` -> `serialNumber`).
-  - API: ensure all requests use `camelCase` keys; adjust API client and mocks/tests.
-  - UI Copy: English; no Spanish identifiers.
+  - Types: prefer English `camelCase` properties (e.g., `numeroSerie` -> `serialNumber`).
+  - API: ensure requests use `camelCase` keys; adjust API client and tests as needed.
+  - UI Copy: converge on English as appropriate.
 - Phase 3 — Deprecation & Cleanup
-  - Remove legacy `snake_case` acceptance; delete temporary mapping branches/logs.
-  - Sweep for Spanish identifiers and mixed casing; fix with codemods where feasible.
-  - Update docs/ADR/SRS to reflect the final contract and conventions.
+  - Remove legacy `snake_case` acceptance when clients are migrated; delete temporary normalization paths/logs.
+  - Sweep for mixed casing and non‑English identifiers; fix with codemods where feasible.
+  - Update docs/ADR/SRS accordingly.
 - Phase 4 — Quality Gates
   - Enforce ESLint `@typescript-eslint/naming-convention` for `camelCase`/`PascalCase`.
-  - Add contract tests (OpenAPI or schema-based) to validate API shapes and enum values.
-  - Run E2E and smoke tests focusing on inventory/auth flows and enum-dependent behavior.
+  - Add contract tests to validate API shapes and enum values.
+  - Run E2E/smoke tests focusing on inventory/auth flows and enum‑dependent behavior.
   - CI: fail builds on naming violations or contract drift.
 
 ## [DEPRECATED] Naming and Casing Conventions
