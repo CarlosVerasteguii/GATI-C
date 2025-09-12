@@ -1,6 +1,6 @@
-Product Requirements Document (PRD) - GATI-C v2.1 (Pragmatic)
+Product Requirements Document (PRD) - GATI-C v2.2 (Final)
 1. Elevator Pitch
-GATI-C es una plataforma web interna para la Comisión Federal de Electricidad (CFE), diseñada para transformar la gestión de activos de TI de un proceso manual y caótico a un sistema centralizado, inteligente y auditable. El sistema garantiza una transparencia total en el ciclo de vida de cada activo, desde su ingreso hasta su retiro, permitiendo a los gerentes tener una visión clara del inventario en tiempo real y a los técnicos gestionar préstamos y asignaciones de manera eficiente y ágil. GATI-C no solo reduce la pérdida de equipos y optimiza los recursos, sino que también implementa una experiencia de usuario moderna y fluida, estableciendo un nuevo estándar de profesionalismo y control para el departamento.
+GATI-C es una plataforma web interna para la Comisión Federal de Electricidad (CFE), diseñada para transformar la gestión de activos de TI de un proceso manual y caótico a un sistema centralizado, inteligente y auditable. El sistema garantiza una trazabilidad de mejor esfuerzo en el ciclo de vida de cada activo, desde su ingreso hasta su retiro, permitiendo a los gerentes tener una visión clara del inventario y a los técnicos gestionar préstamos y asignaciones de manera eficiente y ágil. GATI-C no solo reduce la pérdida de equipos y optimiza los recursos, sino que también implementa una experiencia de usuario moderna y fluida, estableciendo un nuevo estándar de profesionalismo y control para el departamento.
 2. Who is this app for
 Rol Administrador: Es el superusuario del sistema. Realiza todas las acciones críticas: aprueba solicitudes de Editores (esto se ajustará si es necesario), gestiona los atributos del sistema (Categorías, Marcas), supervisa y procesa las "Tareas Pendientes" (Cargas y Retiros rápidos), y tiene control total sobre el inventario.
 Rol Editor: Es el usuario principal en el día a día. Su tarea más crucial es asignar y prestar equipos de manera rápida y precisa. Utilizará intensivamente los flujos de "Retiro Rápido" para sacar material del almacén y registrarlo sin demoras. Necesita que el sistema sea extremadamente ágil para no interrumpir su trabajo de campo.
@@ -8,7 +8,7 @@ Rol: Lector Principalmente consultan la disponibilidad de equipos y registran re
 
 2.1. Matriz de Permisos por Rol
 
-Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para cada rol, considerando que la trazabilidad completa del sistema minimiza la necesidad de aprobaciones directas para las operaciones del día a día:
+Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para cada rol, considerando que la trazabilidad de mejor esfuerzo del sistema minimiza la necesidad de aprobaciones directas para las operaciones del día a día:
 
 | Módulo/Acción                | Administrador | Editor  | Lector  | Observaciones                                                                 |
 |------------------------------|---------------|---------|---------|-------------------------------------------------------------------------------|

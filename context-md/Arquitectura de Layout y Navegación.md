@@ -130,6 +130,6 @@ export default function InventarioPage() {
 ## Referencias
 
 - [Next.js App Router Documentation](https://nextjs.org/docs/app)
-- [SRS - GATI-C v2.0](context-md/Software%20Requirements%20Specification%20(SRS)%20-%20GATI-C%20v2.0%20(Enterprise-Grade).md)
-- [PRD de GATI-C](context-md/Product%20Requirements%20Document%20(PRD)%20de%20GATI-C.md)
+- [SRS - GATI-C v2.2 (Final)](context-md/Software%20Requirements%20Specification%20(SRS)%20-%20GATI-C%20v2.2%20(Final).md)
+- [PRD de GATI-C](context-md/Product%20Requirements%20Document%20(PRD)%20-%20GATI-C%20v2.2%20(Final).md)
 - [Guía Maestra de Estilo Visual](context-md/Guía%20Maestra%20de%20Estilo%20Visual.md) 
