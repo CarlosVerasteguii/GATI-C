@@ -1,6 +1,6 @@
 Product Requirements Document (PRD) - GATI-C v2.2 (Final)
 1. Elevator Pitch
-GATI-C es una plataforma web interna para la Comisión Federal de Electricidad (CFE), diseñada para transformar la gestión de activos de TI de un proceso manual y caótico a un sistema centralizado, inteligente y auditable. El sistema garantiza una trazabilidad de mejor esfuerzo en el ciclo de vida de cada activo, desde su ingreso hasta su retiro, permitiendo a los gerentes tener una visión clara del inventario y a los técnicos gestionar préstamos y asignaciones de manera eficiente y ágil. GATI-C no solo reduce la pérdida de equipos y optimiza los recursos, sino que también implementa una experiencia de usuario moderna y fluida, estableciendo un nuevo estándar de profesionalismo y control para el departamento.
+GATI-C es una plataforma web interna para la Comisión Federal de Electricidad (CFE), diseñada para transformar la gestión de activos de TI de un proceso manual y caótico a un sistema centralizado, inteligente y auditable. El sistema proporciona trazabilidad de mejor esfuerzo en el ciclo de vida de cada activo (asíncrona y no bloqueante), desde su ingreso hasta su retiro, permitiendo a los gerentes tener una visión clara del inventario y a los técnicos gestionar préstamos y asignaciones de manera eficiente y ágil. GATI-C no solo reduce la pérdida de equipos y optimiza los recursos, sino que también implementa una experiencia de usuario moderna y fluida, estableciendo un nuevo estándar de profesionalismo y control para el departamento.
 2. Who is this app for
 Rol Administrador: Es el superusuario del sistema. Realiza todas las acciones críticas: aprueba solicitudes de Editores (esto se ajustará si es necesario), gestiona los atributos del sistema (Categorías, Marcas), supervisa y procesa las "Tareas Pendientes" (Cargas y Retiros rápidos), y tiene control total sobre el inventario.
 Rol Editor: Es el usuario principal en el día a día. Su tarea más crucial es asignar y prestar equipos de manera rápida y precisa. Utilizará intensivamente los flujos de "Retiro Rápido" para sacar material del almacén y registrarlo sin demoras. Necesita que el sistema sea extremadamente ágil para no interrumpir su trabajo de campo.
@@ -71,9 +71,9 @@ Procesamiento: Cualquier Editor o Administrador puede procesar una tarea pendien
         •   **Notas de Retiro:** (Área de texto para detalles adicionales de la baja).
         •   **Destino Final (Opcional):** (Campo de texto libre, para especificar si se mueve a un almacén de desechos, etc.)
 
-Trazabilidad de Mejor Esfuerzo:
-Historial por Artículo: Cada activo debe tener un log detallado de cada acción realizada sobre él (creación, edición, asignación, préstamo, cambio de estado, retiro), incluyendo el registro de los valores que cambiaron. Esta auditoría es una operación secundaria y no debe impedir la acción principal del usuario.
-Historial de Tareas Pendientes: Cada tarea pendiente debe tener su propio log detallado: quién la creó, cuándo, y quién la finalizó. Se elimina la complejidad de flujos de aprobación para ediciones simples.
+ Trazabilidad de Mejor Esfuerzo (Política Oficial):
+ Historial por Artículo: El sistema intentará registrar un log detallado de cada acción realizada sobre cada activo (creación, edición, asignación, préstamo, cambio de estado, retiro), incluyendo el registro de los valores que cambiaron. La auditoría es una operación secundaria, asíncrona y desacoplada: si el subsistema de auditoría falla, la acción principal del usuario NO se bloquea ni se revierte.
+ Historial de Tareas Pendientes: Cada tarea pendiente intentará registrar un log detallado (quién la creó, cuándo, y quién la finalizó). Los fallos de auditoría no impiden el procesamiento ni completado de la tarea.
 4. User Stories
 Como Editor, quiero registrar la llegada de 50 laptops nuevas con números de serie de forma rápida, así que uso la función de "Carga Rápida", selecciono "Laptop" y pego los 50 números de serie. Esto crea una tarea pendiente para que más tarde, yo Editor o algun Administrador podamos completar los detalles (proveedor, fecha de compra) sin detener el trabajo del día.
 Como Editor, necesito un teclado para un usuario. En la vista de inventario, veo que de 10 teclados, el display QTY me muestra 10 4 6, indicándome al instante que hay 10 en total, pero solo 4 disponibles y 6 no disponibles. Hago hover sobre la cantidad para ver el desglose exacto de los 6 no disponibles antes de proceder.
@@ -97,10 +97,11 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 
 4.2. Disponibilidad y Confiabilidad (Availability & Reliability)
 •   **Tiempo de Actividad (Uptime):** El sistema debe garantizar alta disponibilidad durante las horas de operación estándar (aproximadamente 8:00 AM - 4:00 PM, extendiéndose si es necesario para jornadas largas). Se aceptan ventanas de mantenimiento planificadas que pueden ocurrir fuera o, previa comunicación, dentro del horario laboral.
-•   **Manejo de Fallos:**
+    •   **Manejo de Fallos:**
     •   **Registro de Errores:** Todos los errores críticos del sistema (backend, base de datos) deben ser registrados detalladamente para facilitar la depuración y el análisis.
     •   **Notificación a Administradores:** En caso de fallos graves que afecten la funcionalidad, se debe implementar un mecanismo de notificación automática a los administradores del sistema.
     •   **Feedback al Usuario:** Para cualquier error que afecte la experiencia del usuario, el sistema debe mostrar mensajes de error amigables y claros, evitando la exposición de detalles técnicos sensibles (ej. "Ocurrió un error inesperado. Por favor, inténtelo de nuevo o contacte al soporte técnico."). Se evitarán las interrupciones abruptas de la interfaz.
+    •   **Fallo en Auditoría:** Los errores al escribir en el log de auditoría se tratan como técnicos y no bloqueantes. Se registran internamente (warning) y NO afectan el resultado de la operación del usuario ni la respuesta en la UI.
 
 4.3. Mantenibilidad (Maintainability)
 •   **Facilidad de Modificación:** El código base debe ser diseñado de manera modular, con una estructura clara y convenciones de codificación consistentes (según las reglas de estilo de código ya definidas), para facilitar la implementación de nuevas características, modificaciones y correcciones de errores en el futuro.

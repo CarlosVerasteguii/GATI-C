@@ -11,7 +11,7 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 
 ## 2. Auditoría y Trazabilidad
 
-- [ ] **2.1. Política de Trazabilidad:** Tomar una decisión final y vinculante sobre si la auditoría es "de mejor esfuerzo" (asíncrona, no bloqueante) o "garantizada" (atómica, transaccional). Esta es la decisión más crítica.
+- [x] **2.1. Política de Trazabilidad:** Tomar una decisión final y vinculante sobre si la auditoría es "de mejor esfuerzo" (asíncrona, no bloqueante) o "garantizada" (atómica, transaccional). Esta es la decisión más crítica.
 
 ## 3. Ciclo de Vida de los Datos
 

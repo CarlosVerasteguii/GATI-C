@@ -8,7 +8,7 @@ o	Core Modules:
 	Task Management: Manages "Tareas Pendientes" (Carga/Retiro Rápido).
 	Document Management: Handles file uploads, storage, and soft-deletes.
 	Auditing: Responsible for all logging and history tracking.
-•	1.3. Inter-Module Communication: La comunicación entre módulos se realiza a través de llamadas de servicio directas, gestionadas por un contenedor de Inversión de Control (IoC) como `tsyringe`. Esto promueve la simplicidad y la mantenibilidad para la escala actual del proyecto.
+•	1.3. Inter-Module Communication: La comunicación entre módulos se realiza a través de llamadas de servicio directas, gestionadas por un contenedor de Inversión de Control (IoC) como `tsyringe`. Esto promueve la simplicidad y la mantenibilidad para la escala actual del proyecto. La Auditoría es asíncrona y desacoplada; no participa en transacciones de negocio y sus fallos no bloquean operaciones.
 2. Architecture Pattern
 •	2.1. Pattern: Decoupled Client-Server Architecture.
 •	2.2. Frontend (Client): A Single-Page Application (SPA) built with React and Next.js (App Router). Its sole responsibility is to render the UI and manage user interactions. It is a "dumb" client that consumes data from the API.
@@ -29,6 +29,7 @@ o	UI Strategy: Optimistic UI is the default strategy for all common data mutatio
 6.	The controller passes the validated data to the appropriate service module.
 7.	The service executes the business logic, interacting with the database via the Prisma ORM.
 8.	The API responds with a standard JSON structure, including the full, updated resource on success.
+9.	Post-commit and post-response, the service emits an audit event handled by `AuditService` asynchronously. Any failure to persist the audit log is recorded internally and does not affect the already completed user operation.
 •	4.2. Real-time Notifications: Des-priorizado. Las actualizaciones de datos críticos (como nuevas "Tareas Pendientes") se gestionarán mediante la actualización manual o el re-fetching de datos tras una acción del usuario. Esto es suficiente para los flujos de trabajo actuales y evita la complejidad del polling.
 5. Technical Stack
 •	Frontend:
@@ -81,7 +82,7 @@ o	Product -> Category (Many-to-One)
 o	Product -> Location (Many-to-One)
 o	Product -> Document (One-to-Many)
 •	8.3. Data Integrity Policies:
-o	Trazabilidad de Mejor Esfuerzo: Las operaciones de auditoría (logging) se consideran secundarias. Se registrarán como una operación de "mejor esfuerzo" que no debe bloquear ni hacer fallar la acción principal del usuario si el subsistema de auditoría falla.
+o	Trazabilidad de Mejor Esfuerzo: Las operaciones de auditoría (logging) se consideran secundarias, asíncronas y desacopladas. `AuditLog` no forma parte de ninguna transacción de negocio. Garantía at-most-once: se prioriza no duplicar eventos; omisiones puntuales por fallos del subsistema son aceptables. Los fallos de auditoría no bloquean ni hacen fallar la acción principal del usuario, y no provocan rollback de operaciones de negocio.
 o	Soft Deletes: Documents will use a soft-delete mechanism (deleted_at column).
 o	Cascading Borrado Restringido: Deleting Brands, Categories, o Users is restricted by default if they are linked to Products. The API will return an error. The UI will present this error with an option to "Forzar Borrado", which triggers a separate, explicit API call that sets the foreign keys in the Products table to NULL.
 •	8.4. Stock Logic for Non-Serialized Items: The "división de registros" strategy will be used. A loan/assignment of 1 unit from a lot of 10 will update the original row's quantity to 9 and create a new row with quantity 1 and the new status.
