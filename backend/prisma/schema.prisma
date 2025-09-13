@@ -2,6 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Zod schema generator for shared types
+generator zod {
+  provider      = "prisma-zod-generator"
+  // Output to repo root `types/generated` for frontend consumption
+  output        = "../../types/generated"
+  relationModel = true
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")

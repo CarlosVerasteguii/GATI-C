@@ -11,7 +11,9 @@
         "start:dev": "nodemon dist/server.js",
         "dev": "concurrently \"npm:build:watch\" \"npm:start:dev\"",
         "smoke-test": "node --loader ts-node/esm --no-warnings src/scripts/smoke-test.ts",
-        "db:seed": "npm run build && node dist/scripts/seed.js"
+        "db:seed": "npm run build && node dist/scripts/seed.js",
+        "types:generate": "prisma generate",
+        "postinstall": "npm run types:generate"
     },
     "dependencies": {
         "@prisma/client": "^6.14.0",
@@ -37,7 +39,9 @@
         "@types/node": "^20.10.4",
         "concurrently": "^9.2.1",
         "nodemon": "^3.1.10",
+        "prisma-zod-generator": "^1.20.2",
         "prisma": "^6.14.0",
+        "zod-validation-error": "^4.0.1",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.3.3"
     }
