@@ -33,8 +33,7 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Gestión de Ubicaciones       | Sí            | Sí      | No      | Añadir, editar, eliminar ubicaciones.                                         |
 | Gestión de Usuarios          | Sí            | No      | No      | Creación, edición y gestión de roles de usuarios (solo Administrador).       |
 | **Documentos Adjuntos**      |               |         |         |                                                                               |
-| Eliminar Documentos Adjuntos (a papelera) | Sí            | Sí      | No      | El Administrador puede ver la papelera, el Editor no.                         |
-| Restaurar de Papelera        | Sí            | No      | No      | Solo el Administrador puede restaurar documentos eliminados.                  |
+| Eliminar Documentos Adjuntos (soft-delete, sin papelera) | Sí            | Sí      | No      | Se ocultan en la UI; no existe restauración desde papelera.                   |
 
 3. Functional Requirements
 Gestión del Ciclo de Vida del Activo:
@@ -80,6 +79,7 @@ Como Editor, quiero registrar la llegada de 50 laptops nuevas con números de se
 Como Editor, necesito un teclado para un usuario. En la vista de inventario, veo que de 10 teclados, el display QTY me muestra 10 4 6, indicándome al instante que hay 10 en total, pero solo 4 disponibles y 6 no disponibles. Hago hover sobre la cantidad para ver el desglose exacto de los 6 no disponibles antes de proceder.
 Como Administrador, quiero saber cuántos equipos tenemos vencidos. Entro al dashboard y veo la tarjeta "Préstamos Vencidos" en rojo con el número exacto. Hago clic en un ítem de la lista y se abre un panel lateral con todos los detalles del préstamo: quién lo tiene, desde cuándo, y quién autorizó el préstamo, dándome toda la información para una auditoría rápida.
 Como Administrador, recibo una notificación o veo en mi vista de "Tareas Pendientes" una solicitud de un Editor para editar la descripción de un monitor. Puedo ver exactamente qué quería cambiar, aprobarlo con un solo clic, y el sistema registrará automáticamente que yo autoricé el cambio, manteniendo una cadena de responsabilidad clara.
+Nota aclaratoria sobre "notificaciones": Se refiere a indicadores visuales en la UI (p. ej., badges/contadores en vistas), no a un sistema de notificaciones en tiempo real (push/polling), el cual está despriorizado según el SRS.
 5. User Interface
 Estilo General: Profesional, moderno y extremadamente fluido. La interfaz debe sentirse "viva" a través de micro-interacciones y animaciones sutiles (transiciones suaves en botones, apariciones graduales de modales, efectos de hover). El diseño debe ser innovador y visualmente llamativo, sin sacrificar la claridad profesional que requiere CFE.
 Layouts Horizontales: TODOS los modales (Dialogs) y paneles (Sheets) deben usar layouts de múltiples columnas (ej. grid-cols-2) para distribuir los campos de formulario de manera horizontal. El objetivo es eliminar el scroll vertical en la medida de lo posible y aprovechar el espacio de la pantalla para una experiencia más cómoda y eficiente.

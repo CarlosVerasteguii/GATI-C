@@ -3,95 +3,36 @@
 import { useState, useEffect, useReducer, useMemo } from "react"
 import * as React from 'react';
 import { useSearchParams, useRouter } from "next/navigation"
-import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { GroupedProduct, InventoryItem } from "@/types/inventory"
 import { DetailSheet } from "@/components/detail-sheet"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { showError, showSuccess, showInfo } from "@/hooks/use-toast"
-import { Badge } from "@/components/ui/badge"
 import {
-  Plus,
-  Upload,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  HelpCircle,
   Loader2,
-  ExternalLink,
-  Edit,
-  Eye,
-  Copy,
-  UserPlus,
-  Trash2,
-  Calendar,
-  RotateCcw,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Columns,
-  LayoutList,
-  LayoutGrid,
-  X,
   ListFilter,
 } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Check } from "lucide-react"
-import { AssignModal } from "@/components/assign-modal"
-import { LendModal } from "@/components/lend-modal"
-import { BulkEditModal } from "@/components/bulk-edit-modal"
-import { BulkAssignModal } from "@/components/bulk-assign-modal"
-import { BulkLendModal } from "@/components/bulk-lend-modal"
-import { BulkRetireModal } from "@/components/bulk-retire-modal"
-import { BrandCombobox } from "@/components/brand-combobox"
 import { EmptyState } from "@/components/empty-state"
 import { useApp } from "@/contexts/app-context"
 import { useAuthStore } from "@/lib/stores/useAuthStore"
-import { ConfirmationDialogForEditor } from "@/components/confirmation-dialog-for-editor"
 // import { ActionMenu } from "@/components/action-menu"
 import { cn } from "@/lib/utils"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import DocumentManager from "@/components/document-manager"
 import { GroupedInventoryTable } from '@/components/inventory/grouped-inventory-table';
 import { ColumnToggleMenu } from '@/components/inventory/column-toggle-menu';
 import { EditProductModal } from "@/components/edit-product-modal"
-import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
 import { DateRange } from "react-day-picker"
 import { AdvancedFilterState } from "@/types/inventory"
 import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
-import { LocationCombobox } from '@/components/location-combobox';
 import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
 import { useInventory } from "@/hooks/useInventory";

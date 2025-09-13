@@ -1,0 +1,386 @@
+PS C:\Users\carlo\OneDrive\Documentos\Coding2025\GATI-C Proyect> npm run build
+
+> my-v0-project@0.1.0 build
+> next build
+
+   ▲ Next.js 15.2.4
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+
+Failed to compile.
+
+./app/(app)/asignados/page.tsx
+29:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+66:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/configuracion/page.tsx
+29:3  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+38:10  Warning: 'showError' is defined but never used.  @typescript-eslint/no-unused-vars
+38:21  Warning: 'showSuccess' is defined but never used.  @typescript-eslint/no-unused-vars
+49:11  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+639:72  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+639:88  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./app/(app)/configuracion/umbrales-inventario/page.tsx
+62:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+89:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+117:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+154:215  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+154:231  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./app/(app)/dashboard/page.tsx
+24:10  Warning: 'cn' is defined but never used.  @typescript-eslint/no-unused-vars
+29:10  Warning: 'Tooltip' is defined but never used.  @typescript-eslint/no-unused-vars
+29:19  Warning: 'TooltipContent' is defined but never used.  @typescript-eslint/no-unused-vars
+29:35  Warning: 'TooltipTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+59:18  Warning: 'updateLoanStatus' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+59:36  Warning: 'updateInventoryItemStatus' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+59:63  Warning: 'addRecentActivity' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+61:11  Warning: 'toast' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+65:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+163:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+169:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+213:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+595:72  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+637:78  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/historial/page.tsx
+34:10  Warning: 'Label' is defined but never used.  @typescript-eslint/no-unused-vars
+51:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+104:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+105:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/inventario/page.tsx
+44:11  Warning: 'AssignmentItem' is defined but never used.  @typescript-eslint/no-unused-vars
+67:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+111:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+111:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+144:9  Warning: 'selectedProductsData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+148:10  Warning: 'isImportModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+150:10  Warning: 'isConfirmDialogOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+150:31  Warning: 'setIsConfirmDialogOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+153:10  Warning: 'isLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+153:21  Warning: 'setIsLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+154:10  Warning: 'importProgress' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+154:26  Warning: 'setImportProgress' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+155:10  Warning: 'showImportProgress' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+155:30  Warning: 'setShowImportProgress' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+175:10  Warning: 'activeFormTab' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+175:25  Warning: 'setActiveFormTab' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+176:10  Warning: 'isAssignModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+177:10  Warning: 'isLendModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+178:10  Warning: 'isBulkEditModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+178:31  Warning: 'setIsBulkEditModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+179:10  Warning: 'isBulkAssignModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+180:10  Warning: 'isBulkLendModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+180:31  Warning: 'setIsBulkLendModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+181:10  Warning: 'isBulkRetireModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+182:10  Warning: 'isConfirmEditorOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+183:32  Warning: 'setPendingActionDetails' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+184:10  Warning: 'processingTaskId' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+185:10  Warning: 'tempMarca' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+187:10  Warning: 'isReactivateConfirmOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+187:35  Warning: 'setIsReactivateConfirmOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+188:10  Warning: 'dateRange' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+188:21  Warning: 'setDateRange' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+189:10  Warning: 'retirementDetails' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+189:29  Warning: 'setRetirementDetails' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+197:10  Warning: 'uploadingFiles' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+198:10  Warning: 'attachedDocuments' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+215:9  Warning: 'retirementReasons' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+296:67  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+305:6  Warning: React Hook useEffect has a missing dependency: 'isReadOnly'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+308:9  Warning: 'hasActiveFilters' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+380:9  Warning: 'getColumnValue' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+526:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+528:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+564:9  Error: 'sortedData' is never reassigned. Use 'const' instead.  prefer-const
+567:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+568:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+576:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+624:6  Warning: React Hook React.useMemo has an unnecessary dependency: 'allColumns'. Either exclude it or remove the dependency array. Outer scope values like 'allColumns' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps    
+636:9  Warning: 'selectedProducts' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+678:9  Warning: 'handleEdit' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+678:23  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+682:9  Warning: 'handleDuplicate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+682:28  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+686:9  Warning: 'handleMarkAsRetired' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+686:32  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+690:9  Warning: 'executeReactivate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+690:30  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+694:9  Warning: 'handleReactivate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+694:29  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+750:9  Warning: 'executeSaveProduct' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+750:31  Warning: '_productData' is defined but never used.  @typescript-eslint/no-unused-vars
+754:9  Warning: 'handleSaveProduct' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+758:9  Warning: 'handleImportCSV' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+762:9  Warning: 'executeRetirement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+766:9  Warning: 'confirmRetirement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+770:9  Warning: 'getModalTitle' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+785:9  Warning: 'handleAssign' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+785:25  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+789:9  Warning: 'handleLend' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+789:23  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+793:9  Warning: 'handleBulkSuccess' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+799:9  Warning: 'handleConfirmEditorAction' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+805:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+833:9  Warning: 'isLector' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+837:9  Warning: 'getNonSerializedQtyBreakdown' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+881:9  Warning: 'getSerializedQtyColorClass' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+898:9  Warning: 'canShowBulkActions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+901:9  Warning: 'handleFileUpload' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+938:9  Warning: 'allCategories' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+943:9  Warning: 'allBrands' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+948:9  Warning: 'allStatuses' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+982:9  Warning: 'SortIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+990:9  Warning: 'displayedColumns' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+990:28  Error: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+1004:9  Warning: 'handleColumnToggle' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+1103:9  Warning: 'filteredProducts' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+1103:28  Error: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+./app/(app)/layout.tsx
+14:10  Warning: 'isOnline' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+16:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/papelera-documentos/page.tsx
+34:7  Warning: 'mapRoleToEnglish' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+44:13  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+125:53  Warning: 'previousVersion' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/perfil/page.tsx
+27:11  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+28:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+117:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/prestamos/loading.tsx
+1:10  Warning: 'Card' is defined but never used.  @typescript-eslint/no-unused-vars
+1:16  Warning: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+1:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+1:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/prestamos/page.tsx
+23:23  Warning: 'showInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+54:18  Warning: 'dispatch' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/tareas-pendientes/page.tsx
+26:10  Warning: 'showError' is defined but never used.  @typescript-eslint/no-unused-vars
+26:21  Warning: 'showSuccess' is defined but never used.  @typescript-eslint/no-unused-vars
+28:10  Warning: 'ActionMenu' is defined but never used.  @typescript-eslint/no-unused-vars
+32:10  Warning: 'QuickLoadModal' is defined but never used.  @typescript-eslint/no-unused-vars
+42:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:5  Warning: 'removeInventoryItem' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+109:10  Warning: 'isQuickLoadModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+109:32  Warning: 'setIsQuickLoadModalOpen' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+161:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+162:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+173:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+174:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+254:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/ClientLayout.tsx
+15:9  Warning: The 'protectedRoutes' array makes the dependencies of useEffect Hook (at line 29) change on every render. Move it inside the useEffect callback. Alternatively, wrap the initialization of 'protectedRoutes' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/access-request-modal.tsx
+18:34  Warning: 'showInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/activity-detail-sheet.tsx
+4:35  Warning: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+4:45  Warning: 'Package' is defined but never used.  @typescript-eslint/no-unused-vars
+4:60  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+4:67  Warning: 'Tag' is defined but never used.  @typescript-eslint/no-unused-vars
+11:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+16:13  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+119:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+176:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+195:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+230:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+243:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/app-layout.tsx
+9:3  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'LogOut' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+57:48  Warning: 'tasksLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/assign-modal.tsx
+35:95  Warning: 'updateInventory' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+39:68  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:11  Warning: 'assignedTo' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+59:11  Warning: 'assignedToEmail' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+102:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+176:17  Warning: 'addedItem' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+232:39  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+232:56  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/brand-combobox.tsx
+11:34  Warning: 'showInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+75:38  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+75:51  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/bulk-assign-modal.tsx
+26:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+31:11  Warning: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+31:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:21  Warning: 'values' is defined but never used.  @typescript-eslint/no-unused-vars
+57:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:47  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+115:60  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/bulk-lend-modal.tsx
+16:10  Warning: 'showError' is defined but never used.  @typescript-eslint/no-unused-vars
+25:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+57:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/bulk-retire-modal.tsx
+25:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:11  Warning: 'addPendingTask' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+44:21  Warning: 'values' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/detail-sheet.tsx
+5:22  Warning: 'Edit' is defined but never used.  @typescript-eslint/no-unused-vars
+5:46  Warning: 'Wrench' is defined but never used.  @typescript-eslint/no-unused-vars
+5:54  Warning: 'Info' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/document-manager.tsx
+14:10  Warning: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+16:36  Warning: 'Settings' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/document-upload.tsx
+16:10  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+126:8  Warning: React Hook useCallback has a missing dependency: 'handleFileUpload'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+212:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/document-viewer.tsx
+18:5  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+29:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+29:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+48:10  Warning: 'Separator' is defined but never used.  @typescript-eslint/no-unused-vars
+85:5  Warning: 'showTrash' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+266:85  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+266:113  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/edit-product-modal.tsx
+75:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+108:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/edit-task-sheet.tsx
+21:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/inventory/advanced-filter-form.tsx
+25:3  Warning: 'proveedores' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/inventory/grouped-inventory-table.tsx
+8:5  Warning: 'TableCell' is defined but never used.  @typescript-eslint/no-unused-vars
+22:6  Warning: 'SortConfig' is defined but never used.  @typescript-eslint/no-unused-vars
+136:8  Warning: React Hook useEffect has a missing dependency: 'lowercasedQuery'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/inventory/modals/assign-modal.tsx
+33:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:23  Warning: 'values' is defined but never used.  @typescript-eslint/no-unused-vars
+165:86  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+165:99  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/inventory/modals/quick-retire-modal.tsx
+9:74  Warning: 'CommandList' is defined but never used.  @typescript-eslint/no-unused-vars
+49:23  Warning: 'values' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/inventory/parent-row.tsx
+44:5  Warning: 'onRowSelect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/keyboard-shortcuts-help.tsx
+4:20  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/lend-modal.tsx
+14:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+30:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+35:11  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+35:18  Warning: 'updateInventoryItemStatus' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+35:45  Warning: 'addRecentActivity' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/location-combobox.tsx
+75:60  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+75:73  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/login-form.tsx
+60:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+89:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/provider-combobox.tsx
+11:34  Warning: 'showInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+75:42  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+75:55  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/quick-retire-modal.tsx
+18:21  Warning: 'showSuccess' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/retire-product-modal.tsx
+28:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:68  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+201:38  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+201:55  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./components/status-badge.tsx
+1:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/task-audit-log-sheet.tsx
+11:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+100:70  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+119:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/ui/calendar.tsx
+57:25  Warning: 'props' is defined but never used.  @typescript-eslint/no-unused-vars
+58:26  Warning: 'props' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/chart.tsx
+72:7  Warning: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/particle-background.tsx
+66:9  Warning: 'isMouseDown' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+235:6  Warning: React Hook useEffect has missing dependencies: 'randomizeSizes' and 'showConnections'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/ui/sidebar.tsx
+174:13  Warning: 'isMobile' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/user-combobox.tsx
+24:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+91:62  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+91:75  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./lib/api/auth.ts
+3:21  Warning: 'ApiError' is defined but never used.  @typescript-eslint/no-unused-vars
+14:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+17:14  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+54:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/api/client.ts
+4:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+6:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+47:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+67:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/document-storage.ts
+48:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+207:5  Warning: 'restoredBy' is defined but never used.  @typescript-eslint/no-unused-vars
+281:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./lib/stores/useAuthStore.ts
+66:39  Warning: '_p' is defined but never used.  @typescript-eslint/no-unused-vars
+75:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+89:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+PS C:\Users\carlo\OneDrive\Documentos\Coding2025\GATI-C Proyect> 
