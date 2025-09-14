@@ -176,3 +176,7 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 4.3. Mantenibilidad (Maintainability)
 •   **Facilidad de Modificación:** El código base debe ser diseñado de manera modular, con una estructura clara y convenciones de codificación consistentes (según las reglas de estilo de código ya definidas), para facilitar la implementación de nuevas características, modificaciones y correcciones de errores en el futuro.
 •   **Amigabilidad con IA:** La estructura del código, la documentación interna (ej. JSDoc) y la claridad de la lógica deben optimizarse para que herramientas de inteligencia artificial puedan analizarlo, entenderlo y proponer/aplicar cambios de manera eficiente.
+Política de Eliminación de Catálogos (Protección Estricta):
+•	Las entidades de catálogo (Marcas, Categorías, Ubicaciones) no pueden eliminarse si existen Productos que las referencian. La operación devolverá un error y no se realizará ningún cambio.
+•	La interfaz mostrará un mensaje claro con el conteo de productos asociados y ofrecerá un acceso directo a un listado filtrado para su reasignación manual.
+•	Una vez que no existan dependencias, la eliminación será un soft-delete (se marca `deleted_at`). No existe “forzar borrado” que deje productos con campos nulos.
