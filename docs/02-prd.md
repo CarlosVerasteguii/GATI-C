@@ -166,10 +166,13 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 •   **Escalabilidad de Inventario:** El sistema debe ser capaz de manejar eficientemente un inventario actual de aproximadamente 1,200 activos. El diseño debe permitir un crecimiento futuro de hasta 3,000 activos en los próximos 5 años sin degradación significativa del rendimiento.
 
 4.2. Disponibilidad y Confiabilidad (Availability & Reliability)
-•   **Tiempo de Actividad (Uptime):** El sistema debe garantizar alta disponibilidad durante las horas de operación estándar (aproximadamente 8:00 AM - 4:00 PM, extendiéndose si es necesario para jornadas largas). Se aceptan ventanas de mantenimiento planificadas que pueden ocurrir fuera o, previa comunicación, dentro del horario laboral.
+•   **Disponibilidad Pragmática:** El sistema prioriza simplicidad y rapidez de recuperación por encima de la alta disponibilidad. Se aceptan ventanas de mantenimiento planificadas (preferentemente fuera de horario) y posibles interrupciones no planificadas.
+•   **Objetivo Operativo:** Durante horario laboral (8:00–16:00), el enfoque es minimizar el tiempo de recuperación (MTTR) más que prevenir toda caída. Objetivo de MTTR: ≤ 30 minutos para incidencias típicas.
+•   **SLO Realista:** Disponibilidad mensual objetivo durante horario laboral en el rango 95–97%. Fuera de horario, sin garantías formales.
+•   **Mantenimiento Planificado:** Comunicado con antelación; no se exige despliegue sin downtime.
 •   **Manejo de Fallos:**
     •   **Registro de Errores:** Todos los errores críticos del sistema (backend, base de datos) deben ser registrados detalladamente para facilitar la depuración y el análisis.
-    •   **Notificación a Administradores:** En caso de fallos graves que afecten la funcionalidad, se debe implementar un mecanismo de notificación automática a los administradores del sistema.
+    •   **Notificación a Administradores:** En caso de fallos graves que afecten la funcionalidad, se implementará un mecanismo de notificación simple y confiable para administradores (p. ej., alerta por email o canal interno).
     •   **Feedback al Usuario:** Para cualquier error que afecte la experiencia del usuario, el sistema debe mostrar mensajes de error amigables y claros, evitando la exposición de detalles técnicos sensibles (ej. "Ocurrió un error inesperado. Por favor, inténtelo de nuevo o contacte al soporte técnico."). Se evitarán las interrupciones abruptas de la interfaz.
     •   **Fallo en Auditoría:** Los errores al escribir en el log de auditoría se tratan como técnicos y no bloqueantes. Se registran internamente (warning) y NO afectan el resultado de la operación del usuario ni la respuesta en la UI.
 

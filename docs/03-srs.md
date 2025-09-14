@@ -102,9 +102,32 @@ o	Catálogo: Protección Estricta de Borrado: Eliminar Brands, Categories o Loca
 9. Accessibility
 •	Standard: Accesibilidad Razonable. Se priorizará una experiencia de usuario funcional y clara sin necesidad de una auditoría formal de cumplimiento de WCAG 2.1 AA.
 •	Requirements:
-o	Full keyboard navigability.
-o	Semantic HTML5 elements.
-o	aria-label attributes for all icon-only buttons and controls.
-o	Sufficient color contrast ratios for all text.
-o	Focus states (focus-visible) must be clear and consistent.
+	o	Full keyboard navigability.
+	o	Semantic HTML5 elements.
+	o	aria-label attributes for all icon-only buttons and controls.
+	o	Sufficient color contrast ratios for all text.
+	o	Focus states (focus-visible) must be clear and consistent.
+
+10. Availability & Operations (Pragmatic)
+•	10.1. Operating Philosophy: El sistema prioriza simplicidad y rapidez de recuperación por encima de la alta disponibilidad. Se aceptan mantenimientos planificados y caídas esporádicas.
+•	10.2. Service Windows: Horario operativo principal 8:00–16:00. Fuera de horario no se garantizan SLO.
+•	10.3. SLO & Targets:
+	o	SLO de disponibilidad (horario laboral): 95–97% mensual.
+	o	MTTR objetivo para incidencias típicas: ≤ 30 minutos.
+	o	RPO objetivo: ≤ 24 horas (copias nocturnas).
+•	10.4. Infrastructure:
+	o	Despliegue single-node (app + DB en un mismo host o hosts separados sin replicación obligatoria).
+	o	Sin clustering ni failover automático. Se prioriza reinicio/restore rápido y procedimientos documentados.
+•	10.5. Deployments & Maintenance:
+	o	No se requiere zero-downtime deploy. Se permiten interrupciones breves durante despliegues y mantenimiento.
+	o	Mantenimientos planificados preferentemente fuera de horario; comunicar con antelación.
+•	10.6. Health & Monitoring:
+	o	Endpoint `GET /healthz` para liveness/readiness básicos.
+	o	Logging a archivos con rotación; métricas mínimas (CPU, RAM, disco) del host.
+	o	Alertas simples a administradores ante caídas prolongadas o errores críticos.
+•	10.7. Backups & Recovery:
+	o	Backups de base de datos: copia nocturna (full o incremental) con retención mínima de 7 días.
+	o	Pruebas periódicas de restore en entorno de pruebas para validar RPO/MTTR.
+•	10.8. Operational Runbooks:
+	o	Procedimientos documentados para: reinicio de servicios, restauración desde backup, rotación de logs, verificación de salud post-incidente.
 
