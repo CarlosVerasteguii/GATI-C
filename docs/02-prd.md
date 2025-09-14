@@ -4,7 +4,7 @@ GATI-C es una plataforma web interna para la Comisión Federal de Electricidad (
 2. Who is this app for
 Rol Administrador: Es el superusuario del sistema. Realiza todas las acciones críticas: aprueba solicitudes de Editores (esto se ajustará si es necesario), gestiona los atributos del sistema (Categorías, Marcas), supervisa y procesa las "Tareas Pendientes" (Cargas y Retiros rápidos), y tiene control total sobre el inventario.
 Rol Editor: Es el usuario principal en el día a día. Su tarea más crucial es asignar y prestar equipos de manera rápida y precisa. Utilizará intensivamente los flujos de "Retiro Rápido" para sacar material del almacén y registrarlo sin demoras. Necesita que el sistema sea extremadamente ágil para no interrumpir su trabajo de campo.
-Rol: Lector Principalmente consultan la disponibilidad de equipos y registran retiros. El flujo de "Retiro Rápido" es esencial para ellos.
+Rol Lector: Usuario de consulta estrictamente de solo lectura. Accede a dashboards, listados, detalles y documentos para consulta. No participa en flujos que modifiquen datos (p. ej., Carga Rápida, Retiro Rápido, Tareas Pendientes, Préstamos/Asignaciones ni eliminaciones).
 
 2.1. Matriz de Permisos por Rol
 
