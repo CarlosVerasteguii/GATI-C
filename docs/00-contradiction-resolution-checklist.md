@@ -7,7 +7,7 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 ## 1. Gobernanza y Permisos (RBAC)
 
 - [x] **1.1. Permisos del Rol "Lector":** Definir de forma inequívoca si el rol "Lector" tiene permisos de escritura/eliminación. Alinear la matriz de permisos con su descripción filosófica.
-- [ ] **1.2. Gestión de Atributos:** Definir qué rol(es) son responsables de gestionar entidades auxiliares como categorías, marcas y ubicaciones.
+- [x] **1.2. Gestión de Atributos:** Definir qué rol(es) son responsables de gestionar entidades auxiliares como categorías, marcas y ubicaciones.
 
 ## 2. Auditoría y Trazabilidad
 

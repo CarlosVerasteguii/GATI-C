@@ -28,9 +28,9 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Cancelar Préstamos/Asignaciones | Sí            | Sí      | No      |                                                                               |
 | Ver Historial Préstamos/Asignaciones | Sí            | Sí      | No      |                                                                               |
 | **Configuración del Sistema**|               |         |         |                                                                               |
-| Gestión de Categorías        | Sí            | Sí      | No      | Añadir, editar, eliminar categorías de productos.                             |
-| Gestión de Marcas            | Sí            | Sí      | No      | Añadir, editar, eliminar marcas.                                              |
-| Gestión de Ubicaciones       | Sí            | Sí      | No      | Añadir, editar, eliminar ubicaciones.                                         |
+| Gestión de Categorías        | Sí            | No      | No      | Añadir, editar, eliminar categorías de productos (solo Administrador).        |
+| Gestión de Marcas            | Sí            | No      | No      | Añadir, editar, eliminar marcas (solo Administrador).                         |
+| Gestión de Ubicaciones       | Sí            | No      | No      | Añadir, editar, eliminar ubicaciones (solo Administrador).                    |
 | Gestión de Usuarios          | Sí            | No      | No      | Creación, edición y gestión de roles de usuarios (solo Administrador).       |
 | **Documentos Adjuntos**      |               |         |         |                                                                               |
 | Eliminar Documentos Adjuntos (soft-delete, sin papelera) | Sí            | Sí      | No      | Se ocultan en la UI; no existe restauración desde papelera.                   |
@@ -109,10 +109,11 @@ Gestión de Documentos Adjuntos (SISE / Contrato de Compra):
     •	Error del servidor: "Ocurrió un error en el servidor al subir el archivo. Por favor, inténtelo de nuevo más tarde."
     •	Límite de tamaño excedido: "El archivo excede el tamaño máximo permitido de 100MB."
 
-Módulo de Tareas Pendientes:
-Carga Rápida: Permite crear una solicitud de ingreso pendiente. Utiliza un ComboBox que sugiere productos existentes. Si no existe, permite crear un placeholder con un nombre temporal (solo el nombre). La solicitud se guarda en una lista separada sin afectar el stock principal.
-Retiro Rápido: Permite marcar para retiro uno o varios artículos (serializados o no) a través de un modal tipo "carrito". La acción cambia el estado de los artículos a Pendiente de Retiro. Los números de serie y otros datos detallados para una baja adecuada se llenarán en la etapa posterior de procesamiento de la tarea pendiente.
-Procesamiento: Cualquier Editor o Administrador puede procesar una tarea pendiente. Al hacerlo, se abre el formulario completo correspondiente (Añadir/Retirar) con los datos pre-cargados para su finalización.
+ Módulo de Tareas Pendientes:
+ Carga Rápida: Permite crear una solicitud de ingreso pendiente. Utiliza un ComboBox que sugiere productos existentes. Si no existe, permite crear un placeholder con un nombre temporal (solo el nombre). La solicitud se guarda en una lista separada sin afectar el stock principal.
+ Retiro Rápido: Permite marcar para retiro uno o varios artículos (serializados o no) a través de un modal tipo "carrito". La acción cambia el estado de los artículos a Pendiente de Retiro. Los números de serie y otros datos detallados para una baja adecuada se llenarán en la etapa posterior de procesamiento de la tarea pendiente.
+ Nota sobre Catálogos: Durante los flujos de Carga/Retiro Rápido, el EDITOR no necesita crear nuevas Marcas, Categorías o Ubicaciones. El sistema está diseñado para que el EDITOR pueda seleccionar de los catálogos existentes o dejar estos campos en blanco para ser completados más tarde en el "Formulario Completo". Esto asegura que el flujo rápido no se interrumpa por tareas administrativas.
+ Procesamiento: Cualquier Editor o Administrador puede procesar una tarea pendiente. Al hacerlo, se abre el formulario completo correspondiente (Añadir/Retirar) con los datos pre-cargados para su finalización.
     •   **Formulario Completo para Carga/Edición de Activos:** Este formulario se utilizará para registrar y editar los detalles completos de un activo, incluyendo la finalización de una "Carga Rápida". Los campos clave a capturar y mostrar en la vista de detalles del producto son:
         •   **Información Básica del Activo:** Nombre del Producto, Número de Serie / Identificador Único (requerido para serializados), Categoría (ComboBox), Marca (ComboBox), Modelo, Descripción Detallada.
         •   **Detalles de Adquisición:** Proveedor (texto libre/ComboBox), Fecha de Adquisición / Compra, Número de Contrato / Factura, Costo de Adquisición (opcional), Condición al Ingreso (Lista desplegable).
