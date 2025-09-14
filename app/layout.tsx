@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { SWRProvider } from "@/components/providers/swr-provider"
 import { AppProvider } from "@/contexts/app-context"
 import { Toaster } from "@/components/ui/toaster" // Asegúrate de que Toaster esté disponible
 
@@ -23,10 +24,12 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AppProvider>
-            {children}
-            <Toaster /> {/* Renderiza el Toaster aquí para que esté disponible globalmente */}
-          </AppProvider>
+          <SWRProvider>
+            <AppProvider>
+              {children}
+              <Toaster /> {/* Renderiza el Toaster aquí para que esté disponible globalmente */}
+            </AppProvider>
+          </SWRProvider>
         </ThemeProvider>
       </body>
     </html>

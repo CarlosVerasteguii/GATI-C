@@ -40,7 +40,7 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 
 ## 7. Arquitectura Frontend y Datos
 
-- [ ] **7.1. Arquitectura de Renderizado:** Aclarar la postura sobre el uso de React Server Components (RSC) y Server-Side Rendering (SSR) dentro del marco de un "cliente tonto".
-- [ ] **7.2. Patrón de Data-Fetching:** Estandarizar la herramienta para la obtención de datos (SWR/React Query) y prohibir el uso de `fetch`/`axios` directos en los componentes.
+- [x] **7.1. Arquitectura de Renderizado:** Aclarar la postura sobre el uso de React Server Components (RSC) y Server-Side Rendering (SSR) dentro del marco de un "cliente tonto".
+- [x] **7.2. Patrón de Data-Fetching:** Estandarizar la herramienta para la obtención de datos (SWR/React Query) y prohibir el uso de `fetch`/`axios` directos en los componentes.
 
 Nota: He omitido deliberadamente las contradicciones menores o que son consecuencia de las principales para mantener el checklist enfocado en las decisiones estratégicas.
