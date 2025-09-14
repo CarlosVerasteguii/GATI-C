@@ -145,3 +145,16 @@ o	Catálogo: Protección Estricta de Borrado: Eliminar Brands, Categories o Loca
 •	11.4. Growth Path:
 	o	Escalado vertical primero. Componentes adicionales (caché, réplicas de lectura) requieren justificación y cambio controlado del SRS.
 
+12. Transport Security (HTTPS Policy)
+•	12.1. Mandatory HTTPS: Todas las comunicaciones cliente-servidor se realizan exclusivamente por HTTPS. Cualquier petición HTTP recibe redirección 301 a HTTPS.
+•	12.2. TLS Configuration: TLS ≥ 1.2 requerido; TLS 1.3 preferido. Deshabilitar TLS 1.0/1.1 y cifrados débiles.
+•	12.3. Certificates:
+	o	Desarrollo: certificados autofirmados gestionados por el equipo; documentación para instalación del certificado de confianza en equipos internos.
+	o	Producción: certificados emitidos por la CA interna corporativa. Si no disponible, usar un certificado gestionado centralmente y distribuir su cadena de confianza a los clientes internos.
+•	12.4. Headers & Cookies:
+	o	HSTS habilitado en producción.
+	o	Cookies de autenticación con flags `Secure` + `HttpOnly` + `SameSite=Lax`.
+	o	Helmet para establecer cabeceras de seguridad razonables.
+•	12.5. Mixed Content: Prohibido. Todos los recursos deben servirse por HTTPS.
+•	12.6. Certificate Operations: Monitorear expiración y renovar con al menos 30 días de antelación; procedimiento documentado de rotación.
+

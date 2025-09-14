@@ -186,6 +186,14 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 •   **Infraestructura:** Una instancia de aplicación y una base de datos MySQL única (sin replicación). Despliegue simple (p. ej., systemd o Docker Compose).
 •   **Rendimiento:** Paginación, endpoints agregados cuando aplique, e índices de base de datos bien diseñados son suficientes para la escala objetivo (1,200 activos actuales; hasta 3,000 en 5 años).
 •   **Estrategia de Crecimiento:** Escalado vertical primero. Cualquier componente adicional (cachés, réplicas de lectura) requiere justificación explícita y revisita del SRS/PRD.
+
+4.5. Seguridad en Tránsito (HTTPS Obligatorio)
+•   **Política:** Todo tráfico entre cliente y servidor debe ir cifrado por HTTPS en desarrollo y en producción. Cualquier acceso por HTTP será redirigido (301) a HTTPS.
+•   **Certificados:**
+    •   Desarrollo: certificados autofirmados gestionados por el equipo; se documentará su instalación de confianza en los equipos de los usuarios internos.
+    •   Producción: certificados emitidos por la Autoridad de Certificación interna de la empresa (preferido). Si no estuviera disponible, se usará un certificado gestionado centralmente y distribuido a los clientes internos.
+•   **Cookies y Headers:** Las cookies de sesión usan `Secure` + `HttpOnly` + `SameSite=Lax`. Habilitar HSTS en producción. Usar Helmet para cabeceras de seguridad recomendadas.
+•   **TLS:** Requerir TLS ≥ 1.2 (preferido 1.3), deshabilitar TLS 1.0/1.1 y suites de cifrado débiles. Evitar contenido mixto (no cargar recursos por HTTP).
 Política de Eliminación de Catálogos (Protección Estricta):
 •	Las entidades de catálogo (Marcas, Categorías, Ubicaciones) no pueden eliminarse si existen Productos que las referencian. La operación devolverá un error y no se realizará ningún cambio.
 •	La interfaz mostrará un mensaje claro con el conteo de productos asociados y ofrecerá un acceso directo a un listado filtrado para su reasignación manual.
