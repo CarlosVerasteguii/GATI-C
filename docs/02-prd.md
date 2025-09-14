@@ -17,7 +17,7 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Crear Placeholders (Carga Rápida) | Sí            | Sí      | No      | Creación de entrada pendiente de un activo.                                  |
 | Ver Productos/Detalles       | Sí            | Sí      | Sí      | Incluye acceso a documentos adjuntos.                                         |
 | Editar Productos (full form) | Sí            | Sí      | No      | Modificación de cualquier campo de un producto existente. Todas las ediciones quedan registradas. |
-| Eliminar Productos (a papelera) | Sí            | Sí      | No      | Los archivos eliminados se mueven a papelera, con registro de la acción.      |
+| Eliminar Productos (soft-delete, sin papelera) | Sí            | Sí      | No      | Los registros quedan ocultos en la UI; sin restauración desde la interfaz.    |
 | **Tareas Pendientes**        |               |         |         |                                                                               |
 | Crear (Carga Rápida/Retiro Rápido) | Sí            | Sí      | No      | Inicio de una solicitud pendiente.                                            |
 | Procesar (Completar Form.)   | Sí            | Sí      | No      | Finalizar una tarea pendiente, llenando el formulario completo.               |
@@ -33,7 +33,7 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Gestión de Ubicaciones       | Sí            | No      | No      | Añadir, editar, eliminar ubicaciones (solo Administrador).                    |
 | Gestión de Usuarios          | Sí            | No      | No      | Creación, edición y gestión de roles de usuarios (solo Administrador).       |
 | **Documentos Adjuntos**      |               |         |         |                                                                               |
-| Eliminar Documentos Adjuntos (soft-delete, sin papelera) | Sí            | Sí      | No      | Se ocultan en la UI; no existe restauración desde papelera.                   |
+| Eliminar Documentos Adjuntos (soft-delete, sin papelera) | Sí            | Sí      | No      | Se ocultan en la UI; sin restauración desde la interfaz.                      |
 
 ### Contrato Detallado de Permisos: Rol Lector
 
@@ -107,7 +107,14 @@ Gestión de Documentos Adjuntos (SISE / Contrato de Compra):
     •	Archivo corrupto: "Error al procesar el archivo. Por favor, intente con otro archivo."
     •	Tipo de archivo incorrecto: "Tipo de archivo no permitido. Solo se aceptan PDF y Word."
     •	Error del servidor: "Ocurrió un error en el servidor al subir el archivo. Por favor, inténtelo de nuevo más tarde."
-    •	Límite de tamaño excedido: "El archivo excede el tamaño máximo permitido de 100MB."
+•	Límite de tamaño excedido: "El archivo excede el tamaño máximo permitido de 100MB."
+
+Política de Borrado Unificada:
+•	Todas las eliminaciones del sistema se realizan mediante soft-delete, estableciendo `deleted_at` en las entidades eliminables. No existe papelera ni restauración desde la UI. Cualquier restauración será excepcional y manual por un administrador directamente en la base de datos.
+•	Eliminar un Producto provoca el soft-delete de todos sus Documentos Adjuntos en la misma transacción lógica, manteniendo consistencia visible.
+•	Las vistas y búsquedas excluyen por defecto los registros con `deleted_at` no nulo; por lo tanto, al eliminar un elemento desaparece de las vistas principales.
+•	Las descargas de archivos se bloquean si el Documento o su Producto asociado tienen `deleted_at` establecido.
+•	Los roles con permiso de eliminación: Administrador y Editor. El rol Lector no tiene permisos de eliminación.
 
  Módulo de Tareas Pendientes:
  Carga Rápida: Permite crear una solicitud de ingreso pendiente. Utiliza un ComboBox que sugiere productos existentes. Si no existe, permite crear un placeholder con un nombre temporal (solo el nombre). La solicitud se guarda en una lista separada sin afectar el stock principal.

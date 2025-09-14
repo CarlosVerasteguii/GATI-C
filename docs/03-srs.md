@@ -3,10 +3,10 @@ Software Requirements Specification (SRS) - GATI-C v2.2 (Final)
 •	1.1. Type: Web-based application, architected with a desktop-first philosophy. The UI must be fully responsive, ensuring complete functionality on tablets and a usable, streamlined experience on mobile devices.
 •	1.2. Modules (Modular Monolith): The backend is a single, deployable Node.js application, internally structured into discrete, loosely-coupled modules. This provides initial development velocity while paving the way for future migration to microservices if needed.
 o	Core Modules:
-	Inventory: Manages products, stock, and lifecycle states.
+	Inventory: Manages products, stock, lifecycle states, and soft-deletes.
 	Identity & Access Management (IAM): Handles users, roles, permissions, and authentication.
 	Task Management: Manages "Tareas Pendientes" (Carga/Retiro Rápido).
-	Document Management: Handles file uploads, storage, and soft-deletes.
+	Document Management: Handles file uploads, storage, and universal soft-delete semantics (no trash) for documents; participates in product-cascaded soft-delete.
 	Auditing: Responsible for all logging and history tracking.
 •	1.3. Inter-Module Communication: La comunicación entre módulos se realiza a través de llamadas de servicio directas, gestionadas por un contenedor de Inversión de Control (IoC) como `tsyringe`. Esto promueve la simplicidad y la mantenibilidad para la escala actual del proyecto. La Auditoría es asíncrona y desacoplada; no participa en transacciones de negocio y sus fallos no bloquean operaciones.
 2. Architecture Pattern
@@ -65,13 +65,17 @@ o	GET /api/v1/view/inventory?page=1&limit=25&search=...&category=...: Returns pa
 •	7.4. Response Structure:
 o	Success: { "success": true, "data": { ... } }
 o	Error: { "success": false, "error": { "code": "...", "message": "..." } }
+•	7.5. Delete Semantics (Soft-Delete Universal):
+o	DELETE /api/v1/products/:id: Marca el producto con `deleted_at` y, en la misma transacción lógica, aplica soft-delete a sus documentos asociados. Devuelve 204 No Content o { "success": true }.
+o	DELETE /api/v1/products/:productId/documents/:id: Marca el documento con `deleted_at`. Devuelve 204 No Content o { "success": true }.
+o	List endpoints excluyen por defecto registros con `deleted_at` no nulo. Peticiones GET/PUT sobre recursos soft-deleted devuelven 404.
 8. Database Design ERD (Entity-Relationship Design)
 •	8.1. Core Tables:
-o	User (id, name, email, password_hash, role, trusted_ip - Este campo se usará para la funcionalidad de 'Acceso Rápido' desde el login, permitiendo identificar al usuario por su IP registrada para atribuirle automáticamente las acciones rápidas que realice. La relación es de un solo trusted_ip por usuario.)
-o	Product (id, name, serial_number, description, cost, purchase_date, condition, ...)
-o	Brand (id, name)
-o	Category (id, name)
-o	Location (id, name)
+o	User (id, name, email, password_hash, role, trusted_ip, deleted_at - Este campo se usará para la funcionalidad de 'Acceso Rápido' desde el login, permitiendo identificar al usuario por su IP registrada para atribuirle automáticamente las acciones rápidas que realice. La relación es de un solo trusted_ip por usuario.)
+o	Product (id, name, serial_number, description, cost, purchase_date, condition, ..., deleted_at)
+o	Brand (id, name, deleted_at)
+o	Category (id, name, deleted_at)
+o	Location (id, name, deleted_at)
 o	Document (id, original_filename, stored_uuid_filename, product_id, deleted_at)
 o	AuditLog (id, user_id, action, target_type, target_id, changes_json)
 o	PendingTask (id, creator_id, type, status, details_json)
@@ -83,7 +87,7 @@ o	Product -> Location (Many-to-One)
 o	Product -> Document (One-to-Many)
 •	8.3. Data Integrity Policies:
 o	Trazabilidad de Mejor Esfuerzo: Las operaciones de auditoría (logging) se consideran secundarias, asíncronas y desacopladas. `AuditLog` no forma parte de ninguna transacción de negocio. Garantía at-most-once: se prioriza no duplicar eventos; omisiones puntuales por fallos del subsistema son aceptables. Los fallos de auditoría no bloquean ni hacen fallar la acción principal del usuario, y no provocan rollback de operaciones de negocio.
-o	Soft Deletes: Documents will use a soft-delete mechanism (deleted_at column).
+o	Soft Deletes (Universal): Todas las entidades eliminables usan un mecanismo de soft-delete mediante la columna `deleted_at`. No existe papelera visible para el usuario ni endpoints de restauración. El borrado de un `Product` provoca el soft-delete de sus `Document` asociados en la misma transacción lógica. Las lecturas por defecto excluyen registros con `deleted_at` no nulo; peticiones `GET`/`PUT` sobre recursos soft-deleted devuelven 404. Las descargas de archivos se bloquean si el `Document` o su `Product` asociado están soft-deleted.
 o	Cascading Borrado Restringido: Deleting Brands, Categories, o Users is restricted by default if they are linked to Products. The API will return an error. The UI will present this error with an option to "Forzar Borrado", which triggers a separate, explicit API call that sets the foreign keys in the Products table to NULL.
 •	8.4. Stock Logic for Non-Serialized Items: The "división de registros" strategy will be used. A loan/assignment of 1 unit from a lot of 10 will update the original row's quantity to 9 and create a new row with quantity 1 and the new status.
 9. Accessibility

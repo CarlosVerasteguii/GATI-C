@@ -15,7 +15,7 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 
 ## 3. Ciclo de Vida de los Datos
 
-- [ ] **3.1. Política de Borrado:** Unificar la política de eliminación para todas las entidades. ¿Usamos "soft-delete sin papelera" o un "soft-delete con papelera y restauración"?
+- [x] **3.1. Política de Borrado:** Unificar la política de eliminación para todas las entidades. ¿Usamos "soft-delete sin papelera" o un "soft-delete con papelera y restauración"?
 - [ ] **3.2. Nomenclatura de Archivos Adjuntos:** Decidir el estándar para nombrar archivos: ¿se conserva el nombre original o se utiliza un UUID para evitar colisiones?
 - [ ] **3.3. Política de "Forzar Borrado":** Definir si existe la funcionalidad de "borrado forzado" que ponga las claves foráneas a NULL y cuáles son sus implicaciones.
 
