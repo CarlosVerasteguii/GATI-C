@@ -34,6 +34,7 @@ El sistema operará exclusivamente en una **red local interna**. El acceso remot
 - **Estética:** La interfaz debe ser moderna, fluida y visualmente llamativa. La simplicidad del proyecto aplica a la arquitectura y operación, no a la estética.
 - **Plataforma primaria:** Uso 99% en monitor de escritorio. Se optimiza para pantallas grandes. Móvil es "nice-to-have" y no debe comprometer la experiencia de escritorio.
 - **Filosofía de construcción:** Innovación controlada con micro-interacciones sobrias y componentes estándar; evitar soluciones ad-hoc difíciles de mantener. Performance y legibilidad por encima de efectos complejos.
+- **Stack de estilos (6.6):** Tailwind CSS + shadcn/ui (con Radix) como stack oficial; theming con CSS variables y `next-themes` (modo oscuro/claro por clase). Se descartan "frameworks base" y mezclas híbridas.
 
 ## Bloque 2: Re-evaluación de Requisitos Clave
 

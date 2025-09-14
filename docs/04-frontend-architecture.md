@@ -11,8 +11,9 @@ Este documento define la estructura oficial de layout y navegación para la apli
 2. **Consistencia Visual**: Todos los componentes y páginas deben mantener una apariencia y comportamiento coherentes siguiendo la Guía Maestra de Estilo Visual.
 
 3. **Modularidad**: La estructura de layout se implementa de manera modular para facilitar el mantenimiento y la escalabilidad.
+4. **Stack de Estilos (6.6)**: Tailwind CSS + shadcn/ui (Radix) con theming por clase (`next-themes`). Evitar mezclar frameworks o sistemas de estilos alternos.
 
-4. **Rendimiento**: La implementación minimiza re-renderizados innecesarios y optimiza la carga inicial.
+5. **Rendimiento**: La implementación minimiza re-renderizados innecesarios y optimiza la carga inicial.
 
 ## Estructura de Layout Estandarizada
 
@@ -60,8 +61,13 @@ app/
    - El layout del grupo se aplica automáticamente a todas las páginas
 
 2. **Extender funcionalidad con hooks**:
-   - Usar `useDevice()` para adaptar componentes según el dispositivo
-   - Implementar lógica específica de dispositivo dentro de los componentes
+- Usar `useDevice()` para adaptar componentes según el dispositivo
+- Implementar lógica específica de dispositivo dentro de los componentes
+
+### Tema y Modo Oscuro (6.5)
+- Usar `next-themes` con estrategia `class` y `ThemeProvider` a nivel de layout.
+- Tema por defecto recomendado: claro; incluir toggle en el header (componente `ThemeToggle`).
+- Evitar estilos in-line condicionales para tema; preferir tokens (`--background`, `--foreground`, etc.).
 
 3. **Documentar cambios de layout**:
    - Actualizar este documento cuando se realicen cambios arquitectónicos
@@ -147,3 +153,5 @@ export default function InventarioPage() {
 - Organización: agrupar campos por secciones, soportar acordeones/expansiones para detalles avanzados.
 - Navegación: anclas de sección y header “sticky” para contexto.
 - Validación: por sección cuando sea posible; feedback inmediato y accesible.
+- Usar clases semánticas para estados (`bg-status-...`, `text-status-...`) definidas en Tailwind; evitar `bg-green-500` directos para estados.
+- Modo oscuro con estrategia `class` (`.dark` en `<html>`); no usar detección por media query aislada.

@@ -1,14 +1,12 @@
-Guía Maestra de Estilo Visual y Esencia de Marca para
-Aplicaciones CFE (Actualizada) - PARTE 1
+﻿Guía Maestra de Estilo Visual — GATI-C (Tailwind + shadcn/ui)
 Versión: 1.1
 Fecha: [Fecha Actual]
 0. Introducción y Propósito
 Este documento establece las directrices visuales, la paleta de colores, la tipografía, el uso de
-componentes y otros aspectos clave que conforman la "esencia" de las aplicaciones
-desarrolladas para la Comisión Federal de Electricidad (CFE).
+componentes y otros aspectos clave que conforman la UI de GATI-C, desarrollada para la Comisión Federal de Electricidad (CFE) con Tailwind CSS y shadcn/ui.
 El objetivo principal es:
 1. Asegurar la consistencia visual y de experiencia de usuario a través de todas las
-aplicaciones CFE, apalancando las capacidades del Framework Base.
+aplicaciones CFE, apalancando el stack Tailwind CSS + shadcn/ui.
 2. Reflejar y reforzar la identidad de marca de CFE en cada interfaz.
 3. Proporcionar una base sólida para el desarrollo de nuevas aplicaciones o la
 modificación de existentes, garantizando que se alineen con la estética y funcionalidad
@@ -16,14 +14,12 @@ deseadas.
 4. Servir como referencia para desarrolladores e IA en la creación de interfaces
 intuitivas, profesionales y eficientes.
 Esta guía sintetiza las mejores prácticas y elementos visuales identificados en proyectos
-previos y ahora se enriquece con las especificidades del Framework Base.
+previos y ahora se enriquece con las especificidades del stack Tailwind + shadcn.
 1. Filosofía de Diseño y Principios Fundamentales
 La esencia visual de las aplicaciones CFE se centra en los siguientes principios:
 • Profesionalismo y Confianza CFE:
 o Transmitir la seriedad y fiabilidad de CFE.
-o Integrar de forma prominente los colores e imagen corporativa de CFE. El
-Framework Base ya utiliza el color verde CFE (#008E5A) en elementos como
-el loader de página.
+o Integrar de forma prominente los colores e imagen corporativa de CFE. El color verde CFE (#008E5A) se usa como primario.
 • Claridad y Legibilidad:
 o Priorizar una interfaz limpia que permita a los usuarios comprender la
 información y realizar tareas de manera eficiente.
@@ -32,16 +28,15 @@ contraste y una jerarquía tipográfica clara.
 • Eficiencia y Funcionalidad:
 o Facilitar una rápida entrada de datos, navegación y ejecución de tareas.
 o Cada elemento visual debe tener un propósito y contribuir a una experiencia de
-usuario productiva, minimizando la carga cognitiva. El Framework Base
+usuario productiva, minimizando la carga cognitiva. El stack (shadcn/ui + Tailwind)
 proporciona componentes estructurados para este fin (formularios, tablas,
 etc.).
 • Modernidad:
 o Diseño contemporáneo con micro-interacciones sutiles y consistentes. Evitar efectos complejos que penalicen el rendimiento o la mantenibilidad.
 • Consistencia:
 o Mantener una apariencia y comportamiento uniformes en todos los módulos,
-vistas y componentes de la aplicación, utilizando las clases y estructuras
-definidas por el Framework Base.
-o Aplicar estilos de manera consistente para elementos similares.
+vistas y componentes de la aplicación, utilizando Tailwind CSS y componentes shadcn/ui.
+o Aplicar estilos de manera consistente para elementos similares usando tokens (CSS variables) y utilidades de Tailwind.
 • Usabilidad Intuitiva:
 o Diseñar interfaces que guíen al usuario de manera natural a través de los
 procesos.
@@ -51,11 +46,9 @@ o Construir interfaces teniendo en cuenta la accesibilidad (WCAG AA como
 mínimo donde aplique), asegurando que puedan ser utilizadas por el mayor
 número de personas posible.
 2. Paleta de Colores
-El sistema de colores es fundamental. El Framework Base ya define colores clave. Para mayor
-personalización, se pueden complementar con variables CSS (idealmente HSL) e integrarse
-con Tailwind CSS si se usa adicionalmente.
+El sistema de colores es fundamental. Se define mediante variables CSS (HSL) expuestas en Tailwind. Evitar el uso de colores "crudos" para estados; preferir clases semánticas.
 2.1. Colores Corporativos CFE (Primarios de Marca)
-Estos colores son la base de la identidad CFE. El Framework Base ya utiliza el verde principal.
+Estos colores son la base de la identidad CFE.
 Variable/Uso Hex HSL
 (Aprox.)
 Descripción y Uso en Framework
@@ -90,16 +83,10 @@ verdes CFE.
 cfe-black #111111
 hsl(0 0%
 7%)
-Negro definido en el Framework Base
-("COLOR NEGRO"). Útil para texto de
-alto contraste, botones secundarios
-(button-black).
-2.2. Variables CSS del Tema Base (Recomendado para complementar el
-Framework)
-(Esta sección se mantiene de la guía anterior, ya que el Framework Base puede no cubrir
-todos estos aspectos o se podría querer una capa de personalización adicional con Tailwind
-CSS. Los valores HSL son cruciales para la tematización claro/oscuro si el framework no la
-provee nativamente con variables).
+Negro recomendado para texto de alto
+contraste y botones secundarios.
+2.2. Variables CSS del Tema (Tailwind + CSS Variables)
+Los valores HSL habilitan tematización claro/oscuro. El modo oscuro se activa mediante la clase `.dark` en `<html>` (next-themes).
 Modo Claro (:root)
 Variable HSL Value Aplicación Típica
 --background 0 0% 100% Fondo principal de la aplicación/interfaz web.
@@ -160,7 +147,7 @@ idealmente CFE Green.
 Radio de borde base
 (ej. 4px o 0.25rem si button-rounded es
 sutil).
-Modo Oscuro (.dark) (Si se implementa adicionalmente)
+Modo Oscuro (.dark) — Implementado (6.5)
 Variable HSL
 Value
 Descripción
@@ -174,83 +161,67 @@ oscuro, similar a cfe-black)
 98% Texto principal (Casi Blanco)
 ... (adaptar el resto de variables del
 modo oscuro de la guía anterior) ...
-2.3. Colores Semánticos del Framework Base (Alertas, Botones Genéricos)
-El Framework Base provee colores semánticos para alertas (success, error/danger, warning,
-info) y una paleta de colores para botones genéricos (ROJO, AMARILLO, CAFÉ, AQUA, etc.).
-• Alertas: Utilizar los colores definidos por el framework para los componentes de alerta
-(alert-success, alert-danger, etc.) ya que son visualmente distintivos y
-comunican el estado apropiado.
-• Botones Genéricos: Si bien el framework ofrece una amplia gama de colores para
-botones, para aplicaciones CFE, se priorizará el uso de cfe-green para acciones
-primarias y cfe-black (o un gris neutro) para acciones secundarias o buttondefault. Los otros colores (ROJO, AMARILLO, etc.) deben usarse con extrema
-moderación y solo si un estado específico de la UI lo requiere y no entra en conflicto
-con la identidad de CFE (ej. un botón "Eliminar" podría ser rojo).
-2.4. Uso Estratégico de Colores (Adaptado al Framework)
-• Primario (cfe-green, clase button verde): Para botones de acción principal (ej.
-"Enviar", "Generar Reporte", "Procesar Archivo"). El Framework Base ya lo contempla.
-• Secundario (cfe-black, clase button-black o button default): Para acciones
-como "Cancelar", "Limpiar Formulario".
-• Alertas: Los colores provistos por el framework para alertsuccess (verde), alert-danger (rojo), alert-warning (amarillo), alertinfo (azul) son estándar y deben usarse.
-• Texto: Usar cfe-black (#111111) o --foreground para el texto principal,
-asegurando alto contraste con el fondo.
-• Fondos: El fondo principal es blanco por defecto. Las tarjetas y contenedores pueden
-tener fondos sutilmente diferentes si el framework lo define o si se personaliza.
-• Loader: El data-loader-color="#008E5A" ya establece el color CFE.
+2.3. Paleta Semántica de Estados (6.4)
+Los estados de activos y de UI usan clases semánticas expuestas por Tailwind (mapeadas a variables CSS). Mapeo:
+• Disponible → `status.available` (bg/text): Verde (CFE/green-600 en claro; green-800 en oscuro)
+• Asignado → `status.assigned`: Púrpura/Índigo
+• Prestado → `status.lent`: Amarillo/Ámbar (texto oscuro en claro; claro en oscuro)
+• Pendiente de Retiro → `status.pendingRetire`: Naranja
+• Retirado → `status.retired`: Rojo
+• Info → `status.info`: Azul
+• Éxito → `status.success`: Verde
+• Error → `status.error`: Rojo
+• Advertencia → `status.warning`: Naranja
+Uso: `bg-status-<name>-bg`, `text-status-<name>-text`. Evitar utilidades genéricas (`bg-green-500`) para estados.
+
+2.3.1. Guía de Implementación
+Ejemplo de uso correcto en un componente Badge (shadcn/ui) para el estado "Disponible". Usa SIEMPRE clases semánticas; no utilices colores directos.
+
+```tsx
+// Ejemplo de uso correcto para un estado "Disponible"
+<Badge className="bg-status-available-bg text-status-available-text hover:bg-status-available-bg/80">
+  Disponible
+</Badge>
+
+// AVISO: No usar clases de color directas como bg-green-100 para estados.
+// Usar siempre las clases semánticas para asegurar la consistencia con el tema.
+```
+
+2.4. Uso Estratégico de Colores
+• Primario (cfe-green): Acciones principales.
+• Secundario (cfe-black o gris neutro): Acciones secundarias.
+• Alertas: Usar paleta semántica (`destructive`, `warning`, `success`, `info`).
+• Texto: `--foreground` con contraste AA.
+• Fondos: `--background` y contenedores con variaciones sutiles.
 3. Tipografía
 3.1. Fuente Principal
 • Recomendación CFE: Noto Sans. (Como en la guía anterior).
-• Framework Base: Es probable que el Framework Base defina su propia familia de
-fuentes. Se debe:
-1. Verificar si es posible y sencillo configurar Noto Sans como la fuente
-principal del Framework Base.
-2. Si no es factible, evaluar si la fuente del Framework Base es profesional, clara
-y adecuada para CFE. Si lo es (ej. una sans-serif común como Open Sans,
-Lato, Roboto), puede utilizarse.
-3. Si la fuente del Framework Base no es adecuada, se debe priorizar la
-implementación de Noto Sans mediante CSS adicional.
+• Stack: Tailwind/shadcn soportan cualquier familia. Recomendación: Noto Sans (o sistema: Inter/Roboto) según disponibilidad y licencia.
 • Fallback: Arial, Helvetica, sans-serif.
 3.2. Jerarquía Visual y Tamaños
-El Framework Base probablemente define su propia escala tipográfica a través de sus clases
-para encabezados (h1-h6), párrafos, y componentes.
-• Adaptar la Jerarquía CFE: Mapear los niveles jerárquicos de la guía CFE a las clases
-y elementos del Framework Base.
-o Títulos de Página/Sección Principal: Usar el elemento o clase más
-prominente del framework para títulos (ej. <h1>, o una clase específica de
-título).
-o Subtítulos / Encabezados de Sección: Clases de encabezado secundarias.
-o Texto de Párrafo Principal / Etiquetas de Campo: Clases de párrafo o texto
-base.
-o Texto Secundario / Ayuda / Placeholders: Clases de texto más pequeñas o
-con menor peso.
-• Consistencia del Framework: Utilizar las clases de tamaño y peso de fuente
-proporcionadas por el Framework Base para mantener la consistencia interna del
-tema.
+• Usar escala tipográfica de Tailwind (text-2xl/3xl, etc.) y clases de shadcn/ui.
+• Títulos de Página: `text-3xl font-bold` o componente correspondiente.
+• Subtítulos: `text-xl font-semibold`.
+• Texto base y ayuda: `text-sm`/`text-muted-foreground`.
 3.3. Pesos de Fuente
-Utilizar los pesos de fuente (font-weight) que el Framework Base aplique a sus clases
-(normal, bold, etc.) o los que se definan globalmente si se personaliza con Noto Sans.
+Usar utilidades de Tailwind para pesos (`font-normal`, `font-semibold`, `font-bold`) o clases de componentes shadcn/ui.
 3.4. Legibilidad
-• Line-height: Respetar el interlineado definido por el Framework Base, que suele estar
-optimizado. Ajustar con CSS si es necesario para mejorar la legibilidad.
+• Line-height: Usar valores por defecto de Tailwind; ajustar con utilidades (`leading-relaxed`, etc.) si es necesario.
 • Contraste: Siempre asegurar un contraste mínimo de 4.5:1 (WCAG AA) para el
 texto.
 4. Bordes, Radios y Sombras
 4.1. Radio de Borde
-• Framework Base: La clase button-rounded indica que el framework utiliza bordes
-redondeados para botones. Se debe aplicar esta filosofía a otros elementos como
-tarjetas, inputs y modales si el framework lo soporta o si se personaliza.
+• Bordes redondeados: usar tokens `--radius` expuestos a Tailwind (`rounded-md`, `rounded-lg`).
 • Variable CSS (--radius): Si se realizan personalizaciones adicionales, definir una
 variable --radius (ej. 4px, 0.25rem, 0.5rem dependiendo de la prominencia del
 redondeo) y aplicarla consistentemente.
 4.2. Bordes
-• Color: El Framework Base definirá colores de borde para sus componentes (inputs,
-tablas, tarjetas). Estos suelen ser grises sutiles.
+• Color: usar `--border` para inputs, tablas y tarjetas.
 • Grosor: Generalmente 1px.
 • Uso: Para delimitar campos de entrada, tablas (table table-striped), tarjetas, y
 otros contenedores según el diseño del Framework.
 4.3. Sombras
-• El Framework Base puede aplicar sombras sutiles a elementos como modales,
-dropdowns o tarjetas para dar profundidad. Utilizar las sombras provistas por el
-framework. Si no las tiene, se pueden añadir con moderación usando CSS.
+• Sombras: aplicar sombras sutiles (`shadow-sm`/`md`) para profundidad.
 5. Iconografía
 5.1. Principios de Uso
 • Intuitivos: Los iconos deben representar claramente su acción.

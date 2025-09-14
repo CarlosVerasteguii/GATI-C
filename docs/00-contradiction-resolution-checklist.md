@@ -34,9 +34,9 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 - [x] **6.1. Filosofía de Diseño:** Resolver la tensión entre "simplicidad pragmática" e "interfaz innovadora y llamativa". Establecer un principio guía claro.
 - [x] **6.2. Diseño de Modales:** Definir el estándar para modales complejos: ¿se permiten múltiples columnas o se prioriza un diseño de una sola columna compatible con móviles?
 - [x] **6.3. Longitud de Formularios:** Establecer una política sobre la longitud de los formularios para alinear "evitar formularios extensos" con la necesidad de un "Formulario Completo".
-- [ ] **6.4. Paleta de Colores de Estado:** Canonizar el uso de colores para los estados de los activos.
-- [ ] **6.5. Modo Oscuro:** Decidir si el modo oscuro es obligatorio, opcional o despriorizado.
-- [ ] **6.6. Stack de Estilos:** Tomar una decisión final: ¿se usa el ecosistema de shadcn/ui y Tailwind, o se define un "Framework Base" con clases personalizadas?
+- [x] **6.4. Paleta de Colores de Estado:** Canonizar el uso de colores para los estados de los activos.
+- [x] **6.5. Modo Oscuro:** Decidir si el modo oscuro es obligatorio, opcional o despriorizado.
+- [x] **6.6. Stack de Estilos:** Tomar una decisión final: ¿se usa el ecosistema de shadcn/ui y Tailwind, o se define un "Framework Base" con clases personalizadas?
 
 ## 7. Arquitectura Frontend y Datos
 
