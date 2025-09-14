@@ -6,7 +6,7 @@ o	Core Modules:
 	Inventory: Manages products, stock, lifecycle states, and soft-deletes.
 	Identity & Access Management (IAM): Handles users, roles, permissions, and authentication.
 	Task Management: Manages "Tareas Pendientes" (Carga/Retiro Rápido).
-	Document Management: Handles file uploads, storage, and universal soft-delete semantics (no trash) for documents; participates in product-cascaded soft-delete.
+	Document Management: Handles file uploads, UUID-based immutable storage (stored as `uuid.ext`), and universal soft-delete semantics (no trash) for documents; participates in product-cascaded soft-delete.
 	Auditing: Responsible for all logging and history tracking.
 •	1.3. Inter-Module Communication: La comunicación entre módulos se realiza a través de llamadas de servicio directas, gestionadas por un contenedor de Inversión de Control (IoC) como `tsyringe`. Esto promueve la simplicidad y la mantenibilidad para la escala actual del proyecto. La Auditoría es asíncrona y desacoplada; no participa en transacciones de negocio y sus fallos no bloquean operaciones.
 2. Architecture Pattern
@@ -69,6 +69,10 @@ o	Error: { "success": false, "error": { "code": "...", "message": "..." } }
 o	DELETE /api/v1/products/:id: Marca el producto con `deleted_at` y, en la misma transacción lógica, aplica soft-delete a sus documentos asociados. Devuelve 204 No Content o { "success": true }.
 o	DELETE /api/v1/products/:productId/documents/:id: Marca el documento con `deleted_at`. Devuelve 204 No Content o { "success": true }.
 o	List endpoints excluyen por defecto registros con `deleted_at` no nulo. Peticiones GET/PUT sobre recursos soft-deleted devuelven 404.
+•	7.6. Document Upload/Download Semantics (UUID Storage):
+o	POST /api/v1/products/:id/documents (multipart/form-data): Acepta el archivo, valida tipo y tamaño, genera UUID v4, guarda como `uuid.ext`, persiste `original_filename` y `stored_uuid_filename`, y retorna el recurso Document completo.
+o	GET /api/v1/products/:productId/documents/:id/download: Verifica que ni el producto ni el documento estén soft-deleted; sirve el archivo desde `stored_uuid_filename` con encabezado `Content-Type` correcto y `Content-Disposition: attachment; filename*=UTF-8''<original_filename_urlencoded>`.
+o	Seguridad: Rechaza paths arbitrarios, valida extensión vs MIME, y registra auditoría de subida/descarga.
 8. Database Design ERD (Entity-Relationship Design)
 •	8.1. Core Tables:
 o	User (id, name, email, password_hash, role, trusted_ip, deleted_at - Este campo se usará para la funcionalidad de 'Acceso Rápido' desde el login, permitiendo identificar al usuario por su IP registrada para atribuirle automáticamente las acciones rápidas que realice. La relación es de un solo trusted_ip por usuario.)
@@ -88,6 +92,7 @@ o	Product -> Document (One-to-Many)
 •	8.3. Data Integrity Policies:
 o	Trazabilidad de Mejor Esfuerzo: Las operaciones de auditoría (logging) se consideran secundarias, asíncronas y desacopladas. `AuditLog` no forma parte de ninguna transacción de negocio. Garantía at-most-once: se prioriza no duplicar eventos; omisiones puntuales por fallos del subsistema son aceptables. Los fallos de auditoría no bloquean ni hacen fallar la acción principal del usuario, y no provocan rollback de operaciones de negocio.
 o	Soft Deletes (Universal): Todas las entidades eliminables usan un mecanismo de soft-delete mediante la columna `deleted_at`. No existe papelera visible para el usuario ni endpoints de restauración. El borrado de un `Product` provoca el soft-delete de sus `Document` asociados en la misma transacción lógica. Las lecturas por defecto excluyen registros con `deleted_at` no nulo; peticiones `GET`/`PUT` sobre recursos soft-deleted devuelven 404. Las descargas de archivos se bloquean si el `Document` o su `Product` asociado están soft-deleted.
+o	File Naming & Storage Policy: En la subida de archivos, el servicio genera un UUID v4 y almacena el archivo en disco como `uuid.ext` (extensión derivada del MIME/filename validado). La base de datos guarda `stored_uuid_filename` y `original_filename`. En descargas, el servicio sirve el binario desde `stored_uuid_filename` y establece `Content-Disposition` con `original_filename` (UTF-8). Esta política elimina colisiones y evita exposición de información sensible en rutas del sistema de archivos.
 o	Cascading Borrado Restringido: Deleting Brands, Categories, o Users is restricted by default if they are linked to Products. The API will return an error. The UI will present this error with an option to "Forzar Borrado", which triggers a separate, explicit API call that sets the foreign keys in the Products table to NULL.
 •	8.4. Stock Logic for Non-Serialized Items: The "división de registros" strategy will be used. A loan/assignment of 1 unit from a lot of 10 will update the original row's quantity to 9 and create a new row with quantity 1 and the new status.
 9. Accessibility

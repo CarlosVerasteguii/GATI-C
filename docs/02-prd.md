@@ -98,16 +98,16 @@ Gestión de Documentos Adjuntos (SISE / Contrato de Compra):
 •	Tipos de Archivo: Se permitirá adjuntar documentos en formato PDF y Word (.docx).
 •	Cantidad de Archivos: Un producto podrá tener múltiples documentos adjuntos de este tipo.
 •	Obligatoriedad: La adjunción de estos documentos será opcional durante el proceso de carga y edición del producto.
-•	Almacenamiento: Los archivos se almacenarán en el sistema de archivos del servidor, organizados de manera óptima para evitar problemas de gestión y acceso. Se mantendrá el nombre original del archivo.
+•	Almacenamiento: Los archivos se almacenarán en el sistema de archivos del servidor con un nombre inmutable basado en UUID (por ejemplo, `f47ac10b-...-d479.pdf`). La base de datos almacenará tanto el `original_filename` (para la UI) como el `stored_uuid_filename` (para resolver el archivo físico). No se requiere lógica de colisiones.
 •	Visualización: Los documentos adjuntos serán accesibles desde la página de detalle del producto. Al hacer clic en un documento, este se abrirá en una nueva pestaña del navegador para su lectura o descarga.
 •	Flujo de Procesamiento: La opción para adjuntar estos documentos estará disponible únicamente en el formulario completo durante el procesamiento de una tarea pendiente (no en la Carga Rápida).
 •	Eliminación de Archivos: El borrado de documentos se gestionará mediante un `soft-delete` (marcado como borrado en la base de datos). La interfaz de usuario ocultará estos documentos, simplificando la gestión a un solo paso sin necesidad de una papelera de reciclaje o restauración.
 •	Límite de Tamaño: El tamaño máximo permitido por archivo para las subidas será de 100MB.
 •	Manejo de Errores en Subidas: El sistema proporcionará mensajes de error claros al usuario en caso de fallos en la subida, incluyendo, pero no limitándose a:
-    •	Archivo corrupto: "Error al procesar el archivo. Por favor, intente con otro archivo."
-    •	Tipo de archivo incorrecto: "Tipo de archivo no permitido. Solo se aceptan PDF y Word."
-    •	Error del servidor: "Ocurrió un error en el servidor al subir el archivo. Por favor, inténtelo de nuevo más tarde."
-•	Límite de tamaño excedido: "El archivo excede el tamaño máximo permitido de 100MB."
+        •	Archivo corrupto: "Error al procesar el archivo. Por favor, intente con otro archivo."
+        •	Tipo de archivo incorrecto: "Tipo de archivo no permitido. Solo se aceptan PDF y Word."
+        •	Error del servidor: "Ocurrió un error en el servidor al subir el archivo. Por favor, inténtelo de nuevo más tarde."
+        •	Límite de tamaño excedido: "El archivo excede el tamaño máximo permitido de 100MB."
 
 Política de Borrado Unificada:
 •	Todas las eliminaciones del sistema se realizan mediante soft-delete, estableciendo `deleted_at` en las entidades eliminables. No existe papelera ni restauración desde la UI. Cualquier restauración será excepcional y manual por un administrador directamente en la base de datos.
@@ -115,6 +115,12 @@ Política de Borrado Unificada:
 •	Las vistas y búsquedas excluyen por defecto los registros con `deleted_at` no nulo; por lo tanto, al eliminar un elemento desaparece de las vistas principales.
 •	Las descargas de archivos se bloquean si el Documento o su Producto asociado tienen `deleted_at` establecido.
 •	Los roles con permiso de eliminación: Administrador y Editor. El rol Lector no tiene permisos de eliminación.
+
+Política de Nomenclatura de Archivos (UUID Inmutables):
+•	Al subir un archivo, el sistema genera un UUID v4 y guarda el archivo en disco con el patrón `uuid.ext`, preservando la extensión derivada de su MIME/filename saneado.
+•	La base de datos almacena `original_filename` (lo que ve el usuario) y `stored_uuid_filename` (referencia de almacenamiento). La UI siempre muestra el nombre original.
+•	Descargas: Las respuestas de descarga utilizan `Content-Disposition` con el `original_filename` (UTF-8), sirviendo el contenido desde `stored_uuid_filename`.
+•	Seguridad: Se sanea el `original_filename` solo para presentación; el almacenamiento por UUID evita fugas de información y colisiones de nombre.
 
  Módulo de Tareas Pendientes:
  Carga Rápida: Permite crear una solicitud de ingreso pendiente. Utiliza un ComboBox que sugiere productos existentes. Si no existe, permite crear un placeholder con un nombre temporal (solo el nombre). La solicitud se guarda en una lista separada sin afectar el stock principal.
