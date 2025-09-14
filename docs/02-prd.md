@@ -17,7 +17,7 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Crear Placeholders (Carga Rápida) | Sí            | Sí      | No      | Creación de entrada pendiente de un activo.                                  |
 | Ver Productos/Detalles       | Sí            | Sí      | Sí      | Incluye acceso a documentos adjuntos.                                         |
 | Editar Productos (full form) | Sí            | Sí      | No      | Modificación de cualquier campo de un producto existente. Todas las ediciones quedan registradas. |
-| Eliminar Productos (a papelera) | Sí            | Sí      | Sí      | Los archivos eliminados se mueven a papelera, con registro de la acción.      |
+| Eliminar Productos (a papelera) | Sí            | Sí      | No      | Los archivos eliminados se mueven a papelera, con registro de la acción.      |
 | **Tareas Pendientes**        |               |         |         |                                                                               |
 | Crear (Carga Rápida/Retiro Rápido) | Sí            | Sí      | No      | Inicio de una solicitud pendiente.                                            |
 | Procesar (Completar Form.)   | Sí            | Sí      | No      | Finalizar una tarea pendiente, llenando el formulario completo.               |
@@ -34,6 +34,62 @@ Para una mayor claridad, la siguiente tabla detalla las acciones permitidas para
 | Gestión de Usuarios          | Sí            | No      | No      | Creación, edición y gestión de roles de usuarios (solo Administrador).       |
 | **Documentos Adjuntos**      |               |         |         |                                                                               |
 | Eliminar Documentos Adjuntos (soft-delete, sin papelera) | Sí            | Sí      | No      | Se ocultan en la UI; no existe restauración desde papelera.                   |
+
+### Contrato Detallado de Permisos: Rol Lector
+
+**Definición:** El rol "Lector" es estrictamente de **solo lectura**. Su propósito es permitir consultas y visualización de información sin capacidad de modificar datos o realizar operaciones que cambien el estado del sistema.
+
+#### ✅ **Puede (Operaciones Permitidas):**
+
+- **Visualización de Información:**
+  - Ver dashboards y métricas del sistema
+  - Consultar listados completos de productos/inventario
+  - Acceder a detalles individuales de productos
+  - Ver estados actuales de activos (Disponible, Asignado, Prestado, etc.)
+  - Consultar historial de cambios y auditoría (solo lectura)
+
+- **Acceso a Documentos:**
+  - Descargar documentos adjuntos existentes
+  - Visualizar documentos en el navegador
+  - Acceder a contratos SISE y documentos de compra
+
+- **Consultas y Reportes:**
+  - Realizar búsquedas en el inventario
+  - Aplicar filtros para consultas específicas
+  - Exportar datos en formatos de solo lectura (CSV, PDF)
+
+#### ❌ **No Puede (Operaciones Restringidas):**
+
+- **Gestión de Productos:**
+  - Crear nuevos productos o activos
+  - Editar información de productos existentes
+  - Eliminar productos (incluso a papelera)
+  - Modificar estados de activos
+
+- **Operaciones de Flujo de Trabajo:**
+  - Iniciar Carga Rápida de productos
+  - Procesar Retiro Rápido de activos
+  - Crear, procesar o gestionar Tareas Pendientes
+  - Ver lista de Tareas Pendientes (acceso restringido)
+
+- **Préstamos y Asignaciones:**
+  - Realizar préstamos de equipos
+  - Realizar asignaciones de activos
+  - Cancelar préstamos o asignaciones existentes
+  - Modificar términos de préstamos
+
+- **Gestión de Catálogos:**
+  - Añadir, editar o eliminar categorías
+  - Gestionar marcas de productos
+  - Modificar ubicaciones del sistema
+  - Crear o editar usuarios
+
+- **Gestión de Documentos:**
+  - Subir nuevos documentos adjuntos
+  - Eliminar documentos existentes
+  - Modificar metadatos de documentos
+
+**Nota de Implementación:** Este contrato debe ser implementado estrictamente en el sistema RBAC. Cualquier funcionalidad que requiera modificación de datos debe estar completamente deshabilitada para usuarios con rol "Lector".
 
 3. Functional Requirements
 Gestión del Ciclo de Vida del Activo:
@@ -71,9 +127,9 @@ Procesamiento: Cualquier Editor o Administrador puede procesar una tarea pendien
         •   **Notas de Retiro:** (Área de texto para detalles adicionales de la baja).
         •   **Destino Final (Opcional):** (Campo de texto libre, para especificar si se mueve a un almacén de desechos, etc.)
 
- Trazabilidad de Mejor Esfuerzo (Política Oficial):
- Historial por Artículo: El sistema intentará registrar un log detallado de cada acción realizada sobre cada activo (creación, edición, asignación, préstamo, cambio de estado, retiro), incluyendo el registro de los valores que cambiaron. La auditoría es una operación secundaria, asíncrona y desacoplada: si el subsistema de auditoría falla, la acción principal del usuario NO se bloquea ni se revierte.
- Historial de Tareas Pendientes: Cada tarea pendiente intentará registrar un log detallado (quién la creó, cuándo, y quién la finalizó). Los fallos de auditoría no impiden el procesamiento ni completado de la tarea.
+Trazabilidad de Mejor Esfuerzo (Política Oficial):
+Historial por Artículo: El sistema intentará registrar un log detallado de cada acción realizada sobre cada activo (creación, edición, asignación, préstamo, cambio de estado, retiro), incluyendo el registro de los valores que cambiaron. La auditoría es una operación secundaria, asíncrona y desacoplada: si el subsistema de auditoría falla, la acción principal del usuario NO se bloquea ni se revierte.
+Historial de Tareas Pendientes: Cada tarea pendiente intentará registrar un log detallado (quién la creó, cuándo, y quién la finalizó). Los fallos de auditoría no impiden el procesamiento ni completado de la tarea.
 4. User Stories
 Como Editor, quiero registrar la llegada de 50 laptops nuevas con números de serie de forma rápida, así que uso la función de "Carga Rápida", selecciono "Laptop" y pego los 50 números de serie. Esto crea una tarea pendiente para que más tarde, yo Editor o algun Administrador podamos completar los detalles (proveedor, fecha de compra) sin detener el trabajo del día.
 Como Editor, necesito un teclado para un usuario. En la vista de inventario, veo que de 10 teclados, el display QTY me muestra 10 4 6, indicándome al instante que hay 10 en total, pero solo 4 disponibles y 6 no disponibles. Hago hover sobre la cantidad para ver el desglose exacto de los 6 no disponibles antes de proceder.
@@ -97,7 +153,7 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 
 4.2. Disponibilidad y Confiabilidad (Availability & Reliability)
 •   **Tiempo de Actividad (Uptime):** El sistema debe garantizar alta disponibilidad durante las horas de operación estándar (aproximadamente 8:00 AM - 4:00 PM, extendiéndose si es necesario para jornadas largas). Se aceptan ventanas de mantenimiento planificadas que pueden ocurrir fuera o, previa comunicación, dentro del horario laboral.
-    •   **Manejo de Fallos:**
+•   **Manejo de Fallos:**
     •   **Registro de Errores:** Todos los errores críticos del sistema (backend, base de datos) deben ser registrados detalladamente para facilitar la depuración y el análisis.
     •   **Notificación a Administradores:** En caso de fallos graves que afecten la funcionalidad, se debe implementar un mecanismo de notificación automática a los administradores del sistema.
     •   **Feedback al Usuario:** Para cualquier error que afecte la experiencia del usuario, el sistema debe mostrar mensajes de error amigables y claros, evitando la exposición de detalles técnicos sensibles (ej. "Ocurrió un error inesperado. Por favor, inténtelo de nuevo o contacte al soporte técnico."). Se evitarán las interrupciones abruptas de la interfaz.
