@@ -30,7 +30,7 @@ o	UI Strategy: Optimistic UI is the default strategy for all common data mutatio
 7.	The service executes the business logic, interacting with the database via the Prisma ORM.
 8.	The API responds with a standard JSON structure, including the full, updated resource on success.
 9.	Post-commit and post-response, the service emits an audit event handled by `AuditService` asynchronously. Any failure to persist the audit log is recorded internally and does not affect the already completed user operation.
-•	4.2. Real-time Notifications: Des-priorizado. Las actualizaciones de datos críticos (como nuevas "Tareas Pendientes") se gestionarán mediante la actualización manual o el re-fetching de datos tras una acción del usuario. Esto es suficiente para los flujos de trabajo actuales y evita la complejidad del polling.
+•	4.2. Notification Policy (UI Indicators Only): Las "notificaciones" son indicadores visuales pasivos en la UI (badges/contadores). No se implementan canales en tiempo real (WebSockets/SSE) ni polling periódico. Las actualizaciones ocurren por revalidación de datos tras navegación o tras completar una operación que muta datos (optimistic UI + revalidación). Esto es suficiente para la escala y casos de uso actuales.
 5. Technical Stack
 •	Frontend:
 o	Framework/Language: Next.js 14+ (App Router), React 18+, TypeScript 5+.
@@ -77,6 +77,8 @@ o	Seguridad: Rechaza paths arbitrarios, valida extensión vs MIME, y registra au
 o	DELETE /api/v1/brands/:id, /api/v1/categories/:id, /api/v1/locations/:id: Si existen productos asociados, la API responde 409 Conflict con payload { count: <n>, examples: [<product_ids>], required_action: "reassign" }.
 o	Sin productos asociados: elimina con soft-delete (marca `deleted_at`) y devuelve 204 No Content o { "success": true }.
 o	No existe endpoint de “forzar borrado” para nulear FKs. La reasignación de productos es una operación explícita separada (p.ej., PATCH /api/v1/products/bulk-reassign-brand).
+•	7.8. Notification Counters Endpoint:
+o	GET /api/v1/counters: Devuelve contadores agregados mínimos necesarios para la UI (p. ej., { "pending_tasks": 4, "overdue_loans": 2 }). Debe ejecutarse con consultas eficientes (índices adecuados) y responder en < 100 ms en condiciones normales. Se consume sólo en navegación/acciones, no por polling.
 8. Database Design ERD (Entity-Relationship Design)
 •	8.1. Core Tables:
 o	User (id, name, email, password_hash, role, trusted_ip, deleted_at - Este campo se usará para la funcionalidad de 'Acceso Rápido' desde el login, permitiendo identificar al usuario por su IP registrada para atribuirle automáticamente las acciones rápidas que realice. La relación es de un solo trusted_ip por usuario.)

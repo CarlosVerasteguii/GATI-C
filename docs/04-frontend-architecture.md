@@ -6,7 +6,7 @@ Este documento define la estructura oficial de layout y navegación para la apli
 
 ## Principios Fundamentales
 
-1. **Desktop-First con Responsividad Completa**: La aplicación está diseñada priorizando la experiencia en escritorio, pero garantizando una experiencia óptima en tablets y una experiencia funcional en dispositivos móviles.
+1. **Desktop-First con Responsividad Razonable**: La aplicación se optimiza para escritorio (uso ~99%), garantiza una buena experiencia en tablets y una experiencia funcional en móviles sin comprometer la densidad y usabilidad en pantallas grandes.
 
 2. **Consistencia Visual**: Todos los componentes y páginas deben mantener una apariencia y comportamiento coherentes siguiendo la Guía Maestra de Estilo Visual.
 
@@ -133,3 +133,17 @@ export default function InventarioPage() {
 - [SRS - GATI-C v2.2 (Final)](./03-srs.md)
 - [PRD de GATI-C](./02-prd.md)
 - [Guía Maestra de Estilo Visual](./05-visual-style-guide.md) 
+
+## Patrones de Diálogos y Formularios (Política 6.2 y 6.3)
+
+### Diálogos y Paneles (Dialogs/Sheets)
+- Desktop-first: usar grid de 2–3 columnas por defecto en `md` y superiores.
+- Fallback: en pantallas pequeñas, el contenido se apila a 1 columna sin sacrificar legibilidad.
+- Ancho/Alto recomendados: min-width 720–960px en escritorio; altura con scroll interno para contenido excedente.
+- Acciones: barra de acciones inferior “sticky” dentro del modal.
+
+### Formularios
+- Preferencia: una sola página con secciones claras; evitar wizards salvo flujos secuenciales genuinos.
+- Organización: agrupar campos por secciones, soportar acordeones/expansiones para detalles avanzados.
+- Navegación: anclas de sección y header “sticky” para contexto.
+- Validación: por sección cuando sea posible; feedback inmediato y accesible.

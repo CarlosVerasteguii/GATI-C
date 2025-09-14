@@ -149,11 +149,13 @@ Como Editor, quiero registrar la llegada de 50 laptops nuevas con números de se
 Como Editor, necesito un teclado para un usuario. En la vista de inventario, veo que de 10 teclados, el display QTY me muestra 10 4 6, indicándome al instante que hay 10 en total, pero solo 4 disponibles y 6 no disponibles. Hago hover sobre la cantidad para ver el desglose exacto de los 6 no disponibles antes de proceder.
 Como Administrador, quiero saber cuántos equipos tenemos vencidos. Entro al dashboard y veo la tarjeta "Préstamos Vencidos" en rojo con el número exacto. Hago clic en un ítem de la lista y se abre un panel lateral con todos los detalles del préstamo: quién lo tiene, desde cuándo, y quién autorizó el préstamo, dándome toda la información para una auditoría rápida.
 Como Administrador, recibo una notificación o veo en mi vista de "Tareas Pendientes" una solicitud de un Editor para editar la descripción de un monitor. Puedo ver exactamente qué quería cambiar, aprobarlo con un solo clic, y el sistema registrará automáticamente que yo autoricé el cambio, manteniendo una cadena de responsabilidad clara.
-Nota aclaratoria sobre "notificaciones": Se refiere a indicadores visuales en la UI (p. ej., badges/contadores en vistas), no a un sistema de notificaciones en tiempo real (push/polling), el cual está despriorizado según el SRS.
+Nota aclaratoria sobre "notificaciones": Remitirse a la sección 4.6 para la política oficial (indicadores de UI sin tiempo real ni polling).
 5. User Interface
-Estilo General: Profesional, moderno y extremadamente fluido. La interfaz debe sentirse "viva" a través de micro-interacciones y animaciones sutiles (transiciones suaves en botones, apariciones graduales de modales, efectos de hover). El diseño debe ser innovador y visualmente llamativo, sin sacrificar la claridad profesional que requiere CFE.
-Layouts Horizontales: TODOS los modales (Dialogs) y paneles (Sheets) deben usar layouts de múltiples columnas (ej. grid-cols-2) para distribuir los campos de formulario de manera horizontal. El objetivo es eliminar el scroll vertical en la medida de lo posible y aprovechar el espacio de la pantalla para una experiencia más cómoda y eficiente.
-Uso Inteligente del Color: El color no es decorativo, es funcional. Se debe usar la paleta semántica definida en todos los StatusBadge, iconos, gráficos del dashboard y notificaciones para comunicar estados e información de forma instantánea.
+Estilo General: Profesional, moderno y extremadamente fluido. La interfaz debe sentirse "viva" a través de micro-interacciones y animaciones sutiles basadas en tokens (duraciones/easings consistentes). El diseño puede ser visualmente llamativo, siempre priorizando claridad, rendimiento y mantenibilidad.
+Filosofía de Diseño (6.1): Equilibrio Guiado. Se utilizan componentes estándar y patrones consolidables para mantener el código simple, añadiendo innovación controlada mediante micro-interacciones y composiciones visuales que no comprometan el rendimiento.
+Modales y Paneles (6.2): Desktop-First Multi-columna. Por defecto, los Dialogs/Sheets usan grid de 2–3 columnas en ≥ md, con fallback automático a 1 columna en pantallas pequeñas. Se permite scroll interno del modal; se prioriza densidad y visión completa en escritorio.
+Formularios (6.3): Formulario Completo de una sola página cuando aplique, con secciones claras (agrupaciones, acordeones, anclas y header/acciones “sticky”). Evitar wizards multi-paso salvo flujos genuinamente secuenciales. Se acepta scroll razonable si ofrece panorama completo y reduce fricción.
+Uso Inteligente del Color: El color no es decorativo, es funcional. Usar la paleta semántica definida en StatusBadge, iconos, gráficos y notificaciones para comunicar estados e información de forma instantánea.
 Tooltip Avanzado para QTY: La columna de cantidad para ítems no serializados usará el formato [TOTAL] [DISPONIBLE] [NO DISPONIBLE] con sus respectivos colores. El tooltip al hacer hover será rico en información, con iconos y desglose detallado de cada estado.
 "security_considerations": "Sanitizar entradas. Considerar headers de seguridad básicos (ej. con Helmet.js). La autenticación se gestionará mediante credenciales personalizadas dentro de la aplicación, sin integración con Directorio Activo."
 
@@ -194,6 +196,12 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
     •   Producción: certificados emitidos por la Autoridad de Certificación interna de la empresa (preferido). Si no estuviera disponible, se usará un certificado gestionado centralmente y distribuido a los clientes internos.
 •   **Cookies y Headers:** Las cookies de sesión usan `Secure` + `HttpOnly` + `SameSite=Lax`. Habilitar HSTS en producción. Usar Helmet para cabeceras de seguridad recomendadas.
 •   **TLS:** Requerir TLS ≥ 1.2 (preferido 1.3), deshabilitar TLS 1.0/1.1 y suites de cifrado débiles. Evitar contenido mixto (no cargar recursos por HTTP).
+
+4.6. Notificaciones (Indicadores de UI, sin Tiempo Real)
+•   **Definición:** "Notificaciones" son indicadores visuales pasivos (badges/contadores) en la UI. No existen mecanismos de tiempo real (WebSockets/SSE) ni polling periódico.
+•   **Actualización de Indicadores:** Se actualizan al navegar entre vistas y tras operaciones que mutan datos (alta/edición/eliminación), invalidando/revalidando los datos mediante los mecanismos del cliente (SWR/React Query).
+•   **Acción Manual:** Se puede incluir un botón/acción de "Actualizar" para refrescar contadores bajo demanda.
+•   **Backend:** La API expondrá un endpoint ligero para contadores agregados (p. ej., tareas pendientes, préstamos vencidos) que la UI consumirá únicamente en transiciones o acciones explícitas.
 Política de Eliminación de Catálogos (Protección Estricta):
 •	Las entidades de catálogo (Marcas, Categorías, Ubicaciones) no pueden eliminarse si existen Productos que las referencian. La operación devolverá un error y no se realizará ningún cambio.
 •	La interfaz mostrará un mensaje claro con el conteo de productos asociados y ofrecerá un acceso directo a un listado filtrado para su reasignación manual.

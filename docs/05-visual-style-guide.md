@@ -36,9 +36,7 @@ usuario productiva, minimizando la carga cognitiva. El Framework Base
 proporciona componentes estructurados para este fin (formularios, tablas,
 etc.).
 • Modernidad:
-o Utilizar un diseño contemporáneo, aprovechando las capacidades del
-Framework Base y tecnologías actuales (ej. Tailwind CSS si se usa en
-conjunto, o las clases propias del framework).
+o Diseño contemporáneo con micro-interacciones sutiles y consistentes. Evitar efectos complejos que penalicen el rendimiento o la mantenibilidad.
 • Consistencia:
 o Mantener una apariencia y comportamiento uniformes en todos los módulos,
 vistas y componentes de la aplicación, utilizando las clases y estructuras
@@ -331,3 +329,27 @@ efectiva, sin abrumar al usuario.
 La clave es la consistencia y la claridad, asegurando que los colores y el diseño de las
 alertas guíen al usuario y no lo confundan. El uso de las variables CSS, como ya lo tienes
 configurado, facilita mucho la implementación de estos estilos de manera consistente.
+
+6. Motion & Micro-interactions (Política 6.1)
+• Principios: sutiles, rápidos, consistentes. Evitar animaciones largas o distractoras.
+• Tokens de Animación:
+  - Duraciones: 120ms (rápida), 200ms (base), 300ms (suave).
+  - Easing: `ease-out` para entradas, `ease-in` para salidas, `ease-in-out` para hover/focus.
+• Aplicación: botones (hover/active), transiciones de paneles/modales, aparición de tooltips y toasts.
+• No hacer: animaciones personalizadas ad-hoc sin reutilización; parallax pesado o sombras animadas permanentes.
+
+7. Densidad y Estructura de Formularios (Política 6.3)
+• Preferencia de una sola página con secciones claras (agrupaciones, acordeones, avanzados colapsables).
+• Aceptar scroll razonable para ofrecer panorama completo.
+• Header/acciones “sticky”; validación por sección y mensajes claros.
+• Campos de alto uso primero (regla 80/20); campos opcionales en secciones colapsables.
+
+8. Diálogos y Paneles (Política 6.2)
+• Desktop-first multi-columna: 2–3 columnas en ≥ md; 1 columna en < md.
+• Ancho objetivo: 720–960px; altura con scroll interno. Evitar que el modal expanda la página.
+• Contenido estructurado por secciones con títulos; acciones alineadas a la derecha.
+
+9. Breakpoints & Desktop-First
+• Prioridad de escritorio: optimizar densidad y productividad en pantallas grandes.
+• Tablets: asegurar uso cómodo (espaciado y tamaños táctiles adecuados).
+• Móviles: experiencia funcional sin comprometer escritorio; se evita rediseñar complejidades para móvil si penaliza el core de escritorio.

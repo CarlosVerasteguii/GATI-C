@@ -30,6 +30,11 @@ El sistema operará exclusivamente en una **red local interna**. El acceso remot
 
 ---
 
+### 1.5. Directivas de Diseño UX/UI
+- **Estética:** La interfaz debe ser moderna, fluida y visualmente llamativa. La simplicidad del proyecto aplica a la arquitectura y operación, no a la estética.
+- **Plataforma primaria:** Uso 99% en monitor de escritorio. Se optimiza para pantallas grandes. Móvil es "nice-to-have" y no debe comprometer la experiencia de escritorio.
+- **Filosofía de construcción:** Innovación controlada con micro-interacciones sobrias y componentes estándar; evitar soluciones ad-hoc difíciles de mantener. Performance y legibilidad por encima de efectos complejos.
+
 ## Bloque 2: Re-evaluación de Requisitos Clave
 
 ### 2.1. Sobre la "Trazabilidad Absoluta"
