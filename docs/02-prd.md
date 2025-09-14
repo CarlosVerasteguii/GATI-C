@@ -179,6 +179,13 @@ Estos requisitos definen las cualidades del sistema que son cruciales para su é
 4.3. Mantenibilidad (Maintainability)
 •   **Facilidad de Modificación:** El código base debe ser diseñado de manera modular, con una estructura clara y convenciones de codificación consistentes (según las reglas de estilo de código ya definidas), para facilitar la implementación de nuevas características, modificaciones y correcciones de errores en el futuro.
 •   **Amigabilidad con IA:** La estructura del código, la documentación interna (ej. JSDoc) y la claridad de la lógica deben optimizarse para que herramientas de inteligencia artificial puedan analizarlo, entenderlo y proponer/aplicar cambios de manera eficiente.
+
+4.4. Escala (Política de Escala Pragmática)
+•   **Escala de Usuarios:** ~10 usuarios internos; concurrencia típica 2–3 (máximo excepcional 4–5).
+•   **Arquitectura:** Monolito modular. No se introducen microservicios, colas de mensajes (RabbitMQ/Kafka), orquestadores (Kubernetes) ni cachés distribuidos por defecto.
+•   **Infraestructura:** Una instancia de aplicación y una base de datos MySQL única (sin replicación). Despliegue simple (p. ej., systemd o Docker Compose).
+•   **Rendimiento:** Paginación, endpoints agregados cuando aplique, e índices de base de datos bien diseñados son suficientes para la escala objetivo (1,200 activos actuales; hasta 3,000 en 5 años).
+•   **Estrategia de Crecimiento:** Escalado vertical primero. Cualquier componente adicional (cachés, réplicas de lectura) requiere justificación explícita y revisita del SRS/PRD.
 Política de Eliminación de Catálogos (Protección Estricta):
 •	Las entidades de catálogo (Marcas, Categorías, Ubicaciones) no pueden eliminarse si existen Productos que las referencian. La operación devolverá un error y no se realizará ningún cambio.
 •	La interfaz mostrará un mensaje claro con el conteo de productos asociados y ofrecerá un acceso directo a un listado filtrado para su reasignación manual.

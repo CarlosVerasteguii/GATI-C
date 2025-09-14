@@ -1,7 +1,7 @@
 Software Requirements Specification (SRS) - GATI-C v2.2 (Final)
 1. System Design
 •	1.1. Type: Web-based application, architected with a desktop-first philosophy. The UI must be fully responsive, ensuring complete functionality on tablets and a usable, streamlined experience on mobile devices.
-•	1.2. Modules (Modular Monolith): The backend is a single, deployable Node.js application, internally structured into discrete, loosely-coupled modules. This provides initial development velocity while paving the way for future migration to microservices if needed.
+•	1.2. Modules (Modular Monolith): The backend is a single, deployable Node.js application, internally structured into discrete, loosely-coupled modules. This design is optimized for the current scale and does not plan migration to microservices.
 o	Core Modules:
 	Inventory: Manages products, stock, lifecycle states, and soft-deletes.
 	Identity & Access Management (IAM): Handles users, roles, permissions, and authentication.
@@ -130,4 +130,18 @@ o	Catálogo: Protección Estricta de Borrado: Eliminar Brands, Categories o Loca
 	o	Pruebas periódicas de restore en entorno de pruebas para validar RPO/MTTR.
 •	10.8. Operational Runbooks:
 	o	Procedimientos documentados para: reinicio de servicios, restauración desde backup, rotación de logs, verificación de salud post-incidente.
+
+11. Scalability Policy (Pragmatic)
+•	11.1. Assumptions:
+	o	Usuarios totales ~10; concurrencia típica 2–3 (máximo excepcional 4–5).
+	o	Tamaño de inventario actual ~1,200 activos; objetivo hasta ~3,000 en 5 años.
+•	11.2. Architecture & Infra Choices:
+	o	Modular Monolith: una instancia de aplicación; sin microservicios.
+	o	Data Layer: MySQL único (sin replicación por defecto).
+	o	Sin colas de mensajes (RabbitMQ/Kafka), sin cachés distribuidos (Redis/Memcached) por defecto, sin orquestadores (Kubernetes). Despliegue simple (systemd o Docker Compose).
+•	11.3. Performance Approach:
+	o	Paginación consistente, endpoints agregados para vistas primarias, y uso de índices adecuados.
+	o	Evitar tiempo real; revalidación manual/automática tras acciones del usuario.
+•	11.4. Growth Path:
+	o	Escalado vertical primero. Componentes adicionales (caché, réplicas de lectura) requieren justificación y cambio controlado del SRS.
 

@@ -21,8 +21,8 @@ Este documento sirve como hoja de ruta para resolver las inconsistencias identif
 
 ## 4. Requisitos No Funcionales (NFRs)
 
-- [ ] **4.1. Disponibilidad:** Definir un objetivo de disponibilidad realista (ej. "el sistema puede estar inactivo para mantenimiento") en lugar de aspiraciones de "alta disponibilidad".
-- [ ] **4.2. Escala:** Documentar la escala real esperada (~10 usuarios) para evitar la sobre-ingeniería en futuros requisitos.
+- [x] **4.1. Disponibilidad:** Definir un objetivo de disponibilidad realista (ej. "el sistema puede estar inactivo para mantenimiento") en lugar de aspiraciones de "alta disponibilidad".
+- [x] **4.2. Escala:** Documentar la escala real esperada (~10 usuarios) para evitar la sobre-ingeniería en futuros requisitos.
 - [ ] **4.3. Seguridad en Tránsito:** Decidir si HTTPS es obligatorio para el despliegue en la LAN interna.
 
 ## 5. Notificaciones
