@@ -7,7 +7,7 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 
 ## Fase 1: Fundación de la API y Contratos
 
-- [ ] Tarea 1.1 (Contratos): Verificar disponibilidad de tipos canónicos en `types/generated`. Si faltan, coordinar generación desde backend (Prisma/Zod) y versionar.
+- [x] Tarea 1.1 (Contratos): Verificar disponibilidad de tipos canónicos en `types/generated`. Si faltan, coordinar generación desde backend (Prisma/Zod) y versionar.
 - [ ] Tarea 1.2 (Schemas): Crear `lib/api/schemas/inventory.ts` con `ProductWireSchema`, `ProductListResponseSchema` y helpers de parseo.
 - [ ] Tarea 1.3 (API Client): Implementar `lib/api/client.ts` con `baseURL = process.env.NEXT_PUBLIC_API_URL`, `credentials: 'include'`, cabeceras JSON y mapeo de errores; alinear `lib/api/http.ts` (reexportar o deprecado).
 - [ ] Tarea 1.4 (Endpoints): Crear `lib/api/endpoints/inventory.ts` con funciones puras `listProducts`, `getProduct`, `createProduct`, `updateProduct`, `deleteProduct` (sin estado, tipadas, validando respuestas con Zod).
