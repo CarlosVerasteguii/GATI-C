@@ -14,7 +14,7 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 - [x] Tarea 1.5 (Hooks — Lista): Crear `lib/api/hooks/use-inventory.ts` con keygen estable (`all`, `list(params)`), uso de SWR, `keepPreviousData` y `fallbackData` opcional.
 - [x] Tarea 1.6 (Hooks — Mutaciones): Crear `lib/api/hooks/use-create-product.ts`, `use-update-product.ts`, `use-delete-product.ts` con `useSWRMutation` e invalidación de `inventoryKeys.all()` en `onSuccess`.
 - [x] Tarea 1.7 (ViewModel): Crear `types/view-models/inventory.ts` con `export type InventoryViewModel` y `export function toViewModel(product: ProductResultType): InventoryViewModel` para la tabla (etiquetas en español, keys canónicas intactas).
-- [ ] Tarea 1.8 (Env): Documentar y configurar `NEXT_PUBLIC_API_URL` en `.env.local`; actualizar README corto en `lib/api/` explicando la capa.
+- [x] Tarea 1.8 (Env): Documentar y configurar `NEXT_PUBLIC_API_URL` en `.env.local`; actualizar README corto en `lib/api/` explicando la capa.
 - [ ] Tarea 1.9 (Tests — Base): Añadir unit tests para `client.ts` (errores/headers), parsers Zod y endpoints (mocks). Ubicación sugerida: `__tests__/lib/api/`.
 - [ ] Tarea 1.10 (Quality Gate): Activar en CI lint + type‑check y unit tests de `lib/api/*` con umbral de cobertura ≥70%.
 - [ ] Tarea 1.11 (Criterio de salida): Verificar que no existan URLs hardcodeadas (`rg 'http://localhost' hooks app components`), y que UI no importe `fetch/axios` directos.
