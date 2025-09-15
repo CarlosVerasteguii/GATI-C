@@ -9,11 +9,11 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 
 - [x] Tarea 1.1 (Contratos): Verificar disponibilidad de tipos canónicos en `types/generated`. Si faltan, coordinar generación desde backend (Prisma/Zod) y versionar.
 - [x] Tarea 1.2 (Schemas): Crear `lib/api/schemas/inventory.ts` con `ProductWireSchema`, `ProductListResponseSchema` y helpers de parseo.
-- [ ] Tarea 1.3 (API Client): Implementar `lib/api/client.ts` con `baseURL = process.env.NEXT_PUBLIC_API_URL`, `credentials: 'include'`, cabeceras JSON y mapeo de errores; alinear `lib/api/http.ts` (reexportar o deprecado).
-- [ ] Tarea 1.4 (Endpoints): Crear `lib/api/endpoints/inventory.ts` con funciones puras `listProducts`, `getProduct`, `createProduct`, `updateProduct`, `deleteProduct` (sin estado, tipadas, validando respuestas con Zod).
-- [ ] Tarea 1.5 (Hooks — Lista): Crear `lib/api/hooks/use-inventory.ts` con keygen estable (`all`, `list(params)`), uso de SWR, `keepPreviousData` y `fallbackData` opcional.
-- [ ] Tarea 1.6 (Hooks — Mutaciones): Crear `lib/api/hooks/use-create-product.ts`, `use-update-product.ts`, `use-delete-product.ts` con `useSWRMutation` e invalidación de `inventoryKeys.all()` en `onSuccess`.
-- [ ] Tarea 1.7 (ViewModel): Crear `types/view-models/inventory.ts` con `export type InventoryViewModel` y `export function toViewModel(product: ProductResultType): InventoryViewModel` para la tabla (etiquetas en español, keys canónicas intactas).
+- [x] Tarea 1.3 (API Client): Implementar `lib/api/client.ts` con `baseURL = process.env.NEXT_PUBLIC_API_URL`, `credentials: 'include'`, cabeceras JSON y mapeo de errores; alinear `lib/api/http.ts` (reexportar o deprecado).
+- [x] Tarea 1.4 (Endpoints): Crear `lib/api/endpoints/inventory.ts` con funciones puras `listProducts`, `getProduct`, `createProduct`, `updateProduct`, `deleteProduct` (sin estado, tipadas, validando respuestas con Zod).
+- [x] Tarea 1.5 (Hooks — Lista): Crear `lib/api/hooks/use-inventory.ts` con keygen estable (`all`, `list(params)`), uso de SWR, `keepPreviousData` y `fallbackData` opcional.
+- [x] Tarea 1.6 (Hooks — Mutaciones): Crear `lib/api/hooks/use-create-product.ts`, `use-update-product.ts`, `use-delete-product.ts` con `useSWRMutation` e invalidación de `inventoryKeys.all()` en `onSuccess`.
+- [x] Tarea 1.7 (ViewModel): Crear `types/view-models/inventory.ts` con `export type InventoryViewModel` y `export function toViewModel(product: ProductResultType): InventoryViewModel` para la tabla (etiquetas en español, keys canónicas intactas).
 - [ ] Tarea 1.8 (Env): Documentar y configurar `NEXT_PUBLIC_API_URL` en `.env.local`; actualizar README corto en `lib/api/` explicando la capa.
 - [ ] Tarea 1.9 (Tests — Base): Añadir unit tests para `client.ts` (errores/headers), parsers Zod y endpoints (mocks). Ubicación sugerida: `__tests__/lib/api/`.
 - [ ] Tarea 1.10 (Quality Gate): Activar en CI lint + type‑check y unit tests de `lib/api/*` con umbral de cobertura ≥70%.
