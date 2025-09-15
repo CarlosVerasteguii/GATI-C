@@ -59,11 +59,8 @@ export function sanitizeUserFromApi(payload: any): User {
 }
 
 export async function loginUser(email: string, password: string): Promise<User> {
-    const response = await apiClient("http://localhost:3001/api/v1/auth/login", {
+    const response = await apiClient("/api/v1/auth/login", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email, password }),
     });
 
@@ -85,21 +82,15 @@ export async function loginUser(email: string, password: string): Promise<User> 
 }
 
 export async function logoutUser(): Promise<void> {
-    await apiClient("http://localhost:3001/api/v1/auth/logout", {
+    await apiClient("/api/v1/auth/logout", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
     });
 }
 
 export async function getProfile(): Promise<User> {
     try {
-        const response = await apiClient("http://localhost:3001/api/v1/auth/me", {
+        const response = await apiClient("/api/v1/auth/me", {
             method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
 
         const payload = await response.json();
