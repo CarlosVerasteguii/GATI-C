@@ -9,7 +9,8 @@
     "start": "next start",
     "test:e2e": "playwright test",
     "dev:e2e": "concurrently \"npm run dev\" \"npm run dev --prefix backend\"",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
