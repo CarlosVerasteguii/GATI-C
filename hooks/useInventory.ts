@@ -37,10 +37,34 @@ function mapBackendToFrontend(backendProduct: any) {
     } as const;
 }
 
-export function useInventory() {
+export interface InventoryQueryParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    categoryId?: string;
+    brandId?: string;
+}
+
+function buildInventoryUrl(params?: InventoryQueryParams): string {
+    const base = '/api/v1/inventory';
+    if (!params) return base;
+    const query = new URLSearchParams();
+    if (params.page != null) query.set('page', String(params.page));
+    if (params.limit != null) query.set('limit', String(params.limit));
+    if (params.search) query.set('search', params.search);
+    if (params.categoryId) query.set('categoryId', params.categoryId);
+    if (params.brandId) query.set('brandId', params.brandId);
+    const qs = query.toString();
+    return qs ? `${base}?${qs}` : base;
+}
+
+export function useInventory(params?: InventoryQueryParams) {
+    const key = params ? ['/api/v1/inventory', JSON.stringify(params)] : '/api/v1/inventory';
+    const url = buildInventoryUrl(params);
     const { data, error, isLoading, mutate } = useSWR<ApiResponse<any[]>>(
-        'http://localhost:3001/api/v1/inventory',
-        fetcher
+        key,
+        () => fetcher(url),
+        { keepPreviousData: true }
     );
 
     return {

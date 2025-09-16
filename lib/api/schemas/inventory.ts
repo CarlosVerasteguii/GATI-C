@@ -15,6 +15,12 @@ export const ProductListResponseSchema = z.object({
     data: z.array(ProductWireSchema),
 });
 
+// Envelope for single item responses: { success: boolean, data: ProductWire }
+export const ProductResponseSchema = z.object({
+    success: z.boolean(),
+    data: ProductWireSchema,
+});
+
 function toProductResultType(wire: z.infer<typeof ProductWireSchema>): ProductResultType {
     return {
         ...wire,
@@ -27,6 +33,11 @@ function toProductResultType(wire: z.infer<typeof ProductWireSchema>): ProductRe
 export function parseAndTransformProducts(payload: unknown): ProductResultType[] {
     const parsed = ProductListResponseSchema.parse(payload);
     return parsed.data.map(toProductResultType);
+}
+
+export function parseAndTransformProduct(payload: unknown): ProductResultType {
+    const parsed = ProductResponseSchema.parse(payload);
+    return toProductResultType(parsed.data);
 }
 
 

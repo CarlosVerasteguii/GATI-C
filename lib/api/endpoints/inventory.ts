@@ -1,5 +1,5 @@
 import apiClient from '../client';
-import { parseAndTransformProducts } from '../schemas/inventory';
+import { parseAndTransformProducts, parseAndTransformProduct } from '../schemas/inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 import type { ProductInputType } from '@types-generated/schemas/variants/input/Product.input';
 
@@ -23,21 +23,59 @@ export async function listProducts(): Promise<ProductResultType[]> {
 }
 
 export async function getProduct(id: string): Promise<ProductResultType> {
-  throw new Error('Not implemented');
+  try {
+    const response = await apiClient(`/api/v1/inventory/${encodeURIComponent(id)}`);
+    const payload = await response.json();
+    const clean = parseAndTransformProduct(payload);
+    return clean;
+  } catch (error) {
+    console.error('Failed to get product:', error);
+    throw error;
+  }
 }
 
 export async function createProduct(data: CreateProductData): Promise<ProductResultType> {
-  throw new Error('Not implemented');
+  try {
+    const response = await apiClient('/api/v1/inventory', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    const payload = await response.json();
+    const clean = parseAndTransformProduct(payload);
+    return clean;
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    throw error;
+  }
 }
 
 export async function updateProduct(
   id: string,
   data: UpdateProductData
 ): Promise<ProductResultType> {
-  throw new Error('Not implemented');
+  try {
+    const response = await apiClient(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    const payload = await response.json();
+    const clean = parseAndTransformProduct(payload);
+    return clean;
+  } catch (error) {
+    console.error('Failed to update product:', error);
+    throw error;
+  }
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  throw new Error('Not implemented');
+  try {
+    await apiClient(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return;
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    throw error;
+  }
 }
 
