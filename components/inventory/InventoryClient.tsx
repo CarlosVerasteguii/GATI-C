@@ -5,19 +5,11 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useInventoryList } from '@/lib/api/hooks/use-inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 import type { ListParams } from '@/lib/api/schemas/inventory';
+import InventoryToolbar from '@/components/inventory/InventoryToolbar';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
 };
-
-// Placeholders (to be replaced in subsequent tasks)
-function InventoryToolbar({ onFilterChange }: { onFilterChange: (changes: Partial<ListParams>) => void }) {
-    return (
-        <div className="mb-4 p-3 rounded border">
-            <div className="text-sm">Toolbar Placeholder</div>
-        </div>
-    );
-}
 
 function InventoryTable({ products }: { products: ProductResultType[] | undefined }) {
     return (
@@ -86,7 +78,7 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
 
     return (
         <div className="container mx-auto p-6">
-            <InventoryToolbar onFilterChange={handleFilterChange} />
+            <InventoryToolbar initialFilters={params} onFilterChange={handleFilterChange} />
 
             {error ? (
                 <div className="mt-4 text-sm text-red-600">Error al cargar inventario</div>

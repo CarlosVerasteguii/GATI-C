@@ -31,7 +31,7 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 
 - [x] Tarea 2.1 (Ruta v2): Crear `app/(app)/inventario-v2/page.tsx` como RSC; definir revalidate/tags si aplica.
 - [x] Tarea 2.2 (Client Shell): Crear `components/inventory/InventoryClient.tsx` con `'use client'`; usar los `searchParams` de la URL como la única fuente de verdad para filtros y paginación (leer/escribir con `useSearchParams`/`router.replace`), derivando el estado local y consumiendo los hooks de `lib/api/hooks` sin duplicar estado.
-- [ ] Tarea 2.3 (Toolbar): Crear `components/inventory/InventoryToolbar.tsx` (búsqueda, filtros, toggles de columna). Prop‑driven, sin acceso directo a API.
+- [x] Tarea 2.3 (Toolbar): Crear `components/inventory/InventoryToolbar.tsx` (búsqueda, filtros, toggles de columna). Prop‑driven, sin acceso directo a API.
 - [ ] Tarea 2.4 (Tabla): Crear `components/inventory/InventoryTable.tsx` (presentación, ordenamiento, selección); consumir `InventoryViewModel`. Debe implementar la lógica de agrupación y expansión de productos (stacks vs serializados) para lograr paridad funcional con la versión legacy.
 - [ ] Tarea 2.5 (Detalle): Crear/ajustar `components/inventory/InventoryDetailSheet.tsx` para detalle; sin lógica de acceso a datos.
 - [ ] Tarea 2.6 (Diálogo Crear): Crear `components/inventory/CreateProductDialog.tsx` usando `useCreateProduct` y toasts; Optimistic UI + revalidación.
