@@ -95,6 +95,20 @@ describe('getProduct endpoint', () => {
         expect(result).toBe(parsed);
     });
 
+    it('should URL-encode the product id in the request path', async () => {
+        const trickyId = 'abc 123/xyz';
+        const encoded = encodeURIComponent(trickyId);
+        const apiClientSpy = vi.spyOn(client, 'default');
+        (apiClientSpy as Mock).mockResolvedValue({
+            json: () => Promise.resolve({ success: true, data: { id: trickyId } }),
+        } as any);
+        vi.spyOn(schemas, 'parseAndTransformProduct').mockReturnValue({ id: trickyId } as any);
+
+        await getProduct(trickyId);
+
+        expect(apiClientSpy).toHaveBeenCalledWith(`/api/v1/inventory/${encoded}`);
+    });
+
     it('should re-throw an error if apiClient fails', async () => {
         const mockError = new Error('Network Error');
         vi.spyOn(client, 'default').mockRejectedValue(mockError);
@@ -190,6 +204,24 @@ describe('updateProduct endpoint', () => {
         expect(result).toBe(parsed);
     });
 
+    it('should URL-encode the id when updating a product', async () => {
+        const trickyId = 'id with spaces/and/slashes';
+        const encoded = encodeURIComponent(trickyId);
+        const data = { name: 'Updated' } as any;
+        const apiClientSpy = vi.spyOn(client, 'default');
+        (apiClientSpy as Mock).mockResolvedValue({
+            json: () => Promise.resolve({ success: true, data: { id: trickyId } }),
+        } as any);
+        vi.spyOn(schemas, 'parseAndTransformProduct').mockReturnValue({ id: trickyId } as any);
+
+        await updateProduct(trickyId, data);
+
+        expect(apiClientSpy).toHaveBeenCalledWith(`/api/v1/inventory/${encoded}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    });
+
     it('should re-throw an error if apiClient fails', async () => {
         const mockError = new Error('Network Error');
         vi.spyOn(client, 'default').mockRejectedValue(mockError);
@@ -229,6 +261,19 @@ describe('deleteProduct endpoint', () => {
         });
         expect(parseProductsSpy).not.toHaveBeenCalled();
         expect(parseProductSpy).not.toHaveBeenCalled();
+    });
+
+    it('should URL-encode the id when deleting a product', async () => {
+        const trickyId = 'foo/bar baz';
+        const encoded = encodeURIComponent(trickyId);
+        const apiClientSpy = vi.spyOn(client, 'default');
+        (apiClientSpy as Mock).mockResolvedValue({} as any);
+
+        await deleteProduct(trickyId);
+
+        expect(apiClientSpy).toHaveBeenCalledWith(`/api/v1/inventory/${encoded}`, {
+            method: 'DELETE',
+        });
     });
 
     it('should re-throw an error if apiClient fails', async () => {

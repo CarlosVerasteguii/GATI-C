@@ -36,7 +36,7 @@ import { AdvancedFilterForm } from "@/components/inventory/advanced-filter-form"
 import { SearchBar } from "@/components/inventory/search-bar";
 import { FilterBadge } from "@/components/ui/filter-badge";
 import { useInventory } from "@/hooks/useInventory";
-import { createProductAPI, type CreateProductData } from "@/lib/api/inventory";
+import { createProduct, type CreateProductData } from "@/lib/api/endpoints/inventory";
 
 
 // El tipo InventoryItem ahora se importa desde @/types/inventory
@@ -703,27 +703,19 @@ export default function InventarioPage() {
     try {
       // Convertir InventoryItem a CreateProductData
       const createData: CreateProductData = {
-        nombre: productData.nombre,
-        marca: productData.marca,
-        modelo: productData.modelo,
-        numeroSerie: productData.numeroSerie,
-        categoria: productData.categoria,
-        descripcion: productData.descripcion,
-        estado: productData.estado,
-        cantidad: productData.cantidad,
-        fechaIngreso: productData.fechaIngreso,
-        ubicacion: productData.ubicacion,
-        proveedor: productData.proveedor,
-        costo: productData.costo,
-        fechaAdquisicion: productData.fechaAdquisicion,
-        fechaVencimientoGarantia: productData.fechaVencimientoGarantia,
-        vidaUtil: productData.vidaUtil,
-        isSerialized: productData.isSerialized,
-        contratoId: productData.contratoId,
+        name: productData.nombre,
+        serialNumber: productData.numeroSerie ?? null,
+        description: productData.descripcion ?? null,
+        cost: productData.costo ?? null,
+        purchaseDate: productData.fechaAdquisicion ? new Date(productData.fechaAdquisicion) : null,
+        condition: productData.estado ?? null,
+        brandId: null,
+        categoryId: null,
+        locationId: null,
       }
 
       // Llamar a la API para crear el producto
-      await createProductAPI(createData)
+      await createProduct(createData)
 
       // Revalidar los datos del inventario
       await mutate()
