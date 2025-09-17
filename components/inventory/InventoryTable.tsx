@@ -18,6 +18,7 @@ export type InventoryTableProps = {
     onRowSelectionChange?: (ids: string[]) => void;
     sort?: SortState;
     onSortChange?: (sort: SortState) => void;
+    onProductSelect?: (product: InventoryViewModel) => void;
 };
 
 type GroupKey = string;
@@ -47,7 +48,7 @@ function sortItems(items: InventoryViewModel[], sort?: SortState): InventoryView
     });
 }
 
-export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange }: InventoryTableProps) {
+export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange, onProductSelect }: InventoryTableProps) {
     const data = useMemo(() => products ?? [], [products]);
     const [expandedGroups, setExpandedGroups] = useState<Record<GroupKey, boolean>>({});
 
@@ -133,7 +134,7 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                 const item = items[0];
                                 const checked = selectedIds.includes(item.id);
                                 return (
-                                    <TableRow key={item.id} data-group="serialized">
+                                    <TableRow key={item.id} data-group="serialized" className="cursor-pointer" onClick={() => onProductSelect?.(item)}>
                                         <TableCell>
                                             <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
                                         </TableCell>
@@ -194,7 +195,7 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                     {isExpanded && items.map((item) => {
                                         const checked = selectedIds.includes(item.id);
                                         return (
-                                            <TableRow key={item.id} data-group="stack-item">
+                                            <TableRow key={item.id} data-group="stack-item" className="cursor-pointer" onClick={() => onProductSelect?.(item)}>
                                                 <TableCell>
                                                     <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
                                                 </TableCell>

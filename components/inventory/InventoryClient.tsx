@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useInventoryList } from '@/lib/api/hooks/use-inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
@@ -8,12 +8,15 @@ import type { ListParams } from '@/lib/api/schemas/inventory';
 import InventoryToolbar from '@/components/inventory/InventoryToolbar';
 import InventoryTable from '@/components/inventory/InventoryTable';
 import { toViewModels } from '@/types/view-models/inventory';
+import type { InventoryViewModel } from '@/types/view-models/inventory';
+import InventoryDetailSheet from '@/components/inventory/InventoryDetailSheet';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
 };
 
 export default function InventoryClient({ fallbackData }: InventoryClientProps) {
+    const [selectedProduct, setSelectedProduct] = useState<InventoryViewModel | null>(null);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -78,10 +81,22 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
             {error ? (
                 <div className="mt-4 text-sm text-red-600">Error al cargar inventario</div>
             ) : (
-                <InventoryTable products={viewModels} isLoading={isLoading} />
+                <InventoryTable
+                    products={viewModels}
+                    isLoading={isLoading}
+                    onProductSelect={setSelectedProduct}
+                />
             )}
 
             {/* Loading indicator handled inside InventoryTable via skeletons */}
+
+            <InventoryDetailSheet
+                product={selectedProduct}
+                isOpen={selectedProduct !== null}
+                onOpenChange={(isOpen) => {
+                    if (!isOpen) setSelectedProduct(null);
+                }}
+            />
         </div>
     );
 }
