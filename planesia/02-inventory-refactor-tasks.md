@@ -15,25 +15,34 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 - [x] Tarea 1.6 (Hooks — Mutaciones): Crear `lib/api/hooks/use-create-product.ts`, `use-update-product.ts`, `use-delete-product.ts` con `useSWRMutation` e invalidación de `inventoryKeys.all()` en `onSuccess`.
 - [x] Tarea 1.7 (ViewModel): Crear `types/view-models/inventory.ts` con `export type InventoryViewModel` y `export function toViewModel(product: ProductResultType): InventoryViewModel` para la tabla (etiquetas en español, keys canónicas intactas).
 - [x] Tarea 1.8 (Env): Documentar y configurar `NEXT_PUBLIC_API_URL` en `.env.local`; actualizar README corto en `lib/api/` explicando la capa.
-- [ ] Tarea 1.9 (Tests — Base): Añadir unit tests para `client.ts` (errores/headers), parsers Zod y endpoints (mocks). Ubicación sugerida: `__tests__/lib/api/`.
-- [ ] Tarea 1.10 (Quality Gate): Activar en CI lint + type‑check y unit tests de `lib/api/*` con umbral de cobertura ≥70%.
-- [ ] Tarea 1.11 (Criterio de salida): Verificar que no existan URLs hardcodeadas (`rg 'http://localhost' hooks app components`), y que UI no importe `fetch/axios` directos.
+- [x] Tarea 1.9 (Tests — Base): Añadir unit tests para `client.ts` (errores/headers), parsers Zod y endpoints (mocks). Ubicación sugerida: `__tests__/lib/api/`.
+- [x] Tarea 1.10 (Quality Gate): Activar en CI lint + type‑check y unit tests de `lib/api/*` con umbral de cobertura ≥70%.
+- [x] Tarea 1.11 (Criterio de salida): Verificar que no existan URLs hardcodeadas (`rg 'http://localhost' hooks app components`), y que UI no importe `fetch/axios` directos.
+
+## Fase 1.5: Endurecimiento de la API para UI
+
+- [ ] Tarea 1.5.1 (Contrato de params): Definir y documentar en `lib/api/schemas/inventory.ts` el contrato tipado `ListParams` (ej. `{ q?, page?, pageSize?, sort?, brandId?, categoryId?, condition?, locationId? }`) con Zod y tipos exportados.
+- [ ] Tarea 1.5.2 (Endpoints — Lista con params): Extender `lib/api/endpoints/inventory.ts` → `listProducts(params: ListParams)` para construir query string tipado, validar respuesta con Zod y garantizar orden estable.
+- [ ] Tarea 1.5.3 (Hooks — Lista con params): Actualizar `lib/api/hooks/use-inventory.ts` → `useInventoryList(params, { fallbackData })`; usar `inventoryKeys.list(params)` en keygen, pasar `params` al fetcher, mantener `keepPreviousData` y `fallbackData`.
+- [ ] Tarea 1.5.4 (Tests — Params y Keys): Unit tests para construcción de query, estabilidad de `inventoryKeys` con `params` y fetcher parametrizado (mocks). Cobertura ≥70% en `lib/api/*`.
+- [ ] Tarea 1.5.5 (Docs): Documentar el contrato de `params` y el patrón de claves/invalidación en `docs/04-frontend-architecture.md` y README de `lib/api/`.
 
 ## Fase 2: Reconstrucción de la UI en v2 (Sandbox RSC)
 
 - [ ] Tarea 2.1 (Ruta v2): Crear `app/(app)/inventario-v2/page.tsx` como RSC; definir revalidate/tags si aplica.
-- [ ] Tarea 2.2 (Client Shell): Crear `components/inventory/InventoryClient.tsx` con `'use client'`; consumir hooks de `lib/api/hooks` y orquestar filtros/selección/paginación mínima.
+- [ ] Tarea 2.2 (Client Shell): Crear `components/inventory/InventoryClient.tsx` con `'use client'`; usar los `searchParams` de la URL como la única fuente de verdad para filtros y paginación (leer/escribir con `useSearchParams`/`router.replace`), derivando el estado local y consumiendo los hooks de `lib/api/hooks` sin duplicar estado.
 - [ ] Tarea 2.3 (Toolbar): Crear `components/inventory/InventoryToolbar.tsx` (búsqueda, filtros, toggles de columna). Prop‑driven, sin acceso directo a API.
-- [ ] Tarea 2.4 (Tabla): Crear `components/inventory/InventoryTable.tsx` (presentación, ordenamiento, selección); consumir `InventoryViewModel`.
+- [ ] Tarea 2.4 (Tabla): Crear `components/inventory/InventoryTable.tsx` (presentación, ordenamiento, selección); consumir `InventoryViewModel`. Debe implementar la lógica de agrupación y expansión de productos (stacks vs serializados) para lograr paridad funcional con la versión legacy.
 - [ ] Tarea 2.5 (Detalle): Crear/ajustar `components/inventory/InventoryDetailSheet.tsx` para detalle; sin lógica de acceso a datos.
 - [ ] Tarea 2.6 (Diálogo Crear): Crear `components/inventory/CreateProductDialog.tsx` usando `useCreateProduct` y toasts; Optimistic UI + revalidación.
 - [ ] Tarea 2.7 (Zustand Preferencias): Centralizar preferencias de columnas en store (si no existe, crear) y usarlas desde Toolbar/Tabla.
 - [ ] Tarea 2.8 (Anti‑Corruption opcional): Si algún subcomponente legacy lo exige, crear `lib/api/adapters/inventory.legacy.ts` con `toLegacyInventoryItem()` y usarlo solo en el borde RSC. Registrar issue con kill‑date.
-- [ ] Tarea 2.9 (SWR integración): Estándar de claves: `inventoryKeys`; usar `fallbackData` en cliente en caso de SSR hydrate; evitar doble caché.
-- [ ] Tarea 2.10 (Loading UX): Añadir `app/(app)/inventario-v2/loading.tsx` con skeletons; evitar spinners largos.
+- [ ] Tarea 2.9 (SWR integración): Estándar de claves: `inventoryKeys` (las claves deben incluir los `params` de lista); usar `fallbackData` en cliente en caso de SSR hydrate; evitar doble caché.
+- [ ] Tarea 2.10 (Loading/Errores UX): Añadir `app/(app)/inventario-v2/loading.tsx` (skeletons) y `app/(app)/inventario-v2/error.tsx` (degradación elegante con reintento); evitar spinners largos.
 - [ ] Tarea 2.11 (Tests — UI): Component tests (RTL) para Toolbar/Tabla/Dialog; mocks de hooks. Ubicación sugerida: `components/inventory/__tests__/`.
 - [ ] Tarea 2.12 (E2E — Flujos): Playwright para crear/editar/eliminar/filtrar/paginar; smoke suite en CI.
 - [ ] Tarea 2.13 (Criterio de salida): Paridad funcional con la ruta legacy, sin dependencias a `hooks/useInventory.ts` ni a `types/inventory.ts` en v2.
+- [ ] Tarea 2.14 (SSR — Cookies/Fetch): Si `NEXT_PUBLIC_API_URL` es cross‑origin, definir estrategia para SSR con cookies en RSC: preferir un Route Handler proxy (server‑side) o configurar `fetch` con `credentials: 'include'` y política de cookies adecuada; integrar `next: { tags: ['inventory'] }`/`revalidate` y documentar la decisión.
 
 ## Fase 3: El Cambio y Limpieza
 
