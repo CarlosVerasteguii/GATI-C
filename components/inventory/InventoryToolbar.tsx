@@ -21,6 +21,8 @@ export type InventoryToolbarProps = {
     // Column visibility control
     visibleColumns?: Record<string, boolean>;
     onToggleColumn?: (columnId: string, visible: boolean) => void;
+    // Actions
+    onCreateNew?: () => void;
 };
 
 const defaultBrands = [
@@ -48,6 +50,7 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
         conditions = defaultConditions,
         visibleColumns,
         onToggleColumn,
+        onCreateNew,
     } = props;
 
     const storeVisible = useInventoryPreferencesStore((s) => s.visibleColumns);
@@ -123,11 +126,41 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
             </div>
 
             <div className="flex items-center gap-2">
-                <Button variant="default" onClick={() => {/* wired later */ }}>
+                <Button variant="default" onClick={() => { onCreateNew?.(); }}>
                     Crear Nuevo Producto
                 </Button>
 
                 <Separator orientation="vertical" className="h-6 hidden md:block" />
+
+                {/* Pagination controls */}
+                <div className="flex items-end gap-2">
+                    <div>
+                        <Label htmlFor="pageSize">Tamaño página</Label>
+                        <Select
+                            value={String(initialFilters.pageSize ?? '')}
+                            onValueChange={(value) => onFilterChange({ pageSize: value ? Number(value) : undefined, page: 1 })}
+                        >
+                            <SelectTrigger id="pageSize" className="w-28">
+                                <SelectValue placeholder="Auto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="">Auto</SelectItem>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="25">25</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-end gap-2">
+                        <Button variant="outline" onClick={() => onFilterChange({ page: Math.max(1, (initialFilters.page ?? 1) - 1) })}>
+                            Anterior
+                        </Button>
+                        <div className="text-sm">Página {initialFilters.page ?? 1}</div>
+                        <Button variant="outline" onClick={() => onFilterChange({ page: (initialFilters.page ?? 1) + 1 })}>
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

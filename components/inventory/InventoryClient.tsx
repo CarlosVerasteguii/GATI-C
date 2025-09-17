@@ -10,6 +10,7 @@ import InventoryTable from '@/components/inventory/InventoryTable';
 import { toViewModels } from '@/types/view-models/inventory';
 import type { InventoryViewModel } from '@/types/view-models/inventory';
 import InventoryDetailSheet from '@/components/inventory/InventoryDetailSheet';
+import CreateProductDialog from '@/components/inventory/CreateProductDialog';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
@@ -17,6 +18,7 @@ type InventoryClientProps = {
 
 export default function InventoryClient({ fallbackData }: InventoryClientProps) {
     const [selectedProduct, setSelectedProduct] = useState<InventoryViewModel | null>(null);
+    const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -76,7 +78,7 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
 
     return (
         <div className="container mx-auto p-6">
-            <InventoryToolbar initialFilters={params} onFilterChange={handleFilterChange} />
+            <InventoryToolbar initialFilters={params} onFilterChange={handleFilterChange} onCreateNew={() => setCreateDialogOpen(true)} />
 
             {error ? (
                 <div className="mt-4 text-sm text-red-600">Error al cargar inventario</div>
@@ -97,6 +99,8 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                     if (!isOpen) setSelectedProduct(null);
                 }}
             />
+
+            <CreateProductDialog isOpen={isCreateDialogOpen} onOpenChange={setCreateDialogOpen} />
         </div>
     );
 }
