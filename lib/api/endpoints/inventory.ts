@@ -1,7 +1,8 @@
 import apiClient from '../client';
-import { parseAndTransformProducts, parseAndTransformProduct } from '../schemas/inventory';
+import { parseAndTransformProducts, parseAndTransformProduct, ListParamsSchema } from '../schemas/inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 import type { ProductInputType } from '@types-generated/schemas/variants/input/Product.input';
+import type { ListParams } from '../schemas/inventory';
 
 // Input types for create/update operations, based on canonical generated types
 export type CreateProductData = Omit<
@@ -10,9 +11,34 @@ export type CreateProductData = Omit<
 >;
 export type UpdateProductData = Partial<CreateProductData>;
 
-export async function listProducts(): Promise<ProductResultType[]> {
+function buildInventoryQuery(params?: ListParams): string {
+  if (!params) return '';
+  // Sanitize/strip unknown keys via Zod; all fields optional
+  const safe = ListParamsSchema.parse(params);
+  const qs = new URLSearchParams();
+  if (safe.q) qs.set('q', safe.q);
+  if (typeof safe.page === 'number') qs.set('page', String(safe.page));
+  if (typeof safe.pageSize === 'number') qs.set('pageSize', String(safe.pageSize));
+  if (safe.sortBy) qs.set('sortBy', safe.sortBy);
+  if (safe.sortOrder) qs.set('sortOrder', safe.sortOrder);
+  if (safe.brandId) qs.set('brandId', safe.brandId);
+  if (safe.categoryId) qs.set('categoryId', safe.categoryId);
+  if (safe.locationId) qs.set('locationId', safe.locationId);
+  if (safe.condition) qs.set('condition', safe.condition);
+  if (typeof safe.hasSerialNumber === 'boolean') qs.set('hasSerialNumber', String(safe.hasSerialNumber));
+  if (typeof safe.minCost === 'number') qs.set('minCost', String(safe.minCost));
+  if (typeof safe.maxCost === 'number') qs.set('maxCost', String(safe.maxCost));
+  if (safe.purchaseDateFrom) qs.set('purchaseDateFrom', safe.purchaseDateFrom);
+  if (safe.purchaseDateTo) qs.set('purchaseDateTo', safe.purchaseDateTo);
+
+  const queryString = qs.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
+export async function listProducts(params?: ListParams): Promise<ProductResultType[]> {
   try {
-    const response = await apiClient('/api/v1/inventory');
+    const query = buildInventoryQuery(params);
+    const response = await apiClient(`/api/v1/inventory${query}`);
     const payload = await response.json();
     const cleanData = parseAndTransformProducts(payload);
     return cleanData;

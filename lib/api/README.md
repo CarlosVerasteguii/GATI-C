@@ -19,3 +19,30 @@ Este directorio contiene toda la lógica para la comunicación entre el frontend
 ## Flujo de Datos (Validación)
 
 `Backend` -> `API Client` -> `Función de Endpoint` -> `Schema Zod` (`/schemas`) -> `Dato Limpio al Hook`
+
+## Contrato de Parámetros (Inventario)
+
+Los listados de inventario aceptan parámetros de consulta validados por Zod en `schemas/inventory.ts` mediante `ListParamsSchema`.
+
+- Tipo exportado: `export type ListParams = z.infer<typeof ListParamsSchema>`
+- Campos admitidos (todos opcionales):
+  - `q`: búsqueda de texto
+  - `page`, `pageSize`: paginación (enteros positivos; `pageSize` ≤ 100)
+  - `sortBy`, `sortOrder`: ordenamiento (`asc` | `desc`)
+  - `brandId`, `categoryId`, `locationId`: filtros por relaciones
+  - `condition`: filtro por atributo
+  - `hasSerialNumber`, `minCost`, `maxCost`, `purchaseDateFrom`, `purchaseDateTo`: filtros avanzados
+
+Uso de referencia:
+
+```ts
+import { listProducts } from './endpoints/inventory'
+import { useInventoryList } from './hooks/use-inventory'
+
+await listProducts({ q: 'laptop', page: 1, pageSize: 25, sortBy: 'name', sortOrder: 'asc' })
+
+const { data } = useInventoryList({ q: 'router', brandId: 'b1' })
+```
+
+Claves SWR:
+- `inventoryKeys.list(params)` incluye `params` para evitar colisiones y soportar revalidación fina.

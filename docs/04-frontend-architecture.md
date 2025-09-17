@@ -142,6 +142,8 @@ export default function InventarioPage() {
   - `endpoints/`: funciones puras por recurso.
   - `hooks/`: hooks SWR (`useXxx`) que exponen `data`, `error`, `isLoading`.
 - Cliente: toda obtención de datos se hace exclusivamente mediante hooks SWR desde `@/lib/api/hooks`. Prohibido `fetch/axios` directos en la UI.
+- Parámetros de lista (Inventario): `ListParamsSchema` valida `{ q?, page?, pageSize?, sortBy?, sortOrder?, brandId?, categoryId?, locationId?, condition?, hasSerialNumber?, minCost?, maxCost?, purchaseDateFrom?, purchaseDateTo? }`.
+- Claves SWR: `inventoryKeys.list(params)` incluye `params` para cache coherente y revalidación granular.
 - RSC/SSR: usar `fetch` nativo de Next con `revalidate`, `tags` o `cache: 'no-store'` según el caso.
 
 ## Mutaciones

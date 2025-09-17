@@ -1,28 +1,3 @@
-import { defineConfig } from 'vitest/config';
-
-export default defineConfig({
-  test: {
-    environment: 'jsdom',
-    include: ['tests/unit/**/*.test.ts'],
-    coverage: {
-      reporter: ['text', 'json-summary', 'lcov'],
-      provider: 'v8',
-      include: ['lib/api/**'],
-      exclude: [
-        'lib/api/hooks/**',
-        'lib/api/README.md',
-        '**/*.d.ts',
-      ],
-      thresholds: {
-        statements: 70,
-        branches: 70,
-        functions: 70,
-        lines: 70,
-      },
-    },
-  },
-});
-
 import { defineConfig } from 'vitest/config'
 import tsconfigPaths from 'vite-tsconfig-paths'
 

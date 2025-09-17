@@ -1,12 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { listProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../../../../../lib/api/endpoints/inventory';
+import type { ListParams } from '../../../../../lib/api/schemas/inventory';
 import * as client from '../../../../../lib/api/client';
 import * as schemas from '../../../../../lib/api/schemas/inventory';
 import type { Mock } from 'vitest';
 
 // Mock dependencies
 vi.mock('../../../../../lib/api/client');
-vi.mock('../../../../../lib/api/schemas/inventory');
+vi.mock('../../../../../lib/api/schemas/inventory', async () => {
+    const actual = await vi.importActual<any>('../../../../../lib/api/schemas/inventory');
+    return {
+        ...actual,
+        // We mock only the transformers; keep ListParamsSchema real
+        parseAndTransformProducts: vi.fn(),
+        parseAndTransformProduct: vi.fn(),
+    };
+});
 
 describe('listProducts endpoint', () => {
     beforeEach(() => {
@@ -70,6 +79,70 @@ describe('listProducts endpoint', () => {
         });
 
         await expect(listProducts()).rejects.toThrow(mockError);
+    });
+
+    it('builds query string from ListParams and calls correct URL', async () => {
+        const apiClientSpy = vi.spyOn(client, 'default');
+        (apiClientSpy as Mock).mockResolvedValue({
+            json: () => Promise.resolve({ success: true, data: [] }),
+        } as any);
+        vi.spyOn(schemas, 'parseAndTransformProducts').mockReturnValue([] as any);
+
+        const params: ListParams = {
+            q: 'laptop',
+            page: 2,
+            pageSize: 25,
+            sortBy: 'name',
+            sortOrder: 'asc',
+            brandId: 'b1',
+            categoryId: 'c1',
+            locationId: 'l1',
+            condition: 'available',
+            hasSerialNumber: true,
+            minCost: 100,
+            maxCost: 999,
+            purchaseDateFrom: new Date('2023-01-01').toISOString(),
+            purchaseDateTo: new Date('2023-12-31').toISOString(),
+        };
+
+        await listProducts(params);
+
+        const urlCalled = (apiClientSpy as Mock).mock.calls[0][0] as string;
+        expect(urlCalled.startsWith('/api/v1/inventory?')).toBe(true);
+        expect(urlCalled).toContain('q=laptop');
+        expect(urlCalled).toContain('page=2');
+        expect(urlCalled).toContain('pageSize=25');
+        expect(urlCalled).toContain('sortBy=name');
+        expect(urlCalled).toContain('sortOrder=asc');
+        expect(urlCalled).toContain('brandId=b1');
+        expect(urlCalled).toContain('categoryId=c1');
+        expect(urlCalled).toContain('locationId=l1');
+        expect(urlCalled).toContain('condition=available');
+        expect(urlCalled).toContain('hasSerialNumber=true');
+        expect(urlCalled).toContain('minCost=100');
+        expect(urlCalled).toContain('maxCost=999');
+        expect(urlCalled).toContain('purchaseDateFrom=');
+        expect(urlCalled).toContain('purchaseDateTo=');
+    });
+
+    it('URL-encodes special characters in q parameter', async () => {
+        const apiClientSpy = vi.spyOn(client, 'default');
+        (apiClientSpy as Mock).mockResolvedValue({
+            json: () => Promise.resolve({ success: true, data: [] }),
+        } as any);
+        vi.spyOn(schemas, 'parseAndTransformProducts').mockReturnValue([] as any);
+
+        const qRaw = 'laptop con ñ & acentos';
+        const params = { q: qRaw } as any;
+        await listProducts(params);
+
+        const urlCalled = (apiClientSpy as Mock).mock.calls[0][0] as string;
+        const expectedQs = new URLSearchParams({ q: qRaw }).toString();
+
+        expect(urlCalled.startsWith('/api/v1/inventory?')).toBe(true);
+        expect(urlCalled).toContain(expectedQs);
+        // ensure raw string not present
+        expect(urlCalled.includes(qRaw)).toBe(false);
     });
 });
 
