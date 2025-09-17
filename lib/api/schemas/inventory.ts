@@ -2,6 +2,38 @@ import { z } from 'zod';
 import { ProductResultSchema } from '@types-generated/schemas/variants/result/Product.result';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 
+// Query parameters schema for listing products
+export const ListParamsSchema = z.object({
+    // Text search
+    q: z.string().optional(),
+
+    // Pagination
+    page: z.number().int().positive().optional(),
+    pageSize: z.number().int().positive().max(100).optional(),
+
+    // Sorting
+    sortBy: z.string().optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+
+    // Filtering by relationships
+    brandId: z.string().optional(),
+    categoryId: z.string().optional(),
+    locationId: z.string().optional(),
+
+    // Filtering by attributes
+    condition: z.string().optional(),
+
+    // Additional filters for advanced use cases
+    hasSerialNumber: z.boolean().optional(),
+    minCost: z.number().min(0).optional(),
+    maxCost: z.number().min(0).optional(),
+    purchaseDateFrom: z.string().datetime().optional(),
+    purchaseDateTo: z.string().datetime().optional(),
+});
+
+// TypeScript type inferred from the Zod schema
+export type ListParams = z.infer<typeof ListParamsSchema>;
+
 // Wire-format schema for Product as received from the API (dates as ISO strings)
 export const ProductWireSchema = ProductResultSchema.extend({
     purchaseDate: z.string().datetime().nullable(),
