@@ -73,3 +73,14 @@ export function parseAndTransformProduct(payload: unknown): ProductResultType {
 }
 
 
+// Create Product (client-side input) schema to centralize validation contracts
+export const CreateProductSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    serialNumber: z.string().optional().or(z.literal('')),
+    brandId: z.string().min(1, 'Selecciona una marca'),
+    categoryId: z.string().min(1, 'Selecciona una categoría'),
+});
+
+export type CreateProductInput = z.infer<typeof CreateProductSchema>;
+
+
