@@ -4,6 +4,14 @@
 **Autor:** Carlos (Operador del Proyecto)
 **Propósito:** Este documento sirve como una adenda a los documentos SRS y PRD originales. Proporciona un contexto de negocio del mundo real para guiar las decisiones de arquitectura y priorización, con el objetivo de evitar la sobreingeniería y enfocarse en el valor real para el usuario.
 
+## Estado Actual del Proyecto
+
+Estado: Desarrollo Activo (Hobby)
+Entorno: No productivo.
+Usuarios Activos: Cero (0).
+Proyección: No se esperan usuarios activos en los próximos meses.
+Implicación Estratégica Clave: Todas las decisiones de arquitectura y refactorización deben priorizar la calidad a largo plazo, la simplicidad de mantenimiento y la velocidad de desarrollo por encima de la continuidad del negocio a corto plazo o la compatibilidad hacia atrás. Se aceptan cambios disruptivos (como refactorizaciones "in-place" o "Big Bang" controlados) si conducen a una arquitectura final superior, ya que no hay riesgo de impactar a usuarios en producción.
+
 ---
 
 ## Bloque 1: El Contexto y la Escala Real

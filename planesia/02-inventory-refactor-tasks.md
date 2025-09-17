@@ -22,10 +22,10 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 ## Fase 1.5: Endurecimiento de la API para UI
 
 - [x] Tarea 1.5.1 (Contrato de params): Definir y documentar en `lib/api/schemas/inventory.ts` el contrato tipado `ListParams` (ej. `{ q?, page?, pageSize?, sort?, brandId?, categoryId?, condition?, locationId? }`) con Zod y tipos exportados.
-- [ ] Tarea 1.5.2 (Endpoints — Lista con params): Extender `lib/api/endpoints/inventory.ts` → `listProducts(params: ListParams)` para construir query string tipado, validar respuesta con Zod y garantizar orden estable.
-- [ ] Tarea 1.5.3 (Hooks — Lista con params): Actualizar `lib/api/hooks/use-inventory.ts` → `useInventoryList(params, { fallbackData })`; usar `inventoryKeys.list(params)` en keygen, pasar `params` al fetcher, mantener `keepPreviousData` y `fallbackData`.
-- [ ] Tarea 1.5.4 (Tests — Params y Keys): Unit tests para construcción de query, estabilidad de `inventoryKeys` con `params` y fetcher parametrizado (mocks). Cobertura ≥70% en `lib/api/*`.
-- [ ] Tarea 1.5.5 (Docs): Documentar el contrato de `params` y el patrón de claves/invalidación en `docs/04-frontend-architecture.md` y README de `lib/api/`.
+- [x] Tarea 1.5.2 (Endpoints — Lista con params): Extender `lib/api/endpoints/inventory.ts` → `listProducts(params: ListParams)` para construir query string tipado, validar respuesta con Zod y garantizar orden estable.
+- [x] Tarea 1.5.3 (Hooks — Lista con params): Actualizar `lib/api/hooks/use-inventory.ts` → `useInventoryList(params, { fallbackData })`; usar `inventoryKeys.list(params)` en keygen, pasar `params` al fetcher, mantener `keepPreviousData` y `fallbackData`.
+- [x] Tarea 1.5.4 (Tests — Params y Keys): Unit tests para construcción de query, estabilidad de `inventoryKeys` con `params` y fetcher parametrizado (mocks). Cobertura ≥70% en `lib/api/*`.
+- [x] Tarea 1.5.5 (Docs): Documentar el contrato de `params` y el patrón de claves/invalidación en `docs/04-frontend-architecture.md` y README de `lib/api/`.
 
 ## Fase 2: Reconstrucción de la UI en v2 (Sandbox RSC)
 
