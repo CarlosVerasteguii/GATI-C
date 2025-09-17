@@ -5,6 +5,7 @@ import type { InventoryViewModel } from '@/types/view-models/inventory';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useInventoryPreferencesStore } from '@/lib/stores/use-inventory-preferences-store';
 
 export type SortState = {
     sortBy: keyof InventoryViewModel | 'brandName' | 'categoryName' | 'locationName' | 'statusLabel' | 'purchaseDateFormatted';
@@ -51,6 +52,7 @@ function sortItems(items: InventoryViewModel[], sort?: SortState): InventoryView
 export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange, onProductSelect }: InventoryTableProps) {
     const data = useMemo(() => products ?? [], [products]);
     const [expandedGroups, setExpandedGroups] = useState<Record<GroupKey, boolean>>({});
+    const visible = useInventoryPreferencesStore((s) => s.visibleColumns);
 
     const toggleGroup = useCallback((key: GroupKey) => {
         setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -95,13 +97,13 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-8"></TableHead>
-                        {headerCell('Nombre', 'name')}
-                        {headerCell('Marca', 'brandName')}
-                        {headerCell('Núm. Serie', 'serialNumber')}
-                        {headerCell('Estado', 'statusLabel')}
-                        {headerCell('Ubicación', 'locationName')}
-                        {headerCell('Fecha Compra', 'purchaseDateFormatted')}
+                        <TableHead className="w-12"></TableHead>
+                        {visible.name && headerCell('Nombre', 'name')}
+                        {visible.brandName && headerCell('Marca', 'brandName')}
+                        {visible.serialNumber && headerCell('Núm. Serie', 'serialNumber')}
+                        {visible.statusLabel && headerCell('Estado', 'statusLabel')}
+                        {visible.locationName && headerCell('Ubicación', 'locationName')}
+                        {visible.purchaseDateFormatted && headerCell('Fecha Compra', 'purchaseDateFormatted')}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,12 +140,12 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                         <TableCell>
                                             <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
                                         </TableCell>
-                                        <TableCell className="font-medium">{item.name}</TableCell>
-                                        <TableCell>{item.brandName}</TableCell>
-                                        <TableCell>{item.serialNumber ?? '—'}</TableCell>
-                                        <TableCell>{item.statusLabel}</TableCell>
-                                        <TableCell>{item.locationName}</TableCell>
-                                        <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>
+                                        {visible.name && <TableCell className="font-medium">{item.name}</TableCell>}
+                                        {visible.brandName && <TableCell>{item.brandName}</TableCell>}
+                                        {visible.serialNumber && <TableCell>{item.serialNumber ?? '—'}</TableCell>}
+                                        {visible.statusLabel && <TableCell>{item.statusLabel}</TableCell>}
+                                        {visible.locationName && <TableCell>{item.locationName}</TableCell>}
+                                        {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
                                     </TableRow>
                                 );
                             }
@@ -158,7 +160,7 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                             return (
                                 <Fragment key={groupKey}>
                                     <TableRow data-group="stack-summary">
-                                        <TableCell>
+                                        <TableCell className="space-x-2">
                                             <Checkbox
                                                 checked={groupChecked}
                                                 onCheckedChange={(checked) => {
@@ -173,23 +175,23 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                                     }
                                                 }}
                                             />
-                                        </TableCell>
-                                        <TableCell className="font-medium">
                                             <button
                                                 type="button"
-                                                className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded border"
+                                                className="inline-flex h-5 w-5 items-center justify-center rounded border"
                                                 aria-label={isExpanded ? 'Colapsar grupo' : 'Expandir grupo'}
                                                 onClick={() => toggleGroup(groupKey)}
                                             >
                                                 {isExpanded ? '−' : '+'}
                                             </button>
-                                            {representative.name} (x{total})
                                         </TableCell>
-                                        <TableCell>{representative.brandName}</TableCell>
-                                        <TableCell>—</TableCell>
-                                        <TableCell>Apilado</TableCell>
-                                        <TableCell>{representative.locationName}</TableCell>
-                                        <TableCell>{representative.purchaseDateFormatted ?? '—'}</TableCell>
+                                        {visible.name && (
+                                            <TableCell className="font-medium">{representative.name} (x{total})</TableCell>
+                                        )}
+                                        {visible.brandName && <TableCell>{representative.brandName}</TableCell>}
+                                        {visible.serialNumber && <TableCell>—</TableCell>}
+                                        {visible.statusLabel && <TableCell>Apilado</TableCell>}
+                                        {visible.locationName && <TableCell>{representative.locationName}</TableCell>}
+                                        {visible.purchaseDateFormatted && <TableCell>{representative.purchaseDateFormatted ?? '—'}</TableCell>}
                                     </TableRow>
 
                                     {isExpanded && items.map((item) => {
@@ -199,12 +201,12 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                                 <TableCell>
                                                     <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
                                                 </TableCell>
-                                                <TableCell className="pl-6">{item.name}</TableCell>
-                                                <TableCell>{item.brandName}</TableCell>
-                                                <TableCell>—</TableCell>
-                                                <TableCell>{item.statusLabel}</TableCell>
-                                                <TableCell>{item.locationName}</TableCell>
-                                                <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>
+                                                {visible.name && <TableCell className="pl-6">{item.name}</TableCell>}
+                                                {visible.brandName && <TableCell>{item.brandName}</TableCell>}
+                                                {visible.serialNumber && <TableCell>—</TableCell>}
+                                                {visible.statusLabel && <TableCell>{item.statusLabel}</TableCell>}
+                                                {visible.locationName && <TableCell>{item.locationName}</TableCell>}
+                                                {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
                                             </TableRow>
                                         );
                                     })}

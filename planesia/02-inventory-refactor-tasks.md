@@ -36,7 +36,7 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 - [x] Tarea 2.5 (Detalle): Crear/ajustar components/inventory/InventoryDetailSheet.tsx para detalle; sin lógica de acceso a datos.
 - [x] Tarea 2.5.1 (Orquestación de UI): Refactorizar `InventoryClient.tsx` para que gestione el estado de la UI (producto seleccionado, panel de detalle abierto) e integre completamente la `Toolbar`, la `Table` y el `DetailSheet`.
 - [x] Tarea 2.6 (Diálogo Crear): Crear `components/inventory/CreateProductDialog.tsx` usando `useCreateProduct` y toasts; Optimistic UI + revalidación.
-- [ ] Tarea 2.7 (Zustand Preferencias): Centralizar preferencias de columnas en store (si no existe, crear) y usarlas desde Toolbar/Tabla.
+- [x] Tarea 2.7 (Zustand Preferencias): Centralizar preferencias de columnas en store (si no existe, crear) y usarlas desde Toolbar/Tabla.
 - [ ] Tarea 2.8 (Anti‑Corruption opcional): Si algún subcomponente legacy lo exige, crear `lib/api/adapters/inventory.legacy.ts` con `toLegacyInventoryItem()` y usarlo solo en el borde RSC. Registrar issue con kill‑date.
 - [ ] Tarea 2.9 (SWR integración): Estándar de claves: `inventoryKeys` (las claves deben incluir los `params` de lista); usar `fallbackData` en cliente en caso de SSR hydrate; evitar doble caché.
 - [ ] Tarea 2.10 (Loading/Errores UX): Añadir `app/(app)/inventario-v2/loading.tsx` (skeletons) y `app/(app)/inventario-v2/error.tsx` (degradación elegante con reintento); evitar spinners largos.

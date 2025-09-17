@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
+import { useInventoryPreferencesStore } from '@/lib/stores/use-inventory-preferences-store';
+import type { InventoryColumnId } from '@/lib/stores/use-inventory-preferences-store';
 
 export type InventoryToolbarProps = {
     initialFilters: Partial<ListParams>;
@@ -48,7 +50,9 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
         onToggleColumn,
     } = props;
 
-    const currentColumns = useMemo(() => visibleColumns ?? {}, [visibleColumns]);
+    const storeVisible = useInventoryPreferencesStore((s) => s.visibleColumns);
+    const toggleColumn = useInventoryPreferencesStore((s) => s.toggleColumnVisibility);
+    const currentColumns = useMemo(() => visibleColumns ?? storeVisible, [visibleColumns, storeVisible]);
 
     return (
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -139,7 +143,10 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
                                 <DropdownMenuCheckboxItem
                                     key={columnId}
                                     checked={!!visible}
-                                    onCheckedChange={(checked) => onToggleColumn?.(columnId, !!checked)}
+                                    onCheckedChange={(checked) => {
+                                        if (onToggleColumn) onToggleColumn(columnId, !!checked);
+                                        else toggleColumn(columnId as InventoryColumnId);
+                                    }}
                                 >
                                     {columnId}
                                 </DropdownMenuCheckboxItem>
