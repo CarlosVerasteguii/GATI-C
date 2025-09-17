@@ -6,19 +6,12 @@ import { useInventoryList } from '@/lib/api/hooks/use-inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 import type { ListParams } from '@/lib/api/schemas/inventory';
 import InventoryToolbar from '@/components/inventory/InventoryToolbar';
+import InventoryTable from '@/components/inventory/InventoryTable';
+import { toViewModels } from '@/types/view-models/inventory';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
 };
-
-function InventoryTable({ products }: { products: ProductResultType[] | undefined }) {
-    return (
-        <div className="rounded border p-3">
-            <div className="text-sm mb-2">Table Placeholder</div>
-            <div className="text-xs text-gray-500">Items: {products?.length ?? 0}</div>
-        </div>
-    );
-}
 
 export default function InventoryClient({ fallbackData }: InventoryClientProps) {
     const router = useRouter();
@@ -52,6 +45,8 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
     // SWR consumption with fallbackData to avoid duplicate initial fetch
     const { data, isLoading, error } = useInventoryList(params, { fallbackData });
 
+    const viewModels = useMemo(() => (data ? toViewModels(data) : undefined), [data]);
+
     // Update URL on filter/pagination changes; no local state duplication
     const handleFilterChange = useCallback(
         (changes: Partial<ListParams>) => {
@@ -83,10 +78,10 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
             {error ? (
                 <div className="mt-4 text-sm text-red-600">Error al cargar inventario</div>
             ) : (
-                <InventoryTable products={data} />
+                <InventoryTable products={viewModels} isLoading={isLoading} />
             )}
 
-            {isLoading && <div className="mt-2 text-xs text-gray-500">Cargando...</div>}
+            {/* Loading indicator handled inside InventoryTable via skeletons */}
         </div>
     );
 }
