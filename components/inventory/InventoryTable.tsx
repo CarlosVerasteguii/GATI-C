@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useInventoryPreferencesStore } from '@/lib/stores/use-inventory-preferences-store';
+import { Button } from '@/components/ui/button';
 
 export type SortState = {
     sortBy: keyof InventoryViewModel | 'brandName' | 'categoryName' | 'locationName' | 'statusLabel' | 'purchaseDateFormatted';
@@ -20,6 +21,7 @@ export type InventoryTableProps = {
     sort?: SortState;
     onSortChange?: (sort: SortState) => void;
     onProductSelect?: (product: InventoryViewModel) => void;
+    onEditProduct?: (productId: string) => void;
 };
 
 type GroupKey = string;
@@ -49,7 +51,7 @@ function sortItems(items: InventoryViewModel[], sort?: SortState): InventoryView
     });
 }
 
-export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange, onProductSelect }: InventoryTableProps) {
+export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange, onProductSelect, onEditProduct }: InventoryTableProps) {
     const data = useMemo(() => products ?? [], [products]);
     const [expandedGroups, setExpandedGroups] = useState<Record<GroupKey, boolean>>({});
     const visible = useInventoryPreferencesStore((s) => s.visibleColumns);
@@ -92,6 +94,16 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
         </TableHead>
     );
 
+    // Compute dynamic column count for colspan and skeletons
+    const dynamicColumnCount =
+        (visible.name ? 1 : 0) +
+        (visible.brandName ? 1 : 0) +
+        (visible.serialNumber ? 1 : 0) +
+        (visible.statusLabel ? 1 : 0) +
+        (visible.locationName ? 1 : 0) +
+        (visible.purchaseDateFormatted ? 1 : 0);
+    const totalColumns = 1 /* checkbox */ + dynamicColumnCount + 1 /* actions */;
+
     return (
         <div className="mt-4">
             <Table>
@@ -104,6 +116,7 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                         {visible.statusLabel && headerCell('Estado', 'statusLabel')}
                         {visible.locationName && headerCell('Ubicación', 'locationName')}
                         {visible.purchaseDateFormatted && headerCell('Fecha Compra', 'purchaseDateFormatted')}
+                        <TableHead>Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -117,13 +130,14 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                             </TableRow>
                         ))
                     )}
 
                     {!isLoading && data.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center text-sm text-gray-500">
+                            <TableCell colSpan={totalColumns} className="text-center text-sm text-gray-500">
                                 No hay productos para mostrar
                             </TableCell>
                         </TableRow>
@@ -146,6 +160,18 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                         {visible.statusLabel && <TableCell>{item.statusLabel}</TableCell>}
                                         {visible.locationName && <TableCell>{item.locationName}</TableCell>}
                                         {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
+                                        <TableCell>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEditProduct?.(item.id);
+                                                }}
+                                            >
+                                                Editar
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 );
                             }
@@ -192,6 +218,11 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                         {visible.statusLabel && <TableCell>Apilado</TableCell>}
                                         {visible.locationName && <TableCell>{representative.locationName}</TableCell>}
                                         {visible.purchaseDateFormatted && <TableCell>{representative.purchaseDateFormatted ?? '—'}</TableCell>}
+                                        <TableCell>
+                                            <Button variant="outline" size="sm" disabled>
+                                                Editar
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
 
                                     {isExpanded && items.map((item) => {
@@ -207,6 +238,18 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                                 {visible.statusLabel && <TableCell>{item.statusLabel}</TableCell>}
                                                 {visible.locationName && <TableCell>{item.locationName}</TableCell>}
                                                 {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
+                                                <TableCell>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onEditProduct?.(item.id);
+                                                        }}
+                                                    >
+                                                        Editar
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}

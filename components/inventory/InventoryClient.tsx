@@ -11,6 +11,7 @@ import { toViewModels } from '@/types/view-models/inventory';
 import type { InventoryViewModel } from '@/types/view-models/inventory';
 import InventoryDetailSheet from '@/components/inventory/InventoryDetailSheet';
 import CreateProductDialog from '@/components/inventory/CreateProductDialog';
+import EditProductDialog from '@/components/inventory/EditProductDialog';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
@@ -19,6 +20,7 @@ type InventoryClientProps = {
 export default function InventoryClient({ fallbackData }: InventoryClientProps) {
     const [selectedProduct, setSelectedProduct] = useState<InventoryViewModel | null>(null);
     const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
+    const [editingProductId, setEditingProductId] = useState<string | null>(null);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -101,6 +103,7 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                     products={viewModels}
                     isLoading={isLoading}
                     onProductSelect={setSelectedProduct}
+                    onEditProduct={setEditingProductId}
                 />
             )}
 
@@ -115,6 +118,14 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
             />
 
             <CreateProductDialog isOpen={isCreateDialogOpen} onOpenChange={setCreateDialogOpen} />
+
+            <EditProductDialog
+                productId={editingProductId}
+                isOpen={editingProductId !== null}
+                onOpenChange={(isOpen) => {
+                    if (!isOpen) setEditingProductId(null);
+                }}
+            />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { listProducts } from '../endpoints/inventory';
+import { listProducts, getProduct } from '../endpoints/inventory';
 import type { ListParams } from '../schemas/inventory';
 import type { ProductResultType } from '@types-generated/schemas/variants/result/Product.result';
 
@@ -25,6 +25,17 @@ export function useInventoryList(
       keepPreviousData: true,
       ...(options?.fallbackData ? { fallbackData: options.fallbackData } : {}),
     }
+  );
+
+  return { data, isLoading, error, mutate, key } as const;
+}
+
+// Fetch a single product by id
+export function useProduct(id: string | null) {
+  const key = id ? [...inventoryKeys.all, 'detail', id] : null;
+  const { data, error, isLoading, mutate } = useSWR<ProductResultType>(
+    key,
+    () => getProduct(id as string)
   );
 
   return { data, isLoading, error, mutate, key } as const;

@@ -11,13 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUpdateProduct } from '@/lib/api/hooks/use-update-product';
+import { useProduct } from '@/lib/api/hooks/use-inventory';
 import type { UpdateProductData } from '@/lib/api/endpoints/inventory';
-import type { InventoryViewModel } from '@/types/view-models/inventory';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export type EditProductDialogProps = {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    product: InventoryViewModel | null;
+    productId: string | null;
     // Optional controlled option lists; replace with real data later
     brands?: Array<{ id: string; name: string }>;
     categories?: Array<{ id: string; name: string }>;
@@ -43,9 +44,10 @@ const defaultCategories = [
     { id: 'c2', name: 'Categoría Y' },
 ];
 
-export default function EditProductDialog({ isOpen, onOpenChange, product, brands = defaultBrands, categories = defaultCategories }: EditProductDialogProps) {
+export default function EditProductDialog({ isOpen, onOpenChange, productId, brands = defaultBrands, categories = defaultCategories }: EditProductDialogProps) {
     const { toast } = useToast();
     const { updateProduct, isUpdating } = useUpdateProduct();
+    const { data: product, isLoading } = useProduct(isOpen ? productId : null);
 
     const form = useForm<EditProductForm>({
         resolver: zodResolver(EditProductSchema),
@@ -58,21 +60,21 @@ export default function EditProductDialog({ isOpen, onOpenChange, product, brand
         mode: 'onSubmit',
     });
 
-    // Populate form when dialog opens with a product
+    // Populate form when fetched product changes
     useEffect(() => {
         if (isOpen && product) {
             form.reset({
                 name: product.name ?? '',
                 serialNumber: product.serialNumber ?? '',
-                brandId: product.brandId ?? '',
-                categoryId: product.categoryId ?? '',
+                brandId: (product as any).brandId ?? '',
+                categoryId: (product as any).categoryId ?? '',
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, product]);
 
     async function onSubmit(values: EditProductForm) {
-        if (!product) return;
+        if (!productId) return;
         const payload: UpdateProductData = {
             name: values.name,
             serialNumber: values.serialNumber || undefined,
@@ -81,7 +83,7 @@ export default function EditProductDialog({ isOpen, onOpenChange, product, brand
         };
 
         try {
-            await updateProduct({ id: product.id, data: payload });
+            await updateProduct({ id: productId, data: payload });
             toast({ title: 'Producto actualizado', description: 'Los cambios fueron guardados correctamente.' });
             onOpenChange(false);
         } catch (error: any) {
@@ -97,69 +99,81 @@ export default function EditProductDialog({ isOpen, onOpenChange, product, brand
                     <DialogDescription>Modifica los campos esenciales del producto.</DialogDescription>
                 </DialogHeader>
 
-                <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-                    <div>
-                        <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" placeholder="Nombre del producto" {...form.register('name')} />
-                        {form.formState.errors.name && (
-                            <p className="mt-1 text-xs text-red-600">{form.formState.errors.name.message}</p>
-                        )}
+                {isLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-9 w-full" />
+                        <Skeleton className="h-9 w-full" />
+                        <Skeleton className="h-9 w-full" />
+                        <div className="flex justify-end gap-2">
+                            <Skeleton className="h-9 w-24" />
+                            <Skeleton className="h-9 w-28" />
+                        </div>
                     </div>
+                ) : (
+                    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                        <div>
+                            <Label htmlFor="name">Nombre</Label>
+                            <Input id="name" placeholder="Nombre del producto" {...form.register('name')} />
+                            {form.formState.errors.name && (
+                                <p className="mt-1 text-xs text-red-600">{form.formState.errors.name.message}</p>
+                            )}
+                        </div>
 
-                    <div>
-                        <Label htmlFor="serialNumber">Número de Serie</Label>
-                        <Input id="serialNumber" placeholder="Opcional" {...form.register('serialNumber')} />
-                    </div>
+                        <div>
+                            <Label htmlFor="serialNumber">Número de Serie</Label>
+                            <Input id="serialNumber" placeholder="Opcional" {...form.register('serialNumber')} />
+                        </div>
 
-                    <div>
-                        <Label htmlFor="brandId">Marca</Label>
-                        <Select
-                            value={form.watch('brandId')}
-                            onValueChange={(val) => form.setValue('brandId', val, { shouldValidate: true })}
-                        >
-                            <SelectTrigger id="brandId">
-                                <SelectValue placeholder="Selecciona una marca" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {brands.map((b) => (
-                                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {form.formState.errors.brandId && (
-                            <p className="mt-1 text-xs text-red-600">{form.formState.errors.brandId.message}</p>
-                        )}
-                    </div>
+                        <div>
+                            <Label htmlFor="brandId">Marca</Label>
+                            <Select
+                                value={form.watch('brandId')}
+                                onValueChange={(val) => form.setValue('brandId', val, { shouldValidate: true })}
+                            >
+                                <SelectTrigger id="brandId">
+                                    <SelectValue placeholder="Selecciona una marca" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((b) => (
+                                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.formState.errors.brandId && (
+                                <p className="mt-1 text-xs text-red-600">{form.formState.errors.brandId.message}</p>
+                            )}
+                        </div>
 
-                    <div>
-                        <Label htmlFor="categoryId">Categoría</Label>
-                        <Select
-                            value={form.watch('categoryId')}
-                            onValueChange={(val) => form.setValue('categoryId', val, { shouldValidate: true })}
-                        >
-                            <SelectTrigger id="categoryId">
-                                <SelectValue placeholder="Selecciona una categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {form.formState.errors.categoryId && (
-                            <p className="mt-1 text-xs text-red-600">{form.formState.errors.categoryId.message}</p>
-                        )}
-                    </div>
+                        <div>
+                            <Label htmlFor="categoryId">Categoría</Label>
+                            <Select
+                                value={form.watch('categoryId')}
+                                onValueChange={(val) => form.setValue('categoryId', val, { shouldValidate: true })}
+                            >
+                                <SelectTrigger id="categoryId">
+                                    <SelectValue placeholder="Selecciona una categoría" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categories.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.formState.errors.categoryId && (
+                                <p className="mt-1 text-xs text-red-600">{form.formState.errors.categoryId.message}</p>
+                            )}
+                        </div>
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating}>
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={isUpdating}>
-                            {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isUpdating}>
+                                {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                )}
             </DialogContent>
         </Dialog>
     );
