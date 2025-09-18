@@ -7,6 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useInventoryPreferencesStore } from '@/lib/stores/use-inventory-preferences-store';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 
 export type SortState = {
     sortBy: keyof InventoryViewModel | 'brandName' | 'categoryName' | 'locationName' | 'statusLabel' | 'purchaseDateFormatted';
@@ -22,6 +24,7 @@ export type InventoryTableProps = {
     onSortChange?: (sort: SortState) => void;
     onProductSelect?: (product: InventoryViewModel) => void;
     onEditProduct?: (productId: string) => void;
+    onDeleteProduct?: (product: InventoryViewModel) => void;
 };
 
 type GroupKey = string;
@@ -161,16 +164,21 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                         {visible.locationName && <TableCell>{item.locationName}</TableCell>}
                                         {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
                                         <TableCell>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onEditProduct?.(item.id);
-                                                }}
-                                            >
-                                                Editar
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                                    <DropdownMenuItem onClick={() => onEditProduct?.(item.id)}>
+                                                        Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-red-600 focus:text-red-700" onClick={() => onDeleteProduct?.(item)}>
+                                                        Eliminar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -239,16 +247,21 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                                 {visible.locationName && <TableCell>{item.locationName}</TableCell>}
                                                 {visible.purchaseDateFormatted && <TableCell>{item.purchaseDateFormatted ?? '—'}</TableCell>}
                                                 <TableCell>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            onEditProduct?.(item.id);
-                                                        }}
-                                                    >
-                                                        Editar
-                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                                            <DropdownMenuItem onClick={() => onEditProduct?.(item.id)}>
+                                                                Editar
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-red-600 focus:text-red-700" onClick={() => onDeleteProduct?.(item)}>
+                                                                Eliminar
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </TableCell>
                                             </TableRow>
                                         );

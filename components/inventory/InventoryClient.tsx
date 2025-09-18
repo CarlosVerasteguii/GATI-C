@@ -12,6 +12,9 @@ import type { InventoryViewModel } from '@/types/view-models/inventory';
 import InventoryDetailSheet from '@/components/inventory/InventoryDetailSheet';
 import CreateProductDialog from '@/components/inventory/CreateProductDialog';
 import EditProductDialog from '@/components/inventory/EditProductDialog';
+import ConfirmationDialog from '@/components/ui/confirmation-dialog';
+import { useDeleteProduct } from '@/lib/api/hooks/use-delete-product';
+import { useToast } from '@/hooks/use-toast';
 
 type InventoryClientProps = {
     fallbackData: ProductResultType[];
@@ -21,6 +24,9 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
     const [selectedProduct, setSelectedProduct] = useState<InventoryViewModel | null>(null);
     const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
     const [editingProductId, setEditingProductId] = useState<string | null>(null);
+    const [productToDelete, setProductToDelete] = useState<InventoryViewModel | null>(null);
+    const { deleteProduct, isDeleting } = useDeleteProduct();
+    const { toast } = useToast();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -104,6 +110,9 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                     isLoading={isLoading}
                     onProductSelect={setSelectedProduct}
                     onEditProduct={setEditingProductId}
+                    onDeleteProduct={(product) => {
+                        setProductToDelete(product);
+                    }}
                 />
             )}
 
@@ -124,6 +133,29 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                 isOpen={editingProductId !== null}
                 onOpenChange={(isOpen) => {
                     if (!isOpen) setEditingProductId(null);
+                }}
+            />
+
+            <ConfirmationDialog
+                isOpen={productToDelete !== null}
+                onOpenChange={(open) => {
+                    if (!open) setProductToDelete(null);
+                }}
+                title="Eliminar producto"
+                description={productToDelete ? `¿Estás seguro de eliminar "${productToDelete.name}"? Esta acción no se puede deshacer.` : ''}
+                confirmText="Eliminar"
+                variant="destructive"
+                isLoading={isDeleting}
+                onConfirm={async () => {
+                    if (!productToDelete) return;
+                    try {
+                        await deleteProduct(productToDelete.id);
+                        toast({ title: 'Producto eliminado', description: 'El producto fue eliminado correctamente.' });
+                        setProductToDelete(null);
+                    } catch (error: any) {
+                        toast({ title: 'Error al eliminar', description: error?.message ?? 'No se pudo eliminar el producto.', variant: 'destructive' });
+                        setProductToDelete(null);
+                    }
                 }}
             />
         </div>
