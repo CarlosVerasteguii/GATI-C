@@ -18,8 +18,9 @@ export type SortState = {
 export type InventoryTableProps = {
     products: InventoryViewModel[] | undefined;
     isLoading: boolean;
-    selectedIds?: string[];
-    onRowSelectionChange?: (ids: string[]) => void;
+    // Selección para acciones masivas
+    rowSelection: Record<string, boolean>;
+    onRowSelectionChange: (newSelection: Record<string, boolean>) => void;
     sort?: SortState;
     onSortChange?: (sort: SortState) => void;
     onProductSelect?: (product: InventoryViewModel) => void;
@@ -54,7 +55,7 @@ function sortItems(items: InventoryViewModel[], sort?: SortState): InventoryView
     });
 }
 
-export default function InventoryTable({ products, isLoading, selectedIds = [], onRowSelectionChange, sort, onSortChange, onProductSelect, onEditProduct }: InventoryTableProps) {
+export default function InventoryTable({ products, isLoading, rowSelection, onRowSelectionChange, sort, onSortChange, onProductSelect, onEditProduct, onDeleteProduct }: InventoryTableProps) {
     const data = useMemo(() => products ?? [], [products]);
     const [expandedGroups, setExpandedGroups] = useState<Record<GroupKey, boolean>>({});
     const visible = useInventoryPreferencesStore((s) => s.visibleColumns);
@@ -74,12 +75,20 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
         return map;
     }, [data, sort]);
 
-    const toggleSelection = (id: string) => {
-        if (!onRowSelectionChange) return;
-        const set = new Set(selectedIds);
-        if (set.has(id)) set.delete(id);
-        else set.add(id);
-        onRowSelectionChange(Array.from(set));
+    const toggleRow = (id: string) => {
+        const next: Record<string, boolean> = { ...rowSelection };
+        if (next[id]) delete next[id]; else next[id] = true;
+        onRowSelectionChange(next);
+    };
+
+    const setMany = (ids: string[], on: boolean) => {
+        const next: Record<string, boolean> = { ...rowSelection };
+        if (on) {
+            ids.forEach((id) => { next[id] = true; });
+        } else {
+            ids.forEach((id) => { if (next[id]) delete next[id]; });
+        }
+        onRowSelectionChange(next);
     };
 
     const headerCell = (label: string, key: SortState['sortBy']) => (
@@ -107,12 +116,27 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
         (visible.purchaseDateFormatted ? 1 : 0);
     const totalColumns = 1 /* checkbox */ + dynamicColumnCount + 1 /* actions */;
 
+    // All ids currently visible in flat list
+    const allIdsInView = useMemo(() => data.map((p) => p.id), [data]);
+    const selectedCountInView = useMemo(() => allIdsInView.filter((id) => !!rowSelection[id]).length, [allIdsInView, rowSelection]);
+    const allSelected = selectedCountInView > 0 && selectedCountInView === allIdsInView.length;
+    const anySelected = selectedCountInView > 0 && selectedCountInView < allIdsInView.length;
+
     return (
         <div className="mt-4">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-12"></TableHead>
+                        <TableHead className="w-12">
+                            <Checkbox
+                                checked={allSelected ? true : anySelected ? 'indeterminate' : false}
+                                onCheckedChange={(checked) => {
+                                    const turnOn = checked === true || checked === 'indeterminate';
+                                    setMany(allIdsInView, turnOn);
+                                }}
+                                aria-label="Seleccionar todo"
+                            />
+                        </TableHead>
                         {visible.name && headerCell('Nombre', 'name')}
                         {visible.brandName && headerCell('Marca', 'brandName')}
                         {visible.serialNumber && headerCell('Núm. Serie', 'serialNumber')}
@@ -151,11 +175,11 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                             const isStack = groupKey.startsWith('STACK:');
                             if (!isStack) {
                                 const item = items[0];
-                                const checked = selectedIds.includes(item.id);
+                                const checked = !!rowSelection[item.id];
                                 return (
                                     <TableRow key={item.id} data-group="serialized" className="cursor-pointer" onClick={() => onProductSelect?.(item)}>
                                         <TableCell>
-                                            <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
+                                            <Checkbox checked={checked} onCheckedChange={() => toggleRow(item.id)} />
                                         </TableCell>
                                         {visible.name && <TableCell className="font-medium">{item.name}</TableCell>}
                                         {visible.brandName && <TableCell>{item.brandName}</TableCell>}
@@ -187,7 +211,7 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                             // Stack: show summary row
                             const representative = items[0];
                             const total = items.length;
-                            const selectedInGroup = items.filter((it) => selectedIds.includes(it.id)).length;
+                            const selectedInGroup = items.filter((it) => !!rowSelection[it.id]).length;
                             const groupChecked: boolean | 'indeterminate' = selectedInGroup === total ? true : selectedInGroup > 0 ? 'indeterminate' : false;
                             const isExpanded = !!expandedGroups[groupKey];
 
@@ -198,15 +222,8 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                             <Checkbox
                                                 checked={groupChecked}
                                                 onCheckedChange={(checked) => {
-                                                    if (!onRowSelectionChange) return;
                                                     const isOn = checked === true || checked === 'indeterminate';
-                                                    if (isOn) {
-                                                        const union = Array.from(new Set([...selectedIds, ...items.map((i) => i.id)]));
-                                                        onRowSelectionChange(union);
-                                                    } else {
-                                                        const filtered = selectedIds.filter((id) => !items.some((i) => i.id === id));
-                                                        onRowSelectionChange(filtered);
-                                                    }
+                                                    setMany(items.map((i) => i.id), isOn);
                                                 }}
                                             />
                                             <button
@@ -234,11 +251,11 @@ export default function InventoryTable({ products, isLoading, selectedIds = [], 
                                     </TableRow>
 
                                     {isExpanded && items.map((item) => {
-                                        const checked = selectedIds.includes(item.id);
+                                        const checked = !!rowSelection[item.id];
                                         return (
                                             <TableRow key={item.id} data-group="stack-item" className="cursor-pointer" onClick={() => onProductSelect?.(item)}>
                                                 <TableCell>
-                                                    <Checkbox checked={checked} onCheckedChange={() => toggleSelection(item.id)} />
+                                                    <Checkbox checked={checked} onCheckedChange={() => toggleRow(item.id)} />
                                                 </TableCell>
                                                 {visible.name && <TableCell className="pl-6">{item.name}</TableCell>}
                                                 {visible.brandName && <TableCell>{item.brandName}</TableCell>}

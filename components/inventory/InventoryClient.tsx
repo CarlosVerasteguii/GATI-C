@@ -27,6 +27,7 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
     const [productToDelete, setProductToDelete] = useState<InventoryViewModel | null>(null);
     const { deleteProduct, isDeleting } = useDeleteProduct();
     const { toast } = useToast();
+    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -59,6 +60,11 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
     const { data, isLoading, error } = useInventoryList(params, { fallbackData });
 
     const viewModels = useMemo(() => (data ? toViewModels(data) : undefined), [data]);
+
+    // Reset selection when data changes (e.g., filters updated)
+    useEffect(() => {
+        setRowSelection({});
+    }, [viewModels]);
 
     // Update URL on filter/pagination changes; no local state duplication
     const handleFilterChange = useCallback(
@@ -108,6 +114,8 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                 <InventoryTable
                     products={viewModels}
                     isLoading={isLoading}
+                    rowSelection={rowSelection}
+                    onRowSelectionChange={setRowSelection}
                     onProductSelect={setSelectedProduct}
                     onEditProduct={setEditingProductId}
                     onDeleteProduct={(product) => {
@@ -135,6 +143,11 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
                     if (!isOpen) setEditingProductId(null);
                 }}
             />
+
+            {/* Counter for selected items */}
+            <div className="mt-2 text-xs text-muted-foreground">
+                {`${Object.keys(rowSelection).length} fila(s) seleccionadas${viewModels ? ` de ${viewModels.length}` : ''}.`}
+            </div>
 
             <ConfirmationDialog
                 isOpen={productToDelete !== null}

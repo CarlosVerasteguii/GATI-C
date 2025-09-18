@@ -48,8 +48,8 @@ Nota: Este checklist operacionaliza el “Plan Estratégico de Refactorización 
 // ——— Alcance de Paridad Funcional (Expansión Fase 2) ———
 - [x] Tarea 2.15 (Filtros Avanzados): Implementar controles y lógica para filtros avanzados (fecha de compra desde/hasta, proveedor, contratoId, costo mínimo/máximo, hasSerialNumber, locationId). Los filtros deben ser derivados exclusivamente de `searchParams` y reflejarse en la URL.
 - [x] Tarea 2.16 (Diálogo Editar): Crear `components/inventory/EditProductDialog.tsx` con formulario completo para todos los campos editables definidos en el PRD; validar con Zod y revalidar claves/tags al guardar.
-- [ ] Tarea 2.17 (Flujo Eliminar): Implementar soft‑delete con diálogo de confirmación, respetando la Política de Borrado Unificada del PRD; excluir elementos eliminados de vistas por defecto y revalidar claves/tags.
-- [ ] Tarea 2.18.1 (UI de Selección): Implementar en `InventoryTable` la selección múltiple (grupos “stack” y serializados) y contador de ítems/selección parcial.
+- [x] Tarea 2.17 (Flujo Eliminar): Implementar soft‑delete con diálogo de confirmación, respetando la Política de Borrado Unificada del PRD; excluir elementos eliminados de vistas por defecto y revalidar claves/tags.
+- [x] Tarea 2.18.1 (UI de Selección): Implementar en `InventoryTable` la selección múltiple (grupos “stack” y serializados) y contador de ítems/selección parcial.
 - [ ] Tarea 2.18.2 (Acción — Asignar en Lote): Implementar diálogo y lógica para asignación masiva con validaciones de rol/estado; invalidar/revalidar datos.
 - [ ] Tarea 2.18.3 (Acción — Prestar en Lote): Implementar diálogo y lógica para préstamo masivo con validaciones de rol/estado; invalidar/revalidar datos.
 - [ ] Tarea 2.18.4 (Acción — Retirar en Lote): Implementar diálogo y lógica para marcar Pendiente de Retiro en lote; invalidar/revalidar datos.
