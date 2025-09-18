@@ -10,6 +10,10 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Separator } from '@/components/ui/separator';
 import { useInventoryPreferencesStore } from '@/lib/stores/use-inventory-preferences-store';
 import type { InventoryColumnId } from '@/lib/stores/use-inventory-preferences-store';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
+import type { DateRange } from 'react-day-picker';
 
 export type InventoryToolbarProps = {
     initialFilters: Partial<ListParams>;
@@ -56,6 +60,27 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
     const storeVisible = useInventoryPreferencesStore((s) => s.visibleColumns);
     const toggleColumn = useInventoryPreferencesStore((s) => s.toggleColumnVisibility);
     const currentColumns = useMemo(() => visibleColumns ?? storeVisible, [visibleColumns, storeVisible]);
+
+    // Build controlled date range from initialFilters
+    const dateRange: DateRange | undefined = useMemo(() => {
+        const fromStr = initialFilters.purchaseDateFrom as string | undefined;
+        const toStr = initialFilters.purchaseDateTo as string | undefined;
+        const from = fromStr ? new Date(fromStr) : undefined;
+        const to = toStr ? new Date(toStr) : undefined;
+        if (!from && !to) return undefined;
+        return { from, to };
+    }, [initialFilters.purchaseDateFrom, initialFilters.purchaseDateTo]);
+
+    const toISOStart = (d: Date): string => {
+        const x = new Date(d);
+        x.setHours(0, 0, 0, 0);
+        return x.toISOString();
+    };
+    const toISOEnd = (d: Date): string => {
+        const x = new Date(d);
+        x.setHours(23, 59, 59, 999);
+        return x.toISOString();
+    };
 
     return (
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -161,6 +186,73 @@ export default function InventoryToolbar(props: InventoryToolbarProps) {
                         </Button>
                     </div>
                 </div>
+
+                {/* Advanced Filters */}
+                <Collapsible>
+                    <CollapsibleTrigger asChild>
+                        <Button variant="outline">Filtros Avanzados</Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 border rounded-md">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="hasSerialNumber"
+                                    checked={!!initialFilters.hasSerialNumber}
+                                    onCheckedChange={(checked) => {
+                                        const value = checked === true ? true : undefined;
+                                        onFilterChange({ hasSerialNumber: value });
+                                    }}
+                                />
+                                <Label htmlFor="hasSerialNumber">Solo con Número de Serie</Label>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="minCost">Costo mínimo</Label>
+                                <Input
+                                    id="minCost"
+                                    type="number"
+                                    min={0}
+                                    value={initialFilters.minCost ?? ''}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        onFilterChange({ minCost: raw === '' ? undefined : Number(raw) });
+                                    }}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="maxCost">Costo máximo</Label>
+                                <Input
+                                    id="maxCost"
+                                    type="number"
+                                    min={0}
+                                    value={initialFilters.maxCost ?? ''}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        onFilterChange({ maxCost: raw === '' ? undefined : Number(raw) });
+                                    }}
+                                />
+                            </div>
+
+                            <div className="md:col-span-1">
+                                <Label htmlFor="purchaseDateRange">Rango de Fecha de Compra</Label>
+                                <DatePickerWithRange
+                                    id="purchaseDateRange"
+                                    date={dateRange}
+                                    onDateChange={(range) => {
+                                        if (!range || (!range.from && !range.to)) {
+                                            onFilterChange({ purchaseDateFrom: undefined, purchaseDateTo: undefined, page: 1 });
+                                            return;
+                                        }
+                                        const fromISO = range.from ? toISOStart(range.from) : undefined;
+                                        const toISO = range.to ? toISOEnd(range.to) : undefined;
+                                        onFilterChange({ purchaseDateFrom: fromISO, purchaseDateTo: toISO, page: 1 });
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

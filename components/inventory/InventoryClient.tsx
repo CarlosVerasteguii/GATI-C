@@ -66,7 +66,21 @@ export default function InventoryClient({ fallbackData }: InventoryClientProps) 
             });
 
             // Reset page to 1 when filters (other than page) change
-            if ('q' in changes || 'sortBy' in changes || 'sortOrder' in changes || 'brandId' in changes || 'categoryId' in changes || 'locationId' in changes || 'condition' in changes) {
+            if (
+                'q' in changes ||
+                'sortBy' in changes ||
+                'sortOrder' in changes ||
+                'brandId' in changes ||
+                'categoryId' in changes ||
+                'locationId' in changes ||
+                'condition' in changes ||
+                // Advanced filters
+                'hasSerialNumber' in changes ||
+                'minCost' in changes ||
+                'maxCost' in changes ||
+                'purchaseDateFrom' in changes ||
+                'purchaseDateTo' in changes
+            ) {
                 current.set('page', '1');
             }
 
